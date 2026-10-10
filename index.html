@@ -51,7 +51,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 #grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(5,1fr);gap:0 4px;width:100%;max-width:min(100%,calc((100dvh - 230px) * .64));aspect-ratio:4/6.25;touch-action:none}
 .cell{position:relative;border-radius:10px;cursor:grab}
 .plabel{position:absolute;left:-6px;right:-6px;top:0;text-align:center;font-size:clamp(10px,3.3vw,15px);font-weight:700;color:var(--label);white-space:nowrap;pointer-events:none;letter-spacing:-.2px}
-.item{position:absolute;inset:22% 6% 4%;animation:pop .22s ease-out}
+.item{position:absolute;inset:17% 1% 0;animation:pop .22s ease-out}
 .cell.target,.cell.sel{background:rgba(255,255,255,.28)}
 .cell.match{background:rgba(255,255,255,.22);box-shadow:inset 0 0 0 3px rgba(255,255,255,.7)}
 .cell.match .item{animation:bob .45s ease-in-out infinite alternate}
@@ -249,6 +249,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
     </div>
     <div class="pane" id="pane-set">
       <div class="setrow"><span>Sound</span><button id="mute"></button></div>
+      <div class="setrow"><span>Barrel style</span><button id="style"></button></div>
       <div class="sect">Statistics</div>
       <div class="stats" id="stats"></div>
       <div class="sect">News</div>
@@ -661,9 +662,131 @@ const ITEMS = [
         <path d="M41 64 h18 M43 67.5 h14" stroke="#7a5a10" stroke-width="1.2"/>`,
   over:`<polygon points="${star(16,14,5,1.4,4)}" fill="#fff" stroke-width="1.4"/><polygon points="${star(86,10,4,1.2,4)}" fill="#fff" stroke-width="1.2"/>` },
 ];
-const MAX = ITEMS.length;
-const SVG_CACHE = ITEMS.map(it => `<svg viewBox="0 0 100 100" aria-hidden="true"><g stroke="#1d1a24" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round">${barrel(it)}</g></svg>`);
-const svgFor = t => SVG_CACHE[t-1];
+// ================= SC2-STYLE BARRELS =================
+// Redrawn from the Scrap Clicker 2 barrel list (names from the community wiki): flat colours,
+// no outlines, darker right side. Three bodies: cylinder, cuboid and hex prism.
+const darken = (c, f) => { const n = parseInt(c.slice(1),16); return "#" + [n>>16, n>>8&255, n&255].map(v => Math.round(v*f).toString(16).padStart(2,"0")).join(""); };
+const CYL = "M20 22 V84 A30 10.5 0 0 0 80 84 V22 Z";
+const SYM = {
+  heart:c=>`<path d="M50 72 L38 59 Q32 51 39 46 Q46 42 50 50 Q54 42 61 46 Q68 51 62 59 Z" fill="${c}"/>`,
+  moon:c=>`<path d="M56 44 A14 14 0 1 0 56 72 A17 17 0 0 1 56 44 Z" fill="${c}"/>`,
+  plus:c=>`<path d="M45 42 H55 V53 H66 V63 H55 V74 H45 V63 H34 V53 H45 Z" fill="${c}"/>`,
+  star:c=>`<polygon points="${star(50,59,14,6,5)}" fill="${c}"/>`,
+  sun:c=>`<polygon points="${star(50,58,13,8,8)}" fill="${c}"/>`,
+  noentry:c=>`<circle cx="50" cy="58" r="12" fill="none" stroke="${c}" stroke-width="5"/><path d="M42 50 L58 66" stroke="${c}" stroke-width="5"/>`,
+  up:c=>`<polygon points="50,40 63,54 55,54 55,74 45,74 45,54 37,54" fill="${c}"/>`,
+  down:c=>`<polygon points="50,76 63,62 55,62 55,42 45,42 45,62 37,62" fill="${c}"/>`,
+  tri:c=>`<polygon points="50,46 62,68 38,68" fill="${c}"/>`,
+  tridown:c=>`<polygon points="38,48 62,48 50,68" fill="${c}"/>`,
+  cross:c=>`<path d="M39 47 L61 69 M61 47 L39 69" stroke="${c}" stroke-width="5"/><polygon points="35,43 45,44 36,53" fill="${c}"/><polygon points="65,43 55,44 64,53" fill="${c}"/><polygon points="35,73 45,72 36,63" fill="${c}"/><polygon points="65,73 55,72 64,63" fill="${c}"/>`,
+  chevrons:c=>`<path d="M41 54 L50 46 L59 54 M41 66 L50 58 L59 66" fill="none" stroke="${c}" stroke-width="5"/>`,
+  ff:c=>`<polygon points="38,48 50,58 38,68" fill="${c}"/><polygon points="50,48 62,58 50,68" fill="${c}"/>`,
+  rew:c=>`<polygon points="62,48 50,58 62,68" fill="${c}"/><polygon points="50,48 38,58 50,68" fill="${c}"/>`,
+  bubble:c=>`<path d="M37 48 H63 Q65 48 65 50 V62 Q65 64 63 64 H48 L42 70 V64 H37 Q35 64 35 62 V50 Q35 48 37 48 Z" fill="${c}"/>`,
+};
+const HOLE = {
+  round:()=>`<ellipse cx="50" cy="22" rx="17" ry="5.8" fill="#0d0d0d"/>`,
+  diamond:()=>`<polygon points="50,16.5 61,22 50,27.5 39,22" fill="#0d0d0d"/>`,
+  rect:()=>`<rect x="37" y="18.5" width="26" height="7" fill="#0d0d0d"/>`,
+  hex:()=>`<polygon points="39,22 44,17.5 56,17.5 61,22 56,26.5 44,26.5" fill="#0d0d0d"/>`,
+};
+function flatCyl(o){
+  const dk = darken(o.body, .8);
+  let d = "";
+  if(o.grad) d += `<rect x="20" y="0" width="60" height="100" fill="url(#gv-${o.grad})"/>`;
+  if(o.panel) d += `<path d="M27 32 V78 A23 8 0 0 0 73 78 V32 A23 8 0 0 1 27 32 Z" fill="${o.panel}"/>`;
+  if(o.ribs) d += [29,39.5,50,60.5,71].map(x => `<rect x="${x-2.6}" y="34" width="5.2" height="50" rx="2.6" fill="${o.ribs}"/>`).join("");
+  if(o.rings) d += Array.from({length:o.n||4}, (_,i) => { const y = 36 + i*(52/(o.n||4)); return `<path d="M20 ${y.toFixed(1)} A30 10.5 0 0 0 80 ${y.toFixed(1)}" fill="none" stroke="${o.rings}" stroke-width="${o.n>5?3.6:5}"/>`; }).join("");
+  if(o.slot) d += `<rect x="35" y="${o.slotY||38}" width="30" height="${o.slotH||8}" rx="${o.slotR||0}" fill="#0d0d0d"/>`;
+  if(o.sym) d += SYM[o.sym](o.symc);
+  const top = o.hole === "none"
+    ? `<ellipse cx="50" cy="22" rx="30" ry="10.5" fill="${o.rim}"/><ellipse cx="50" cy="22.5" rx="26" ry="8.4" fill="${o.lid || o.body}"/>`
+    : `<ellipse cx="50" cy="22" rx="30" ry="10.5" fill="${o.rim}"/><ellipse cx="50" cy="22.3" rx="24" ry="8" fill="${o.inner || darken(o.rim,1.18)}"/>${HOLE[o.hole||"round"]()}`;
+  return `<path d="${CYL}" fill="${o.body}"/>
+    <g clip-path="url(#c-flatcyl)">${d}<rect x="66" y="0" width="14" height="100" fill="#000" opacity=".14"/></g>${top}`;
+}
+function flatBox(o){
+  const l = o.body, r = darken(o.body,.82);
+  let d = "";
+  if(o.stripes) for(let y=34; y<92; y+=11) d += `<polygon points="22,${y-12} 50,${y} 50,${y+5.5} 22,${y-6.5}" fill="${darken(l,.72)}"/><polygon points="50,${y} 78,${y-12} 78,${y-6.5} 50,${y+5.5}" fill="${darken(r,.72)}"/>`;
+  if(o.leftSlot) d += `<polygon points="26,30 42,37 42,47 26,40" fill="#0d0d0d"/>`;
+  if(o.rightSlot) d += `<polygon points="58,37 74,30 74,40 58,47" fill="#0d0d0d"/>`;
+  return `<polygon points="22,22 50,34 50,96 22,84" fill="${l}"/><polygon points="50,34 78,22 78,84 50,96" fill="${r}"/>${d}
+    <polygon points="22,22 50,10 78,22 50,34" fill="${o.top}"/>${o.hole === "diamond" ? `<polygon points="50,16 63,22 50,28 37,22" fill="#0d0d0d"/>` : ""}`;
+}
+function flatHex(o){
+  const f = o.body, s = darken(o.body,.82), s2 = darken(o.body,.9);
+  return `<polygon points="24,22 36,33 36,93 24,82" fill="${s2}"/><polygon points="36,33 64,33 64,93 36,93" fill="${f}"/><polygon points="64,33 76,22 76,82 64,93" fill="${s}"/>
+    ${o.slot ? `<rect x="40" y="46" width="20" height="${o.slotH||8}" rx="${o.slotR||0}" fill="#0d0d0d"/>` : ""}
+    <polygon points="24,22 36,11 64,11 76,22 64,33 36,33" fill="${o.top}"/>
+    ${o.hole === "none" ? `<polygon points="31,22 39,15 61,15 69,22 61,29 39,29" fill="${o.lid}"/>` : `<polygon points="32,22 40,15.5 60,15.5 68,22 60,28.5 40,28.5" fill="#0d0d0d"/>`}`;
+}
+const flat = o => o.box ? flatBox(o) : o.hex ? flatHex(o) : flatCyl(o);
+$defs().insertAdjacentHTML("beforeend", `<clipPath id="c-flatcyl"><path d="${CYL}"/></clipPath>
+  <linearGradient id="gv-grey" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#e2e2e2"/><stop offset="1" stop-color="#8e8e8e"/></linearGradient>
+  <linearGradient id="gv-copper" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#d98a4a"/><stop offset="1" stop-color="#b8662a"/></linearGradient>`);
+function $defs(){ return document.getElementById("defs"); }
+
+const SC2_ITEMS = [
+ {name:"Circle Blue", body:"#9fbbe3", rim:"#4f7fcf"},
+ {name:"Square Pink", body:"#e39b9e", rim:"#d0575e", hole:"diamond"},
+ {name:"Trash Can", body:"#ecc89a", rim:"#c98a42", ribs:"#c98a42"},
+ {name:"Billboard", body:"#cfa6dc", rim:"#c7a0d6", panel:"#9a5ab5", inner:"#e2c8ea"},
+ {name:"Post Box", body:"#7fcf66", rim:"#5cb34a", hole:"none", lid:"#86d56c", slot:1, slotY:36, slotH:9},
+ {name:"Blue Cuboid", box:1, body:"#8599d9", top:"#3d58b8", hole:"diamond"},
+ {name:"Look Up", body:"#dcc95a", rim:"#b9a83a", sym:"up", symc:"#9a8a2a"},
+ {name:"Helter Skelter", body:"#ea9452", rim:"#d9772e", rings:"#b5601f"},
+ {name:"Rubbish Bin", body:"#d96d6d", rim:"#c45252", ribs:"#a63a3a", hole:"diamond"},
+ {name:"Watermelon", box:1, body:"#36ad3e", top:"#287d2e", stripes:1, hole:"diamond"},
+ {name:"I Love You", body:"#d77ac6", rim:"#c75ab4", sym:"heart", symc:"#a8358a"},
+ {name:"Blue Swirl", body:"#7088d8", rim:"#5168c8", rings:"#3a4fae", n:7},
+ {name:"Good Night", body:"#d1b61a", rim:"#a89010", sym:"moon", symc:"#8a7410"},
+ {name:"I See You", body:"#8b5550", rim:"#6a3c38", hole:"none", lid:"#8e5a55", slot:1, slotY:36, slotH:10},
+ {name:"No Entry", body:"#ea9090", rim:"#d33a3a", sym:"noentry", symc:"#d32f2f"},
+ {name:"Tree Doctor", body:"#22b322", rim:"#168f16", sym:"plus", symc:"#0d6a0d"},
+ {name:"Layer Cake", box:1, body:"#7a5ed0", top:"#5a40b0", stripes:1, hole:"diamond"},
+ {name:"Twinkle Twinkle", body:"#e8b496", rim:"#d8834e", sym:"star", symc:"#c8682a"},
+ {name:"Lurid Layered", body:"#36c8c8", rim:"#1f9c9c", rings:"#1e8080", n:7},
+ {name:"Neon Trash", body:"#80c83c", rim:"#5aa62a", ribs:"#3d8a1a"},
+ {name:"Tie Your Laces", body:"#c25a5a", rim:"#a84444", sym:"down", symc:"#8a3030"},
+ {name:"Banana Hole", body:"#e8c45a", rim:"#c49e2a", hole:"rect"},
+ {name:"The Pink Hex of Doom", hex:1, body:"#d48fd0", top:"#9a3fa0"},
+ {name:"Sign o' The Times", body:"#1e6a3a", rim:"#1e6a3a", panel:"#4cc47a", inner:"#5ad68a"},
+ {name:"Trash Bin", body:"#2a7a7a", rim:"#1e5a5a", ribs:"#174848", hole:"rect"},
+ {name:"Shades of Grey", body:"#c0c0c0", rim:"#9a9a9a", grad:"grey", inner:"#d8d8d8"},
+ {name:"Wrong Direction", box:1, body:"#7d9a32", top:"#5a7a20", leftSlot:1},
+ {name:"Which Direction?", body:"#9c9c9c", rim:"#3a3a3a", sym:"cross", symc:"#2a2a2a", inner:"#5a5a5a"},
+ {name:"Open Wide", body:"#c87a3e", rim:"#a85a20", grad:"copper"},
+ {name:"I C U 2", body:"#6b95d4", rim:"#4a78c4", hole:"none", lid:"#7aa2dc", slot:1, slotY:34, slotH:9},
+ {name:"Illuminati", body:"#de4b4b", rim:"#c03030", sym:"tri", symc:"#a82020"},
+ {name:"No Parcels", hex:1, body:"#e8b83a", top:"#c9962a", hole:"none", lid:"#f0c84a", slot:1},
+ {name:"Rhapsody in Green", body:"#1aa04a", rim:"#0e6a30", rings:"#0e6a30", hole:"diamond"},
+ {name:"Double Jump", body:"#c8a2e2", rim:"#9a5ac0", sym:"chevrons", symc:"#9a4ac8"},
+ {name:"Spin the Lime", body:"#9ac24a", rim:"#6f9a2a", rings:"#6a8a2a", n:5, hole:"rect"},
+ {name:"The Box", box:1, body:"#9a6e30", top:"#6e4a1e", leftSlot:1},
+ {name:"Visor", body:"#4a9ac8", rim:"#3a86b8", panel:"#2a6a8a", hole:"diamond"},
+ {name:"Walking on Sunshine", body:"#e2cf62", rim:"#c4a83a", sym:"sun", symc:"#a8902a"},
+ {name:"Fast Forward", body:"#86c85a", rim:"#5aa63a", sym:"ff", symc:"#3a8a2a"},
+ {name:"Hexbox", body:"#a38ae8", rim:"#7a5ad8", hole:"hex"},
+ {name:"Firecracker", body:"#c03a3a", rim:"#8a2020", rings:"#7a1e1e"},
+ {name:"Hedge Trimmer", hex:1, body:"#6aaa2a", top:"#4a7a1a", hole:"none", lid:"#7aba3a", slot:1, slotH:9, slotR:3},
+ {name:"Not Too Fat", body:"#c84ac8", rim:"#b032b0", hole:"none", lid:"#d060d0", slot:1, slotY:38, slotH:6, slotR:3},
+ {name:"Rubbish Can", body:"#ecc232", rim:"#c9a018", ribs:"#8a7010", hole:"hex"},
+ {name:"Straight Down", body:"#1a7aaa", rim:"#0e5a8a", sym:"tridown", symc:"#0e4a6a"},
+ {name:"Rewind", body:"#ee8a30", rim:"#d06a10", sym:"rew", symc:"#b85a10"},
+ {name:"Two at Once", box:1, body:"#33a033", top:"#227722", leftSlot:1, rightSlot:1},
+ {name:"The End of The Beginning", body:"#22b8b8", rim:"#1aa0a0", panel:"#0e6a6a", hole:"rect"},
+ {name:"Purple Whirlpool", body:"#9a3ad0", rim:"#6a1aa0", rings:"#5a1a8a", n:6},
+ {name:"I Can't Hear You", body:"#de4040", rim:"#c02828", sym:"bubble", symc:"#a01a1a"},
+];
+
+// Two barrel sets with the same number of tiers: SC2-style (default) and the original Forge cartoons.
+const MAX = Math.min(ITEMS.length, SC2_ITEMS.length);
+const SVG_FORGE = ITEMS.map(it => `<svg viewBox="0 0 100 100" aria-hidden="true"><g stroke="#1d1a24" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round">${barrel(it)}</g></svg>`);
+const SVG_SC2 = SC2_ITEMS.map(it => `<svg viewBox="0 0 100 100" aria-hidden="true">${flat(it)}</svg>`);
+const forgeStyle = () => typeof S !== "undefined" && S.style === "forge";
+const svgFor = t => (forgeStyle() ? SVG_FORGE : SVG_SC2)[t-1];
+const nameOf = t => (forgeStyle() ? ITEMS : SC2_ITEMS)[t-1].name;
 
 // ================= BIG NUMBERS =================
 // All currencies are stored as log10(value) so they can grow far past 1e308.
@@ -698,7 +821,7 @@ const fresh = () => ({
   scrap:LZ, runScrap:LZ, totalScrap:LZ, gs:LZ, stars:0, best:1, runBest:1, prestiges:0, merges:0,
   up:{spawn:0,tier:0,mult:0,auto:0,double:0,lucky:0,offline:0},
   gup:{touch:0,gains:0,head:0},
-  grid:Array(SLOTS).fill(0), spawnT:0, autoT:0, last:Date.now(), muted:false, theme:"auto", buyMax:false
+  grid:Array(SLOTS).fill(0), spawnT:0, autoT:0, last:Date.now(), muted:false, theme:"auto", buyMax:false, style:"sc2"
 });
 let S = fresh();
 function load(){
@@ -850,7 +973,7 @@ function drawCell(i, anim=true){
   c.classList.toggle("sel", sel === i);
   if(c._t === t) return;
   c._t = t; c._lbl = null;
-  c.innerHTML = `<span class="plabel"></span>` + (t ? `<div class="item"${anim?"":' style="animation:none"'} title="#${t} ${ITEMS[t-1].name}">${svgFor(t)}</div>` : "");
+  c.innerHTML = `<span class="plabel"></span>` + (t ? `<div class="item"${anim?"":' style="animation:none"'} title="#${t} ${nameOf(t)}">${svgFor(t)}</div>` : "");
 }
 function drawGrid(anim=true){ for(let i=0;i<SLOTS;i++) drawCell(i, anim); }
 // light up the barrels you can merge the held/selected barrel into
@@ -997,19 +1120,20 @@ function renderBook(){
   [...book.children].forEach((c,i)=>{
     const t = i+1, known = t <= S.best;
     c.classList.toggle("locked", !known);
-    c.querySelector("b").textContent = known ? ITEMS[i].name : "???";
+    c.querySelector("b").textContent = known ? nameOf(i+1) : "???";
     c.querySelector("span").textContent = `#${t}`;
   });
   $("colcount").textContent = `Unlocked: ${S.best}/${MAX}`;
 }
 function showBarrel(t){
   const known = t <= S.best;
-  modal({title: known ? ITEMS[t-1].name : "???",
+  modal({title: known ? nameOf(t) : "???",
     html:`<div class="detail${known?"":" locked"}">${svgFor(t)}</div><p>Barrel #${t}<br>${known ? `Makes ${fmtL(tierL(t))} scrap/sec before boosts.` : "Merge your way up to discover this barrel."}</p>`,
     ok:"Close"});
 }
 function renderSettings(){
   $("mute").textContent = S.muted ? "Off" : "On";
+  $("style").textContent = forgeStyle() ? "Forge" : "SC2";
   $("stats").innerHTML = `<span>Scrap per second</span><b>${fmtL(prodL())}</b><span>Total scrap earned</span><b>${fmtL(S.totalScrap)}</b><span>Merges</span><b>${fmt(S.merges)}</b><span>Prestiges</span><b>${S.prestiges}</b><span>Best barrel</span><b>#${S.best}</b>`;
 }
 function showGsInfo(){
@@ -1102,7 +1226,7 @@ function discover(t){
   }
   if(t > S.best){
     S.best = t; sfx.discover();
-    toast(`<span class="mini">${svgFor(t)}</span>New barrel: #${t} ${ITEMS[t-1].name}!`);
+    toast(`<span class="mini">${svgFor(t)}</span>New barrel: #${t} ${nameOf(t)}!`);
     if(pane === "col") renderBook();
   }
 }
@@ -1149,7 +1273,7 @@ function prestige(){
     big:`<svg class="ico"><use href="#i-gold"/></svg>${fmtL(g)}`, ok:"Prestige", cancel:"Not yet",
     onOk:()=>{
       initAudio();
-      const keep = {gs:ladd(S.gs, g), stars:S.stars, buyMax:S.buyMax, best:S.best, prestiges:S.prestiges+1, merges:S.merges, totalScrap:S.totalScrap, gup:S.gup, muted:S.muted, theme:S.theme};
+      const keep = {gs:ladd(S.gs, g), stars:S.stars, buyMax:S.buyMax, style:S.style, best:S.best, prestiges:S.prestiges+1, merges:S.merges, totalScrap:S.totalScrap, gup:S.gup, muted:S.muted, theme:S.theme};
       S = Object.assign(fresh(), keep);
       S.runBest = spawnTier();
       sel = null; cells.forEach(c=>c._t = -1);
@@ -1217,6 +1341,7 @@ $("prestige").onclick = prestige;
 $("bulk").onclick = () => { S.buyMax = !S.buyMax; $("bulk").textContent = S.buyMax ? "MAX" : "×1"; };
 function applyTheme(){}
 $("mute").onclick = ()=>{ S.muted = !S.muted; renderSettings(); save(); };
+$("style").onclick = ()=>{ S.style = forgeStyle() ? "sc2" : "forge"; cells.forEach(c=>c._t = -1); drawGrid(false); $("book").innerHTML = ""; renderSettings(); save(); };
 $("wipe").onclick = ()=> modal({title:"Reset everything?", text:"This deletes ALL progress, including Golden Scrap and your barrel collection.", ok:"Delete", cancel:"Cancel",
   onOk:()=>{
     try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
