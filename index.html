@@ -176,6 +176,8 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 .gst div.cur{box-shadow:inset 0 0 0 2px var(--star)}
 
 .toast{position:absolute;left:50%;top:150px;transform:translateX(-50%);background:var(--dbox);color:#fff;padding:10px 16px;z-index:40;width:max-content;max-width:calc(100% - 32px);text-align:center;animation:tin .2s ease-out;font-size:15px}
+.toast.era{box-shadow:inset 0 0 0 3px var(--star);font-size:16px;padding:12px 18px}
+.toast.era b{color:var(--star)}
 .toast .mini{display:inline-block;width:30px;height:30px;vertical-align:middle;margin-right:6px}
 .toast .mini svg{width:100%;height:100%}
 @keyframes tin{from{transform:translate(-50%,-12px);opacity:0}}
@@ -311,6 +313,7 @@ const SHAPE = {
   capsule:{d:"M24 18 V62 Q24 91 50 91 Q76 91 76 62 V18 Z", top:18, rx:26, ry:7, x1:24, x2:76, bot:88},
   globe:  {d:"M34 18 Q10 32 13 58 Q18 88 50 88 Q82 88 87 58 Q90 32 66 18 Z", top:18, rx:16, ry:5, x1:12, x2:88, bot:86},
   // flat-sided bodies like SC2's newer barrels: a front-facing box and a hex prism
+  trophy: {d:"M18 14 Q18 44 42 52 V60 Q36 63 34 70 H28 V93 H72 V70 H66 Q64 63 58 60 V52 Q82 44 82 14 Z", top:14, rx:32, ry:7, x1:18, x2:82, bot:93},
   box:    {poly:"box", d:"M20 26 L32 16 H82 V80 L70 90 H20 Z"},
   hex:    {poly:"hex", d:"M22 20 L36 12 H64 L78 20 V84 L64 92 H36 L22 84 Z"},
 };
@@ -673,14 +676,232 @@ const ITEMS = [
         <rect x="36" y="70" width="28" height="9" rx="2" fill="#2b2e35"/>
         <ellipse cx="46" cy="73" rx="3.5" ry="1.6" fill="#f2c14e"/><ellipse cx="54" cy="74" rx="3.5" ry="1.6" fill="#f2c14e"/>`,
   over:`${tube("M82 56 H89 V26","#c7ced6",3)}<circle cx="89" cy="23" r="5" fill="#e2465b"/><circle cx="85.5" cy="21.5" r="1.4" fill="#fff" stroke="none"/>` },
-{ name:"Hall of Fame", shape:"bucket", fill:"#f2c14e", hoops:[82], hoop:"#c8961f", hw:7, lid:"#ffd96b", inner:"#c8961f",
-  under:`${tube("M21 28 Q4 28 6 44 Q8 58 25 58","#f2c14e",5)}${tube("M79 28 Q96 28 94 44 Q92 58 75 58","#f2c14e",5)}`,
-  deco:`<polygon points="${star(50,42,11,4.6,5)}" fill="#fff2a8" stroke="#000" stroke-opacity=".35" stroke-width="2"/>
-        <rect x="37" y="60" width="26" height="11" rx="1.5" fill="#c8961f" stroke="#000" stroke-opacity=".35" stroke-width="2"/>
-        <path d="M41 64 h18 M43 67.5 h14" stroke="#7a5a10" stroke-width="1.2"/>`,
-  over:`<polygon points="${star(16,14,5,1.4,4)}" fill="#fff" stroke-width="1.4"/><polygon points="${star(86,10,4,1.2,4)}" fill="#fff" stroke-width="1.2"/>` },
+{ name:"Hall of Fame", shape:"trophy", fill:"#f2c14e", lid:"#ffd96b", inner:"#c8961f",
+  under:`${tube("M21 20 Q4 20 6 34 Q8 46 32 47","#e9b53a",5)}${tube("M79 20 Q96 20 94 34 Q92 46 68 47","#e9b53a",5)}`,
+  deco:`<polygon points="${star(50,31,11,4.6,5)}" fill="#fff2a8" stroke="#000" stroke-opacity=".3" stroke-width="1.5"/>
+        <path d="M24 44 Q50 54 76 44" fill="none" stroke="#c8961f" stroke-width="2.5"/>
+        <rect x="0" y="58" width="100" height="5" fill="#c8961f"/>
+        <rect x="0" y="70" width="100" height="30" fill="#5a3a1e"/><rect x="0" y="70" width="100" height="3" fill="#7a5230"/>
+        <rect x="38" y="77" width="24" height="9" rx="1" fill="#e9c14e"/><path d="M42 80.5 h16 M44 83.5 h12" stroke="#7a5a10" stroke-width="1.1"/>`,
+  over:`<polygon points="${star(14,10,5,1.4,4)}" fill="#fff" stroke="none"/><polygon points="${star(88,8,4,1.2,4)}" fill="#fff" stroke="none"/><polygon points="${star(80,30,3,1,4)}" fill="#fff" stroke="none"/>` },
+
+// ---------- 51-80: deluxe objects (more layers, contents on top, props, printed labels) ----------
+{ name:"Bubble Trouble", shape:"can", fill:"#e6c39c", lid:"#f4f4f4", inner:"#cfa57a",
+  deco:`<rect x="0" y="14" width="100" height="10" fill="#d9b088"/>
+        <rect x="33" y="22" width="9" height="8" rx="2" fill="#fff" opacity=".5" transform="rotate(-12 37 26)"/><rect x="54" y="25" width="8" height="7" rx="2" fill="#fff" opacity=".45" transform="rotate(15 58 28)"/>
+        <rect x="0" y="40" width="100" height="16" fill="#fff"/><text x="50" y="52.5" font-size="11" font-weight="800" text-anchor="middle" fill="#e2468a" stroke="none" font-family="Open Sans,system-ui,sans-serif">BOBA</text>
+        <path d="M30 40 h40 M30 56 h40" stroke="#e2468a" stroke-width="1.4"/>
+        ${dots([[34,74],[42,77],[50,74],[58,77],[66,74],[38,81],[46,84],[54,81],[62,84],[34,86],[66,86],[50,88]],3.4,"#3a2210")}
+        ${dots([[33,73],[41,76],[49,73],[57,76],[65,73]],1,"#8a5a30")}`,
+  top:`${tube("M53 14 L63 0","#2fbf71",4.5)}<ellipse cx="53" cy="14" rx="3" ry="1.3" fill="#1d6b3a" stroke="none"/>` },
+{ name:"Brain Freeze", shape:"bucket", fill:"#f7b3c7", lid:"#ffffff", inner:"#ffffff",
+  deco:`<path d="M30 20 L36 90 M44 20 L46 90 M56 20 L54 90 M70 20 L64 90" stroke="#fff" stroke-opacity=".3" stroke-width="2.5"/>
+        <rect x="0" y="66" width="100" height="6" fill="#fff" opacity=".8"/><path d="M0 72 Q50 78 100 72" fill="none" stroke="#e98fb0" stroke-width="2"/>
+        ${dots([[36,40],[60,46],[44,56],[58,32]],1.6,"#ffd6e2")}`,
+  top:`<ellipse cx="50" cy="18" rx="28" ry="7" fill="#fff"/><ellipse cx="50" cy="12" rx="20" ry="6" fill="#fff"/><ellipse cx="50" cy="7" rx="11" ry="4.5" fill="#fff"/>
+       <path d="M30 18 q10 -4 20 0 q10 4 20 0 M36 12 q7 -3 14 0 q7 3 14 0" fill="none" stroke="#e7e2ea" stroke-width="1.4"/>
+       ${tube("M63 14 L76 0","#e2465b",3.5)}<path d="M66 10 l4 3 M69 6 l4 3" stroke="#fff" stroke-width="2"/>
+       <circle cx="49" cy="3" r="3.6" fill="#d61f3a" stroke="none"/><circle cx="48" cy="2" r="1" fill="#fff" stroke="none"/><path d="M50 0 q3 -2 5 -1" fill="none" stroke="#3d7a2a" stroke-width="1.4"/>
+       ${[[40,15,"#3b82f6"],[57,16,"#f2c230"],[45,9,"#2fbf71"],[55,9,"#e2465b"]].map(([x,y,c])=>`<rect x="${x}" y="${y}" width="3.5" height="1.4" rx=".7" fill="${c}" stroke="none"/>`).join("")}` },
+{ name:"Stack Overflow", shape:"tub", fill:"#e0a052", lid:"#e8a858", inner:"#e8a858",
+  deco:`<path d="M0 50 q6 4 12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 V56 H0 Z" fill="#5fbf3a"/>
+        <polygon points="14,55 24,64 34,55 44,64 54,55 64,64 74,55 84,64 94,55 94,56 14,56" fill="#ffcf3f"/>
+        <rect x="0" y="58" width="100" height="12" rx="4" fill="#6b3a1e"/><path d="M14 62 h70 M18 66 h64" stroke="#4a2612" stroke-width="1.2"/>
+        <rect x="0" y="70" width="100" height="4" fill="#e2465b"/>`,
+  top:`<path d="M14 38 Q14 12 50 10 Q86 12 86 38 Q50 46 14 38 Z" fill="#e8a858" stroke="none"/><path d="M20 26 Q30 14 46 13" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="2.5"/>
+       ${[[34,22],[46,18],[58,20],[68,26],[40,30],[54,28],[28,32],[62,33]].map(([x,y])=>`<ellipse cx="${x}" cy="${y}" rx="2" ry="1.1" fill="#fff6dc" stroke="none" transform="rotate(${x%3*20-20} ${x} ${y})"/>`).join("")}
+       <path d="M60 12 V-2" stroke="#c99a5b" stroke-width="1.6"/><path d="M60 -2 H70 L66 1.5 L70 5 H60 Z" fill="#e2465b" stroke="none"/>` },
+{ name:"Delivery Pending", shape:"box", fill:"#f1ebdf", lid:"#e6dac6", inner:"#e6dac6",
+  deco:`<path d="M0 44 H100 M0 62 H100 M0 80 H100" stroke="#c9b894" stroke-width="2.5"/>
+        ${[35,53,71].map(y=>`<text x="50" y="${y}" font-size="9" font-weight="800" text-anchor="middle" fill="#d62f2f" stroke="none" font-family="Open Sans,system-ui,sans-serif">PIZZA</text>`).join("")}
+        <path d="M66 86 l6 -3" stroke="#c9b894" stroke-width="1.5"/>`,
+  top:`<path d="M36 23 L60 18 L52 26 Z" fill="#f2c230" stroke="none"/><path d="M36 23 L60 18" stroke="#d98a2b" stroke-width="2.5"/>
+       ${dots([[47,21.5],[53,21]],1.6,"#c0263a")}` },
+{ name:"Scoop There It Is", shape:"tub", fill:"#7ec8e3", hoops:[78], hoop:"#5aaccb", hw:4, lid:"#bfe6f3", inner:"#fff4e0",
+  deco:`<ellipse cx="50" cy="60" rx="22" ry="11" fill="#fff"/><text x="50" y="58" font-size="8.5" font-weight="800" text-anchor="middle" fill="#3b82f6" stroke="none" font-family="Open Sans,system-ui,sans-serif">FROSTY</text>
+        <text x="50" y="66" font-size="5" font-weight="700" text-anchor="middle" fill="#e2468a" stroke="none" font-family="Open Sans,system-ui,sans-serif">BROS. · VANILLA</text>
+        ${dots([[20,48],[80,50],[26,72],[74,72]],1.6,"#fff")}`,
+  top:`<circle cx="36" cy="30" r="10" fill="#f9a8c8" stroke="none"/><circle cx="64" cy="30" r="10" fill="#7a4a2a" stroke="none"/><circle cx="50" cy="20" r="11" fill="#fff8e6" stroke="none"/>
+       <path d="M27 34 q3 5 6 0 M58 35 q3 6 6 0 M44 26 q3 6 6 0" fill="none" stroke-width="1.2"/>
+       <path d="M58 13 L74 4 L76 8 L61 17 Z" fill="#e9c98b" stroke="none"/><path d="M62 12 l11 -6 M64 15 l10 -6" stroke="#c99a5b" stroke-width=".9"/>
+       <circle cx="46" cy="15" r="2" fill="#fff" opacity=".8" stroke="none"/>` },
+{ name:"Oodles", shape:"bucket", fill:"#ffffff", lid:"#f4e2c0", inner:"#e8b85a",
+  deco:`<rect x="0" y="18" width="100" height="24" fill="#d62f2f"/><text x="50" y="35" font-size="12" font-weight="800" text-anchor="middle" fill="#fff" stroke="none" font-family="Open Sans,system-ui,sans-serif">NOODL</text>
+        <path d="M30 52 q5 -5 10 0 t10 0 t10 0 t10 0 M32 60 q5 -5 10 0 t10 0 t10 0 t10 0" fill="none" stroke="#f2c230" stroke-width="2.5"/>
+        <path d="M46 70 q4 -8 8 0 q-4 10 -8 0 Z" fill="#d62f2f"/><path d="M50 66 v-3" stroke="#2fbf71" stroke-width="1.5"/>
+        <text x="50" y="84" font-size="5" font-weight="700" text-anchor="middle" fill="#888" stroke="none" font-family="Open Sans,system-ui,sans-serif">SPICY · 3 MIN</text>`,
+  top:`<path d="M30 20 q4 -6 8 0 t8 0 t8 0 t8 0 t8 0 M34 17 q4 -5 8 0 t8 0 t8 0 t8 0" fill="none" stroke="#f2c230" stroke-width="2"/>
+       <ellipse cx="40" cy="21" rx="4" ry="1.6" fill="#7a9a3a" stroke="none"/><circle cx="60" cy="21" r="2.2" fill="#fff" stroke="none"/><circle cx="60" cy="21" r="1.1" fill="#f2c230" stroke="none"/>
+       ${tube("M52 22 L74 0","#c99a5b",2.2)}${tube("M56 22 L80 4","#c99a5b",2.2)}` },
+{ name:"Fully Charged", shape:"can", fill:"#1d1d22", lid:"#c7ced6", inner:"#9aa4ae",
+  deco:`<rect x="0" y="52" width="100" height="48" fill="#d98a2b"/><rect x="0" y="50" width="100" height="3" fill="#f2c230"/>
+        <text x="50" y="40" font-size="9" font-weight="800" text-anchor="middle" fill="#fff" stroke="none" font-family="Open Sans,system-ui,sans-serif">VOLTA</text>
+        <path d="M52 58 L44 70 H50 L46 82 L56 67 H50 Z" fill="#f2c230"/>
+        <rect x="58" y="60" width="8" height="22" rx="1.5" fill="#1d1d22"/>${[0,1,2,3].map(i=>`<rect x="59.5" y="${77.5-i*5}" width="5" height="3.6" fill="#3ef27a"/>`).join("")}`,
+  top:`<rect x="44" y="5" width="12" height="9" rx="1" fill="#d5dae0" stroke="none"/><ellipse cx="50" cy="5" rx="6" ry="2" fill="#eef1f4" stroke="none"/><text x="50" y="13" font-size="6" font-weight="800" text-anchor="middle" fill="#555" stroke="none" font-family="Open Sans,system-ui,sans-serif">+</text>` },
+{ name:"Fix-It", shape:"box", fill:"#d63a3a", lid:"#b02a2a", inner:"#3a2020",
+  deco:`<rect x="25" y="26" width="50" height="10" fill="#b02a2a"/>
+        <rect x="31" y="34" width="8" height="6" rx="1" fill="#c7ced6"/><rect x="61" y="34" width="8" height="6" rx="1" fill="#c7ced6"/>
+        <rect x="33" y="52" width="34" height="16" rx="2" fill="#f2f4f7"/><text x="50" y="63.5" font-size="8.5" font-weight="800" text-anchor="middle" fill="#d63a3a" stroke="none" font-family="Open Sans,system-ui,sans-serif">TOOLS</text>
+        <path d="M25 80 H75" stroke="#b02a2a" stroke-width="3"/>`,
+  top:`${tube("M34 21 L28 2","#9aa4ae",2.5)}<rect x="26" y="-1" width="6" height="5" rx="1" fill="#9aa4ae" transform="rotate(-18 29 1)" stroke="none"/>
+       <rect x="44" y="4" width="5" height="17" rx="2" fill="#f2c230" stroke="none"/><path d="M46.5 4 V-2" stroke="#9aa4ae" stroke-width="2"/>
+       ${tube("M62 22 L68 6","#8a5a30",3)}<rect x="62" y="1" width="14" height="6" rx="1.5" fill="#6b7682" stroke="none" transform="rotate(20 69 4)"/>
+       ${tube("M33 19 Q50 9 67 19","#2b2e35",2.5)}` },
+{ name:"Cool Story", shape:"box", fill:"#e9eef3", lid:"#dfe5eb", inner:"#dfe5eb",
+  deco:`<path d="M25 48 H75" stroke="#b8c2cc" stroke-width="2"/>
+        <rect x="67" y="31" width="3" height="12" rx="1.5" fill="#9aa4ae"/><rect x="67" y="53" width="3" height="20" rx="1.5" fill="#9aa4ae"/>
+        <rect x="33" y="54" width="18" height="22" fill="#fff8b8" transform="rotate(-5 42 65)"/><path d="M36 60 h12 M36 64 h12 M36 68 h9" stroke="#b8a860" stroke-width="1" transform="rotate(-5 42 65)"/>
+        <circle cx="42" cy="54" r="2.4" fill="#e2465b"/><circle cx="56" cy="62" r="3" fill="#3b82f6"/><circle cx="58" cy="72" r="2.6" fill="#2fbf71"/><polygon points="${star(36,38,4,1.8,5)}" fill="#f2c230"/>
+        <text x="50" y="42" font-size="6" font-weight="800" text-anchor="middle" fill="#9aa4ae" stroke="none" font-family="Open Sans,system-ui,sans-serif">FRIDGO</text>` },
+{ name:"Insert Coin", shape:"box", fill:"#2b2f6b", lid:"#3a3f8a", inner:"#ff4fd8",
+  deco:`<rect x="25" y="26" width="50" height="6" fill="#ff4fd8"/><text x="50" y="31" font-size="5" font-weight="800" text-anchor="middle" fill="#fff" stroke="none" font-family="Open Sans,system-ui,sans-serif">SPACE ZAP</text>
+        <rect x="30" y="35" width="40" height="22" rx="2" fill="#0b0b18"/>
+        <path d="M44 42 h12 v2 h2 v4 h-2 v2 h-3 v-2 h-6 v2 h-3 v-2 h-2 v-4 h2 Z" fill="#3ef27a"/><rect x="46" y="44" width="2" height="2" fill="#0b0b18"/><rect x="52" y="44" width="2" height="2" fill="#0b0b18"/>
+        ${dots([[34,39],[64,41],[60,53],[36,52]],.8,"#fff")}
+        <polygon points="26,60 74,60 70,68 30,68" fill="#4a50a8"/><path d="M40 64 V58" stroke="#2b2e35" stroke-width="2"/><circle cx="40" cy="57" r="2.6" fill="#e2465b"/>
+        ${dots([[52,64],[58,64],[64,64]],2,"#f2c230")}
+        <rect x="42" y="74" width="7" height="9" rx="1" fill="#ff9a2e"/><rect x="51" y="74" width="7" height="9" rx="1" fill="#ff9a2e"/><path d="M45.5 76 v5 M54.5 76 v5" stroke="#5a2a00" stroke-width="1.2"/>`,
+  top:`<path d="M30 22 H66" stroke="#ff4fd8" stroke-width="2"/>` },
+{ name:"Snack Attack", shape:"box", fill:"#e2465b", lid:"#c0263a", inner:"#c0263a",
+  deco:`<text x="50" y="33" font-size="6.5" font-weight="800" text-anchor="middle" fill="#fff" stroke="none" font-family="Open Sans,system-ui,sans-serif">SNACKS</text>
+        <rect x="28" y="36" width="33" height="40" rx="1.5" fill="#cfeaf7"/>
+        ${[0,1,2].map(r=>[0,1,2].map(c=>{const col=["#f2c230","#3b82f6","#2fbf71","#ff8a1f","#9b5de5","#e2465b","#8a5a30","#3ef2ff","#ff7ad9"][r*3+c];return `<rect x="${30+c*10.5}" y="${38+r*12.5}" width="8" height="9" rx="1.2" fill="${col}"/><path d="M${30+c*10.5} ${48+r*12.5} h8" stroke="#9aa4ae" stroke-width="1.2"/>`}).join("")).join("")}
+        <rect x="63" y="38" width="8" height="18" rx="1" fill="#2b2e35"/>${[0,1,2].map(r=>`<rect x="64.5" y="${40+r*5}" width="5" height="3" fill="#9aa4ae"/>`).join("")}
+        <rect x="63" y="60" width="8" height="4" rx="1" fill="#f2c230"/><rect x="30" y="80" width="30" height="6" rx="1" fill="#2b2e35"/>` },
+{ name:"Hit Parade", shape:"drum", fill:"#7a3b1a", lid:"#ffb02e", inner:"#ff4fd8",
+  deco:`${[["#e2465b",24],["#ff9a2e",21],["#f2c230",18],["#2fbf71",15],["#3b82f6",12]].map(([c,r])=>`<path d="M${50-r} 52 A${r} ${r} 0 0 1 ${50+r} 52" fill="none" stroke="${c}" stroke-width="3"/>`).join("")}
+        <rect x="38" y="40" width="24" height="16" rx="2" fill="#1d1d22"/>${[44,50,56].map(x=>`<ellipse cx="${x}" cy="49" rx="3.2" ry="5.5" fill="#2b2b33"/><circle cx="${x}" cy="49" r="1" fill="#e2465b"/>`).join("")}
+        ${Array.from({length:15},(_,i)=>`<circle cx="${32+(i%5)*9}" cy="${66+Math.floor(i/5)*6}" r="1.6" fill="#4a2410"/>`).join("")}
+        <rect x="0" y="58" width="100" height="2" fill="#f2c230"/>` },
+{ name:"Tanked", shape:"box", fill:"#cdeffd", lid:"#2b2e35", inner:"#3a3f48",
+  deco:`<rect x="25" y="34" width="50" height="56" fill="#6fc6f0"/><path d="M25 34 q6 -3 12 0 t12 0 t12 0 t12 0" fill="none" stroke="#fff" stroke-width="1.5"/>
+        <path d="M25 84 Q40 78 55 83 T75 81 V90 H25 Z" fill="#e9d29a"/>
+        <path d="M32 84 Q28 70 33 60 M36 84 Q40 72 36 64" fill="none" stroke="#2fbf71" stroke-width="2.5"/>
+        <path d="M60 84 V74 H64 V70 H66 V74 H70 V84 Z" fill="#9aa4ae"/><rect x="63.5" y="78" width="3" height="6" rx="1.5" fill="#3a3f48"/>
+        <ellipse cx="48" cy="54" rx="7" ry="4.5" fill="#ff8a1f"/><path d="M55 54 L60 50 V58 Z" fill="#ff8a1f"/><circle cx="45" cy="53" r="1" fill="#1d1a24"/>
+        <ellipse cx="60" cy="66" rx="5" ry="3.2" fill="#f2c230"/><path d="M55 66 L51 63 V69 Z" fill="#f2c230"/><circle cx="62" cy="65.5" r=".8" fill="#1d1a24"/>
+        <circle cx="44" cy="44" r="1.6" fill="none" stroke="#fff" stroke-width="1"/><circle cx="42" cy="39" r="1.1" fill="none" stroke="#fff" stroke-width="1"/>
+        <path d="M28 38 V80" stroke="#fff" stroke-opacity=".6" stroke-width="2.5"/>`,
+  top:`<rect x="40" y="19" width="22" height="3" rx="1.5" fill="#fff6b0" stroke="none"/>` },
+{ name:"Indoor Jungle", shape:"bucket", fill:"#c8693a", hoops:[28], hoop:"#a85428", hw:6, lid:"#c8693a", inner:"#5a3a22",
+  deco:`<path d="M20 50 L80 50" stroke="#e08a5a" stroke-width="2"/>${[30,42,54,66].map(x=>`<path d="M${x} 56 l4 6 l4 -6" fill="none" stroke="#e8a070" stroke-width="2"/>`).join("")}
+        <text x="50" y="80" font-size="7" font-weight="800" text-anchor="middle" fill="#f6d2b8" stroke="none" font-family="Open Sans,system-ui,sans-serif">GROW</text>`,
+  top:`<path d="M50 20 Q40 6 22 4 Q30 18 48 22 Z" fill="#2f9a4a" stroke="none"/><path d="M50 20 Q62 2 82 2 Q74 18 52 22 Z" fill="#3cb85a" stroke="none"/>
+       <path d="M50 20 Q50 4 56 -2 Q62 8 52 20 Z" fill="#2a8a42" stroke="none"/><path d="M50 21 Q34 14 14 18 Q30 26 48 23 Z" fill="#45c46a" stroke="none"/>
+       <path d="M30 8 L46 20 M70 5 L52 20 M36 17 L48 22" stroke="#1d6b3a" stroke-width="1"/>` },
+{ name:"Lift Off", shape:"can", fill:"#f0f2f5", lid:"#e2465b", inner:"#c0263a",
+  under:`<path d="M30 60 L18 86 H30 Z" fill="#e2465b" stroke="none"/><path d="M70 60 L82 86 H70 Z" fill="#c0263a" stroke="none"/>`,
+  deco:`<rect x="0" y="70" width="100" height="5" fill="#e2465b"/><rect x="0" y="78" width="100" height="3" fill="#3b82f6"/>
+        <circle cx="50" cy="38" r="8" fill="#9aa4ae"/><circle cx="50" cy="38" r="5.5" fill="#4fb3ff"/><path d="M47 35 q2 -2 5 -1" fill="none" stroke="#fff" stroke-width="1.4"/>
+        <text x="50" y="62" font-size="8" font-weight="800" text-anchor="middle" fill="#2b2e35" stroke="none" font-family="Open Sans,system-ui,sans-serif">ZOOM</text>`,
+  top:`<path d="M30 14 Q34 -2 50 -4 Q66 -2 70 14 Q50 20 30 14 Z" fill="#e2465b" stroke="none"/><path d="M36 10 Q40 2 48 0" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="2"/>`,
+  over:`<path d="M40 92 Q45 100 50 96 Q55 100 60 92 Z" fill="#ff9a2e" stroke="none"/><path d="M45 92 Q50 98 55 92 Z" fill="#ffe36e" stroke="none"/>` },
+{ name:"Gourd Times", shape:"globe", fill:"#f08a24", lid:"#3d7a2a", inner:"#2a5a1a",
+  deco:`<path d="M50 18 V90 M34 22 Q24 54 34 88 M66 22 Q76 54 66 88 M20 34 Q14 56 22 78 M80 34 Q86 56 78 78" fill="none" stroke="#c96a12" stroke-width="2.5"/>
+        <polygon points="32,46 42,46 37,38" fill="#ffcf3f"/><polygon points="58,46 68,46 63,38" fill="#ffcf3f"/><polygon points="47,52 53,52 50,57" fill="#ffcf3f"/>
+        <path d="M28 62 L34 68 L40 62 L46 68 L50 63 L54 68 L60 62 L66 68 L72 62 Q66 78 50 78 Q34 78 28 62 Z" fill="#ffcf3f"/>
+        <path d="M30 63 Q50 74 70 63" fill="none" stroke="#ff9a2e" stroke-width="1.5"/>`,
+  top:`<path d="M47 18 L46 6 Q50 3 54 6 L53 18 Z" fill="#6b4a22" stroke="none"/><path d="M54 8 Q64 2 66 10 Q60 8 58 14" fill="none" stroke="#3d7a2a" stroke-width="2"/>
+       <path d="M44 10 Q34 4 30 12 Q38 14 44 12 Z" fill="#4c9a32" stroke="none"/>` },
+{ name:"Chill Guy", shape:"capsule", fill:"#f5f9ff", lid:"#2b2b33", inner:"#2b2b33",
+  deco:`<circle cx="42" cy="32" r="2.6" fill="#1d1a24"/><circle cx="58" cy="32" r="2.6" fill="#1d1a24"/>
+        <path d="M50 37 L64 40 L50 41 Z" fill="#ff8a1f"/>${dots([[42,45],[46,47],[50,48],[54,47],[58,45]],1.2,"#1d1a24")}
+        <rect x="0" y="52" width="100" height="8" fill="#e2465b"/>${[24,34,44,54,64,74].map(x=>`<rect x="${x}" y="52" width="4" height="8" fill="#fff" opacity=".7"/>`).join("")}
+        <path d="M60 58 L66 82 L58 82 L56 60 Z" fill="#e2465b"/><path d="M58 66 h6 M59 72 h6" stroke="#fff" stroke-width="2"/>
+        ${dots([[50,68],[50,78]],2.2,"#1d1a24")}<ellipse cx="34" cy="30" rx="3" ry="1.6" fill="#ffb3c8" opacity=".6"/>`,
+  top:`<rect x="38" y="0" width="24" height="18" rx="1" fill="#2b2b33" stroke="none"/><rect x="38" y="11" width="24" height="3.5" fill="#e2465b" stroke="none"/>
+       <ellipse cx="50" cy="18" rx="22" ry="4" fill="#2b2b33" stroke="none"/><path d="M40 2 V16" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>` },
+{ name:"Wrapped Up", shape:"box", fill:"#3b82f6", lid:"#2f6fe0", inner:"#2f6fe0",
+  deco:`${[[32,36],[60,40],[38,58],[66,64],[30,80],[56,82],[44,46]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="3" fill="#fff" opacity=".5"/>`).join("")}
+        <rect x="45" y="26" width="10" height="64" fill="#f2c230"/><rect x="25" y="52" width="50" height="9" fill="#f2c230"/>
+        <path d="M45 26 V90 M55 26 V90" stroke="#d6a400" stroke-width="1"/>
+        <rect x="58" y="64" width="13" height="9" rx="1" fill="#fff" transform="rotate(12 64 68)"/><path d="M60 68 h8" stroke="#e2465b" stroke-width="1.2" transform="rotate(12 64 68)"/>`,
+  top:`<path d="M44 26 L56 16" stroke="#f2c230" stroke-width="7"/><path d="M28 22 L76 19" stroke="#f2c230" stroke-width="5"/>
+       <path d="M51 18 Q36 2 32 12 Q36 20 51 19 Z M53 18 Q66 0 72 10 Q70 19 53 19 Z" fill="#f7d03a" stroke="none"/>
+       <circle cx="52" cy="18" r="3.5" fill="#e0b000" stroke="none"/>` },
+{ name:"Tweet Home", shape:"box", fill:"#e9c98b", lid:"#c0392b", inner:"#c0392b",
+  deco:`${[34,46,58,70].map(y=>`<path d="M25 ${y} H75" stroke="#d1ad6a" stroke-width="1.4"/>`).join("")}
+        <circle cx="50" cy="50" r="8" fill="#3a2410"/><path d="M48 50 q4 -6 8 0 q-2 4 -4 4 q-4 0 -4 -4 Z" fill="#f2c230"/><circle cx="53" cy="49" r="1" fill="#1d1a24"/><path d="M56 50 l3 1 l-3 1 Z" fill="#ff8a1f"/>
+        <path d="M44 62 H56" stroke="#8a5a30" stroke-width="2.5"/>
+        ${[[32,80,"#e2468a"],[40,84,"#9b5de5"],[66,82,"#f2c230"]].map(([x,y,c])=>`<polygon points="${star(x,y,3.5,1.6,5)}" fill="${c}"/><circle cx="${x}" cy="${y}" r="1" fill="#fff"/>`).join("")}`,
+  over:`<path d="M14 30 L50 2 L90 18 L82 28 L50 8 L22 34 Z" fill="#c0392b" stroke="none"/><path d="M50 2 L90 18 L82 28 L50 8 Z" fill="#000" opacity=".2" stroke="none"/>
+        <path d="M18 30 L50 6" stroke="#fff" stroke-opacity=".35" stroke-width="2"/>` },
+{ name:"Buzzword", shape:"keg", fill:"#f2c230", hoops:[30,44,58,72], hoop:"#d6a400", hw:4, lid:"#e0a800", inner:"#c47f00",
+  deco:`<path d="M42 90 V80 Q50 72 58 80 V90 Z" fill="#3a2410"/>
+        <path d="M60 20 V36 a3 3 0 0 0 6 0 V20 Z" fill="#e08a00"/>
+        <rect x="34" y="48" width="32" height="12" rx="2" fill="#fff8e0"/><text x="50" y="56.5" font-size="6.5" font-weight="800" text-anchor="middle" fill="#a86a00" stroke="none" font-family="Open Sans,system-ui,sans-serif">HONEY</text>`,
+  over:`${[[16,36],[84,52],[22,74]].map(([x,y])=>`<ellipse cx="${x}" cy="${y}" rx="4.5" ry="3.2" fill="#f2c230" stroke-width="1"/><path d="M${x-1.5} ${y-3} v6 M${x+1.5} ${y-3} v6" stroke="#1d1a24" stroke-width="1.4"/><ellipse cx="${x-1}" cy="${y-4.5}" rx="3" ry="2" fill="#fff" opacity=".85" stroke="none"/>`).join("")}` },
+{ name:"Grind Time", shape:"box", fill:"#9aa4ae", lid:"#7d8794", inner:"#5c6672",
+  deco:`<rect x="25" y="26" width="50" height="8" fill="#2b2e35"/><text x="50" y="32" font-size="5" font-weight="800" text-anchor="middle" fill="#ffcf8a" stroke="none" font-family="Open Sans,system-ui,sans-serif">ESPRESSO</text>
+        <circle cx="35" cy="44" r="5.5" fill="#f2f4f7"/><path d="M35 44 l3 -2" stroke="#e2465b" stroke-width="1.2"/>
+        <rect x="44" y="40" width="20" height="8" rx="2" fill="#2b2e35"/><rect x="50" y="48" width="8" height="5" fill="#2b2e35"/>
+        <path d="M44 58 H58 V68 Q58 72 54 72 H48 Q44 72 44 68 Z" fill="#fff"/><ellipse cx="51" cy="58" rx="7" ry="1.6" fill="#6b3a1e"/><path d="M58 61 q4 0 4 3 q0 3 -4 3" fill="none" stroke="#fff" stroke-width="1.8"/>
+        <path d="M54 53 V57" stroke="#6b3a1e" stroke-width="1.4"/>
+        <rect x="28" y="76" width="44" height="6" fill="#5c6672"/>${[32,38,44,50,56,62,68].map(x=>`<path d="M${x} 77 V81" stroke="#2b2e35" stroke-width="1.4"/>`).join("")}`,
+  top:`<path d="M46 14 q-3 -4 0 -8 M52 13 q3 -4 0 -8" fill="none" stroke="#c7ced6" stroke-width="1.6"/>`,
+  over:`${tube("M82 44 Q90 48 88 64","#c7ced6",2.2)}` },
+{ name:"Fill 'Er Up", shape:"box", fill:"#e2465b", lid:"#c0263a", inner:"#c0263a",
+  deco:`<circle cx="50" cy="35" r="6" fill="#fff"/><text x="50" y="37.5" font-size="5.5" font-weight="800" text-anchor="middle" fill="#e2465b" stroke="none" font-family="Open Sans,system-ui,sans-serif">GAS</text>
+        <rect x="31" y="44" width="38" height="14" rx="2" fill="#1d1d22"/><text x="50" y="54.5" font-size="9" font-weight="800" text-anchor="middle" fill="#3ef27a" stroke="none" font-family="Open Sans,system-ui,sans-serif">88.8</text>
+        ${[["#f2c230",34],["#3b82f6",46],["#2fbf71",58]].map(([c,x])=>`<rect x="${x}" y="62" width="9" height="6" rx="1" fill="${c}"/>`).join("")}
+        <rect x="31" y="72" width="38" height="12" rx="1" fill="#f2f4f7"/><path d="M34 76 h20 M34 80 h14" stroke="#9aa4ae" stroke-width="1.4"/>`,
+  over:`<path d="M82 40 Q96 44 92 70 Q90 84 80 84" fill="none" stroke="#1d1d22" stroke-width="3.5"/><rect x="76" y="30" width="10" height="12" rx="2" fill="#2b2e35" stroke="none"/><path d="M80 30 L76 24" stroke="#2b2e35" stroke-width="3"/>` },
+{ name:"Hold the Line", shape:"box", fill:"#c0262d", lid:"#a01e24", inner:"#a01e24",
+  deco:`<rect x="25" y="26" width="50" height="9" fill="#1d1d22"/><text x="50" y="33" font-size="5.5" font-weight="800" text-anchor="middle" fill="#fff" stroke="none" font-family="Open Sans,system-ui,sans-serif">TELEPHONE</text>
+        ${[0,1,2].map(r=>[0,1].map(c=>`<rect x="${31+c*20}" y="${39+r*15}" width="17" height="12" fill="#cfeaf7"/>`).join("")).join("")}
+        <path d="M36 52 q6 -4 10 0 v6 h-10 Z" fill="#2b2e35"/><path d="M38 58 v6" stroke="#2b2e35" stroke-width="2"/>
+        <path d="M31 40 L36 44 M51 40 L56 44" stroke="#fff" stroke-width="1.4" opacity=".8"/>
+        <rect x="64" y="64" width="3" height="6" rx="1.5" fill="#f2c230"/>` },
+{ name:"Packed Lunch", shape:"box", fill:"#2fbf71", lid:"#249a5a", inner:"#249a5a",
+  deco:`<rect x="25" y="26" width="50" height="10" fill="#249a5a"/><rect x="45" y="32" width="10" height="8" rx="1.5" fill="#c7ced6"/>
+        <circle cx="38" cy="58" r="7" fill="#f2c230"/>${Array.from({length:8},(_,i)=>{const a=i*Math.PI/4;return `<path d="M${(38+9*Math.cos(a)).toFixed(1)} ${(58+9*Math.sin(a)).toFixed(1)} L${(38+12*Math.cos(a)).toFixed(1)} ${(58+12*Math.sin(a)).toFixed(1)}" stroke="#f2c230" stroke-width="1.6"/>`}).join("")}
+        <polygon points="${star(62,66,7,3,5)}" fill="#fff"/><path d="M54 48 q6 -6 12 0" fill="none" stroke="#fff" stroke-width="2"/>
+        <text x="50" y="84" font-size="7" font-weight="800" text-anchor="middle" fill="#fff" stroke="none" font-family="Open Sans,system-ui,sans-serif">LUNCH</text>`,
+  top:`${tube("M38 20 Q38 8 52 8 Q66 8 66 20","#c7ced6",2.5)}` },
+{ name:"Sauce Boss", shape:"churn", fill:"#d62f2f", lid:"#f2f4f7", inner:"#e2e5ea",
+  deco:`<ellipse cx="50" cy="60" rx="20" ry="15" fill="#fff"/><circle cx="50" cy="55" r="6" fill="#e2465b"/><path d="M47 49 l3 2 l3 -2" stroke="#2fbf71" stroke-width="1.8" fill="none"/>
+        <text x="50" y="69" font-size="6" font-weight="800" text-anchor="middle" fill="#d62f2f" stroke="none" font-family="Open Sans,system-ui,sans-serif">KETCH-UP</text>
+        <path d="M36 24 V34 a2.5 2.5 0 0 0 5 0 V24 Z" fill="#b01e1e"/>`,
+  top:`<rect x="44" y="4" width="12" height="10" rx="2" fill="#f2f4f7" stroke="none"/><rect x="48" y="0" width="4" height="5" rx="1" fill="#e2e5ea" stroke="none"/><path d="M45 9 h10" stroke="#c7ced6" stroke-width="1"/>` },
+{ name:"Put It Out", shape:"can", fill:"#d63a3a", lid:"#2b2e35", inner:"#1d1d22",
+  deco:`<rect x="34" y="44" width="32" height="30" rx="2" fill="#fff"/><text x="50" y="54" font-size="7.5" font-weight="800" text-anchor="middle" fill="#d63a3a" stroke="none" font-family="Open Sans,system-ui,sans-serif">FIRE</text>
+        <path d="M50 58 Q56 64 53 70 Q50 72 47 70 Q44 64 50 58 Z" fill="#ff8a1f"/><path d="M38 72 h24" stroke="#9aa4ae" stroke-width="1"/>
+        <circle cx="50" cy="32" r="5.5" fill="#f2f4f7"/><path d="M47 33 A3.5 3.5 0 0 1 53 33" fill="none" stroke="#2fbf71" stroke-width="1.6"/><path d="M50 33 l2 -2.5" stroke="#1d1d22" stroke-width="1"/>`,
+  top:`<rect x="44" y="4" width="12" height="10" rx="1" fill="#2b2e35" stroke="none"/><path d="M56 6 L72 2" stroke="#2b2e35" stroke-width="3"/><path d="M44 8 L30 6" stroke="#9aa4ae" stroke-width="2"/>`,
+  over:`<path d="M70 18 Q84 22 82 46 Q80 64 74 70" fill="none" stroke="#1d1d22" stroke-width="3"/><path d="M71 70 l6 6 l3 -3 Z" fill="#2b2e35" stroke="none"/>` },
+{ name:"Double Trouble", shape:"globe", fill:"#2b2b33", hoops:[30], hoop:"#3a3a44", hw:5, lid:"#3a3a44", inner:"#7cff3a",
+  deco:`<path d="M30 52 l4 -6 l4 6 M46 60 l4 -6 l4 6 M62 52 l4 -6 l4 6" fill="none" stroke="#7cff3a" stroke-width="2" opacity=".7"/>
+        <path d="M34 22 V34 a3 3 0 0 0 6 0 V22 Z M58 22 V30 a3 3 0 0 0 6 0 V22 Z" fill="#7cff3a"/>`,
+  top:`${[[44,14,3.5],[54,12,2.6],[50,6,2],[58,4,1.4]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#a8ff7a" stroke="none"/>`).join("")}${tube("M60 18 L74 2","#8a5a30",2.5)}`,
+  over:`<path d="M26 82 L20 96 M74 82 L80 96 M50 88 V98" stroke="#2b2b33" stroke-width="4"/>` },
+{ name:"Mirror Mirror", shape:"globe", fill:"#b8c2cc", lid:"#9aa4ae", inner:"#6b7682",
+  deco:`${[30,40,50,60,70,80].map(y=>`<path d="M0 ${y} Q50 ${y+5} 100 ${y}" fill="none" stroke="#7d8794" stroke-width="1.2"/>`).join("")}
+        ${[22,32,42,50,58,68,78].map(x=>`<path d="M${x} 18 Q${50+(x-50)*1.35} 54 ${x} 90" fill="none" stroke="#7d8794" stroke-width="1.2"/>`).join("")}
+        ${[[36,34],[54,44],[44,64],[64,58],[30,56],[58,76],[70,38]].map(([x,y])=>`<rect x="${x}" y="${y}" width="6" height="6" fill="#fff" opacity=".85"/>`).join("")}
+        ${[[46,36],[66,70],[38,74]].map(([x,y])=>`<rect x="${x}" y="${y}" width="6" height="6" fill="#9b5de5" opacity=".6"/>`).join("")}`,
+  top:`<path d="M50 18 V0" stroke="#7d8794" stroke-width="1.6"/>`,
+  over:`<polygon points="${star(22,30,6,1.6,4)}" fill="#fff" stroke="none"/><polygon points="${star(80,64,5,1.4,4)}" fill="#fff" stroke="none"/><polygon points="${star(60,26,3.5,1,4)}" fill="#fff" stroke="none"/>` },
+{ name:"Bird O'Clock", shape:"box", fill:"#8a5a30", lid:"#5a3a1e", inner:"#5a3a1e",
+  deco:`<rect x="44" y="30" width="12" height="9" rx="1" fill="#3a2410"/><path d="M47 36 q3 -5 6 0" fill="#f2c230"/><circle cx="51" cy="34" r=".8" fill="#1d1a24"/>
+        <circle cx="50" cy="54" r="12" fill="#fff8e6"/>${Array.from({length:12},(_,i)=>{const a=i*Math.PI/6;return `<path d="M${(50+10*Math.cos(a)).toFixed(1)} ${(54+10*Math.sin(a)).toFixed(1)} L${(50+8.4*Math.cos(a)).toFixed(1)} ${(54+8.4*Math.sin(a)).toFixed(1)}" stroke="#3a2410" stroke-width="1.2"/>`}).join("")}
+        <path d="M50 54 V46 M50 54 L56 57" stroke="#1d1a24" stroke-width="1.8"/>
+        <path d="M30 40 q4 -6 8 0 q-4 6 -8 0 Z M62 40 q4 -6 8 0 q-4 6 -8 0 Z" fill="#3d7a2a"/>
+        <path d="M42 70 V80 M58 70 V84" stroke="#c99a5b" stroke-width="1.2"/><ellipse cx="42" cy="83" rx="2.6" ry="4" fill="#6b4a22"/><ellipse cx="58" cy="87" rx="2.6" ry="4" fill="#6b4a22"/>`,
+  over:`<path d="M14 30 L50 4 L90 18 L80 30 L50 10 L22 34 Z" fill="#5a3a1e" stroke="none"/><path d="M50 4 L90 18 L80 30 L50 10 Z" fill="#000" opacity=".2" stroke="none"/>
+        <path d="M44 8 q6 -10 12 0" fill="none" stroke="#3d7a2a" stroke-width="2.5"/><circle cx="50" cy="2" r="2.4" fill="#e9c98b" stroke="none"/>` },
+{ name:"The Vault", shape:"box", fill:"#7d8794", lid:"#6b7682", inner:"#5c6672",
+  deco:`<rect x="25" y="26" width="50" height="8" fill="#5c6672"/><text x="50" y="32.5" font-size="6" font-weight="800" text-anchor="middle" fill="#f2c230" stroke="none" font-family="Open Sans,system-ui,sans-serif">BANK</text>
+        <circle cx="50" cy="60" r="19" fill="#9aa4ae"/><circle cx="50" cy="60" r="15" fill="#b8c2cc"/>
+        ${Array.from({length:10},(_,i)=>{const a=i*Math.PI/5;return `<circle cx="${(50+17*Math.cos(a)).toFixed(1)}" cy="${(60+17*Math.sin(a)).toFixed(1)}" r="1.3" fill="#5c6672"/>`}).join("")}
+        ${[0,1,2].map(i=>{const a=i*2*Math.PI/3-Math.PI/2;return `<path d="M50 60 L${(50+12*Math.cos(a)).toFixed(1)} ${(60+12*Math.sin(a)).toFixed(1)}" stroke="#5c6672" stroke-width="3"/><circle cx="${(50+12*Math.cos(a)).toFixed(1)}" cy="${(60+12*Math.sin(a)).toFixed(1)}" r="2.2" fill="#e2465b"/>`}).join("")}
+        <circle cx="50" cy="60" r="4.5" fill="#5c6672"/><circle cx="50" cy="60" r="2" fill="#f2c230"/>`,
+  top:`${[[36,22],[48,22],[60,22],[42,18],[54,18],[48,14]].map(([x,y])=>`<path d="M${x-6} ${y} L${x-4} ${y-4} H${x+4} L${x+6} ${y} Z" fill="#f2c230" stroke-width="1"/><path d="M${x-3} ${y-3} h4" stroke="#fff6b0" stroke-width="1"/>`).join("")}`,
+  over:`<polygon points="${star(70,8,4,1.2,4)}" fill="#fff" stroke="none"/>` }
 ];
 const MAX = ITEMS.length;
+// barrels get more detailed as you go; the first barrel of each era gets a special announcement
+const ERAS = {21:"Everyday objects", 51:"Deluxe objects"};
 // no black outlines (SC2's newer barrels don't use them): details get a faint dark edge instead
 const SVG_CACHE = ITEMS.map(it => `<svg viewBox="0 0 100 100" aria-hidden="true"><g stroke="#000" stroke-opacity=".3" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">${barrel(it)}</g></svg>`);
 const svgFor = t => SVG_CACHE[t-1];
@@ -880,10 +1101,10 @@ function markMatches(from){
   cells.forEach((c,i) => c.classList.toggle("match", !!t && i !== from && S.grid[i] === t && t < MAX));
 }
 
-function toast(html){
+function toast(html, cls=""){
   app.querySelectorAll(".toast").forEach(e=>e.remove());
-  const d = document.createElement("div"); d.className = "toast"; d.innerHTML = html;
-  app.appendChild(d); setTimeout(()=>d.remove(), 2600);
+  const d = document.createElement("div"); d.className = "toast " + cls; d.innerHTML = html;
+  app.appendChild(d); setTimeout(()=>d.remove(), cls ? 4000 : 2600);
 }
 function floatText(i, txt){
   const r = cells[i].getBoundingClientRect(), d = document.createElement("div");
@@ -1123,7 +1344,8 @@ function discover(t){
   }
   if(t > S.best){
     S.best = t; sfx.discover();
-    toast(`<span class="mini">${svgFor(t)}</span>New barrel: #${t} ${nameOf(t)}!`);
+    toast(ERAS[t] ? `<span class="mini">${svgFor(t)}</span><b>New era!</b> ${ERAS[t]}<br>#${t} ${nameOf(t)}`
+                  : `<span class="mini">${svgFor(t)}</span>New barrel: #${t} ${nameOf(t)}!`, ERAS[t] ? "era" : "");
     if(pane === "col") renderBook();
   }
 }
