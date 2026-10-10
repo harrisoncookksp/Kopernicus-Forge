@@ -50,6 +50,13 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 .sitem svg{width:100%;height:100%}
 @keyframes fall{from{transform:translateY(0) rotate(-12deg)}50%{transform:translateY(55vh) rotate(10deg)}to{transform:translateY(110vh) rotate(-8deg)}}
 .toast.lvl{box-shadow:inset 0 0 0 3px var(--level)}
+.yardpile{display:block;width:84%;margin:6px auto 0;aspect-ratio:3/2}
+.yardpile svg{width:100%;height:100%}
+.yardpile:active svg{transform:scale(.96)}
+.yardpile.locked{filter:grayscale(1);opacity:.5;cursor:not-allowed}
+.tapdots{display:flex;justify-content:center;gap:6px;margin:4px 0}
+.tapdots i{width:12px;height:12px;border-radius:50%;background:#9a9a9a}
+.tapdots i.on{background:var(--blue)}
 .lbar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.35);white-space:nowrap}
 
 /* ---- board ---- */
@@ -143,7 +150,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 .buy.max{background:linear-gradient(#00c94a 50%,#00ab3d 50%);color:#fff;cursor:default}
 .buy.poor,.buy:disabled:not(.max){background:linear-gradient(#8c8c8c 50%,#7b7b7b 50%);color:#ff7070;cursor:not-allowed;text-shadow:none}
 .ico{width:30px;height:30px;flex:none}
-.ico.xs{width:14px;height:17px;vertical-align:-3px}
+.ico.xs{width:19px;height:25px;vertical-align:-6px}
 .ph{color:var(--ink-dark);text-align:center;font-size:clamp(20px,6vw,26px);font-weight:800;margin:0 0 10px}
 .ph2{color:var(--ink-dark);text-align:center;font-size:clamp(18px,5.4vw,24px);font-weight:800;margin:18px 0 6px}
 .ph3{color:var(--ink-dark);text-align:center;font-size:clamp(18px,5.4vw,24px);font-weight:700;margin-bottom:10px}
@@ -227,10 +234,13 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
     <nav class="tabs" id="ptabs">
       <button data-ptab="gs" title="Golden Scrap"><svg viewBox="0 0 40 54"><use href="#i-gold"/></svg></button>
       <button data-ptab="star" title="Stars"><svg viewBox="0 0 100 100"><use href="#i-star"/></svg></button>
+      <button data-ptab="yard" title="Scrapyard"><svg viewBox="0 0 64 56"><use href="#i-goldpile"/></svg></button>
+      <button data-ptab="brick" title="Bricks"><svg viewBox="0 0 40 54"><use href="#i-brick"/></svg></button>
     </nav>
     <nav class="tabs" id="utabs">
       <button data-utab="scrap" title="Scrap Upgrades"><svg viewBox="0 0 40 54"><use href="#i-scrap"/></svg></button>
       <button data-utab="mag" title="Magnet Upgrades"><svg viewBox="0 0 40 54"><use href="#i-magnet"/></svg></button>
+      <button data-utab="brick" title="Brick Upgrades"><svg viewBox="0 0 40 54"><use href="#i-brick"/></svg></button>
       <button data-utab="gold" title="Golden Scrap Upgrades"><svg viewBox="0 0 40 54"><use href="#i-gold"/></svg></button>
     </nav>
     <div class="pane" id="pane-col"><div class="unl" id="colcount"></div><div id="book"></div></div>
@@ -252,10 +262,28 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
         <p class="dark-note" id="starown"></p>
         <button class="bigbtn" id="upstars">Upgrade<br>Stars</button>
       </div>
+      <div class="sub-pane" id="pt-yard">
+        <div class="ph">Scrapyard</div>
+        <div class="dbox starhdr"><div class="bignum" id="yardlvl">Level 1</div><button class="sq blue small" id="yardinfo">i</button></div>
+        <button class="yardpile" id="yardpile" aria-label="Tap the Scrapyard"><svg viewBox="0 0 120 80" id="yardsvg"></svg></button>
+        <div class="tapdots" id="yarddots"></div>
+        <div class="dark-lbl" id="yardtxt"></div>
+        <p class="dark-note" id="yardcost"></p>
+      </div>
+      <div class="sub-pane" id="pt-brick">
+        <div class="ph">Bricks</div>
+        <div class="dbox starhdr"><div class="bignum"><svg viewBox="0 0 40 54"><use href="#i-brick"/></svg><span id="bricks">0</span></div></div>
+        <div class="ph2">Current Production:</div>
+        <div class="ph3" id="brickrate"></div>
+        <p class="dark-note" id="brickmult"></p>
+        <button class="bigbtn" id="spendlv">Spend Levels</button>
+        <p class="dark-note" id="spendtxt"></p>
+      </div>
     </div>
     <div class="pane flush" id="pane-up">
       <div class="sub-pane" id="ut-scrap"><div id="ups"></div></div>
       <div class="sub-pane" id="ut-mag"><p class="dark-note" style="margin:10px">Magnets come from merging, levelling up and Storms. Magnet upgrades are never reset.</p><div id="mups"></div></div>
+      <div class="sub-pane" id="ut-brick"><p class="dark-note" style="margin:10px" id="bricknote">Bricks unlock at 15 Stars. Brick upgrades are never reset.</p><div id="bups"></div></div>
       <div class="sub-pane" id="ut-gold"><p class="dark-note" style="margin:10px">Spending Golden Scrap on these lowers its production boost, so spend wisely.</p><div id="gups"></div></div>
     </div>
     <div class="pane" id="pane-set">
@@ -969,7 +997,8 @@ function fmtL(l){
   if(l < 15){
     const n = 10**l;
     if(n < 100 && n % 1 > 0.05 && n % 1 < 0.95) return n.toFixed(1);
-    return Math.floor(n + 1e-6).toLocaleString("en-US");
+    const r = Math.round(n);   // undo float error from log storage (4,373,999,999.9 -> 4,374,000,000)
+    return (Math.abs(n - r) < Math.max(1e-6, n * 1e-9) ? r : Math.floor(n)).toLocaleString("en-US");
   }
   let x = Math.floor(l), m = 10**(l - x);
   if(m >= 9.9995){ m = 1; x++; }
@@ -977,8 +1006,8 @@ function fmtL(l){
 }
 const fmt = n => fmtL(lnum(n));
 // short form for tight spots (per-barrel labels): switch to 1.234e12 above a billion
-function fmtS(l){
-  if(l < 9) return fmtL(l);
+function fmtS(l, from=9){
+  if(l < from) return fmtL(l);
   let x = Math.floor(l), m = 10**(l - x);
   if(m >= 9.9995){ m = 1; x++; }
   return m.toFixed(3) + "e" + (x < 1e6 ? x : fmtL(Math.log10(x)));
@@ -998,6 +1027,8 @@ const fresh = () => ({
   gup:{touch:0,gains:0,head:0},
   // magnets, levels and storms: kept through prestige
   magnets:0, level:1, xp:0, stormT:0, mup:{chance:0,boost:0,gold:0,merge:0,storm:0,freq:0},
+  // scrapyard (4 stars) and bricks (15 stars): kept through prestige
+  yard:1, yardTaps:0, bricks:LZ, brickSpends:0, bup:{mag:0,cheap:0,mag2:0,scrap:0,mag3:0,more:0},
   grid:Array(SLOTS).fill(0), spawnT:0, autoT:0, last:Date.now(), muted:false, theme:"auto", buyMax:false
 });
 let S = fresh();
@@ -1006,10 +1037,10 @@ function load(){
     const raw = localStorage.getItem(SAVE_KEY);
     if(!raw) return;
     const d = JSON.parse(raw), f = fresh();
-    S = Object.assign(f, d, {up:Object.assign(f.up, d.up||{}), gup:Object.assign(f.gup, d.gup||{}), mup:Object.assign(f.mup, d.mup||{})});
+    S = Object.assign(f, d, {up:Object.assign(f.up, d.up||{}), gup:Object.assign(f.gup, d.gup||{}), mup:Object.assign(f.mup, d.mup||{}), bup:Object.assign(f.bup, d.bup||{})});
     if(!Array.isArray(S.grid) || S.grid.length!==SLOTS) S.grid = f.grid;
     S.grid = S.grid.map(t => Math.max(0, Math.min(MAX, t|0)));
-    for(const k of ["scrap","runScrap","totalScrap","gs"]) if(typeof S[k] !== "number" || !isFinite(S[k])) S[k] = LZ;
+    for(const k of ["scrap","runScrap","totalScrap","gs","bricks"]) if(typeof S[k] !== "number" || !isFinite(S[k])) S[k] = LZ;
   }catch(e){ S = fresh(); }
 }
 function save(){ S.last = Date.now(); try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){} }
@@ -1034,9 +1065,25 @@ const tierL = t => (t-1) * L3;                              // log10 of a tier's
 const spawnInterval = l => 6 - 0.1 * l;
 const autoInterval = l => 10 * 0.88 ** (l-1) * 0.92 ** S.mup.merge;   // 10s -> ~1.7s at max, faster with magnets
 // ---- magnets, levels, storms (like SC2's top bar) ----
-const magnetChance = () => 0.01 + 0.005 * S.mup.chance;       // per merge
+const magnetChance = () => 0.01 + 0.005 * S.mup.chance + 0.01 * S.bup.mag3;   // per merge
 const xpNeed = l => 15 + 10 * (l - 1);                        // merges per level
-const levelReward = l => 3 + l;                               // magnets for reaching level l
+const levelReward = l => Math.round((3 + l) * (1 + 0.02 * S.bup.mag2));   // magnets for reaching level l
+// ---- Scrapyard (SC2: unlocks at 4 Stars, tap 10 times to level up, each level 4x the price,
+// stars cost x100/(level+99)) and Bricks (SC2: unlock at 15 Stars, 1/sec, x2 per Levels spent) ----
+const YARD_STARS = 4, BRICK_STARS = 15;
+const yardTapCostL = () => 8 + (S.yard - 1) * Math.log10(4) - S.bup.cheap * Math.log10(4);
+const starPriceL = n => starCostL(n) + Math.log10(100 / (S.yard + 99));
+const spendReq = () => 2 + S.brickSpends;
+// Brick Multipliers: from barrel #103, x4 then x8 every 6 barrels to #211, x16 to #271, x1000 after (SC2)
+function brickTierL(){
+  const b = S.runBest; if(b < 103) return 0;
+  const k = Math.floor((b - 103) / 6);
+  let l = Math.log10(4) + Math.min(k, 18) * Math.log10(8);
+  if(k > 18) l += Math.min(k - 18, 10) * Math.log10(16);
+  if(k > 28) l += (k - 28) * 3;
+  return l;
+}
+const brickRateL = () => S.brickSpends * Math.log10(2) + S.bup.more * Math.log10(1.25) + brickTierL();
 const stormEvery = () => 300 * 0.95 ** S.mup.freq;            // seconds between storms
 const STORM_LEN = 12;                                         // seconds magnets keep falling
 const stormGain = () => 1 + S.mup.storm;                      // magnets per caught item
@@ -1044,7 +1091,7 @@ const offEff = l => Math.min(1, 0.1 + 0.1*l);
 const spawnTier = () => Math.max(1, Math.min(MAX-1, 1 + S.up.tier + S.gup.head));
 const gsPer = () => 0.01 * (1 + S.gup.touch);              // 1% -> 51% per Golden Scrap
 const gsMultL = () => ladd(0, S.gs + Math.log10(gsPer())); // log10(1 + GS * per)
-const multL = () => Math.log10(1 + 0.1 * S.up.mult) + gsMultL() + S.stars + S.mup.boost * Math.log10(1.25);   // each star x10
+const multL = () => Math.log10(1 + 0.1 * S.up.mult) + gsMultL() + S.stars + S.mup.boost * Math.log10(1.25) + Math.log10(1 + 0.01 * S.bup.scrap);   // each star x10
 const prodL = () => S.grid.reduce((a,t) => t ? ladd(a, tierL(t)) : a, LZ) + multL();
 // Golden Scrap Multipliers (same thresholds as Scrap Clicker 2): the highest barrel reached this run
 // multiplies the Golden Scrap a prestige gives. They stop growing at barrel #97 (x1024).
@@ -1116,6 +1163,26 @@ const MUPG = [
    icon:gi(`<circle cx="32" cy="34" r="22" fill="#e8ecf1" stroke="#2f6fe0" stroke-width="4"/><path d="M32 34 V18 M32 34 L44 40" stroke="#1d1d22" stroke-width="4"/>`),
    desc:l=>`Storms come 5% more often. Currently: every ${fmtTime(stormEvery())}`},
 ];
+const BUPG = [
+  {id:"mag", name:"More Magnets", base:1e4, grow:4,
+   icon:gi(`<use href="#i-magnet" x="10" y="4" width="44" height="56"/><text x="48" y="58" font-size="16" font-weight="800" fill="#1d1d22" font-family="Open Sans,sans-serif">x3</text>`),
+   desc:l=>`+1% Chance to get a x3 Magnet during Storms. Currently: ${l}%`},
+  {id:"cheap", name:"Cheaper Scrapyard", base:1e6, grow:4,
+   icon:gi(`<use href="#i-goldpile" x="2" y="10" width="60" height="48"/>`),
+   desc:l=>`Reduces Scrapyard costs to a quarter. Currently: /${fmt(4**l)}`},
+  {id:"mag2", name:"More Magnets II", base:1e8, grow:4,
+   icon:gi(`<use href="#i-magnet" x="10" y="4" width="44" height="56"/><polygon points="${star(50,16,10,4.5,5)}" fill="#f2c230"/>`),
+   desc:l=>`+2% more Magnets from Level Ups. Currently: +${l*2}%`},
+  {id:"scrap", name:"More Scrap", base:1e10, grow:4, max:100,
+   icon:gi(`${cyl(12,10,34,40,"#8f8f8f","#b4b4b4","#6c6c6c")}<text x="40" y="60" font-size="16" font-weight="800" fill="#1d1d22" font-family="Open Sans,sans-serif">x2</text>`),
+   desc:l=>`+1% Chance to get x2 Scrap from a Barrel. Currently: ${l}%`},
+  {id:"mag3", name:"More Magnets III", base:1e12, grow:4, max:100,
+   icon:gi(`<use href="#i-magnet" x="10" y="4" width="44" height="56"/><path d="M44 40 L58 54 M58 40 L44 54" stroke="#3cc04a" stroke-width="5"/>`),
+   desc:l=>`+1% Chance to get a Magnet while merging Barrels. Currently: ${l}%`},
+  {id:"more", name:"More Bricks", base:1e14, grow:4,
+   icon:gi(`<use href="#i-brick" x="6" y="2" width="52" height="60"/>`),
+   desc:l=>`Earn Bricks x1.25 times faster. Currently: x${fmtL(l*Math.log10(1.25))}`},
+];
 const costL = (u,l) => u.costL ? u.costL(l) : u.cur === "mag" ? Math.log10(Math.ceil(u.base * u.grow ** l)) : Math.log10(u.base) + l*Math.log10(u.grow);
 
 // ================= SOUND =================
@@ -1157,7 +1224,8 @@ function cyl(x, y, w, h, body, top, rib){
 }
 $("defs").insertAdjacentHTML("beforeend", `
   <symbol id="i-scrap" viewBox="0 0 40 54">${cyl(4,8,32,32,"#8f8f8f","#b4b4b4","#6c6c6c")}</symbol>
-  <symbol id="i-magnet" viewBox="0 0 40 54"><path d="M6 12 V30 A14 14 0 0 0 34 30 V12 H24 V30 A4 4 0 0 1 16 30 V12 Z" fill="#d63a3a"/><path d="M20 12 V44 A14 14 0 0 0 34 30 V12 H24 V30 A4 4 0 0 1 20 34 Z" fill="#2f6fe0"/><rect x="6" y="8" width="10" height="8" fill="#f2f4f7"/><rect x="24" y="8" width="10" height="8" fill="#f2f4f7"/><path d="M6 12 V30 A14 14 0 0 0 34 30 V12" fill="none" stroke="#1a1a1a" stroke-width="1.6"/></symbol>
+  <symbol id="i-magnet" viewBox="0 0 40 54"><path d="M2 6 V30 A18 18 0 0 0 38 30 V6 H26 V30 A6 6 0 0 1 14 30 V6 Z" fill="#d63a3a"/><path d="M20 48 A18 18 0 0 0 38 30 V6 H26 V30 A6 6 0 0 1 20 36 Z" fill="#2f6fe0"/><rect x="2" y="4" width="12" height="9" fill="#f2f4f7"/><rect x="26" y="4" width="12" height="9" fill="#f2f4f7"/><path d="M2 4 V30 A18 18 0 0 0 38 30 V4 H26 V30 A6 6 0 0 1 14 30 V4 Z" fill="none" stroke="#1a1a1a" stroke-width="1.8"/><path d="M6 16 V30 A14 14 0 0 0 10 40" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="2"/></symbol>
+  <symbol id="i-brick" viewBox="0 0 40 54"><polygon points="1,17 20,7.5 39,17 20,26.5" fill="#ffb347"/><polygon points="1,17 20,26.5 20,50 1,40.5" fill="#f28c1a"/><polygon points="20,26.5 39,17 39,40.5 20,50" fill="#d06f0a"/><polygon points="5,24 10,26.5 10,31.5 5,29" fill="#3a1e00"/><polygon points="12,27.5 17,30.0 17,35.0 12,32.5" fill="#3a1e00"/><polygon points="5,32 10,34.5 10,39.5 5,37" fill="#3a1e00"/><polygon points="12,35.5 17,38.0 17,43.0 12,40.5" fill="#3a1e00"/><path d="M1 17 L20 26.5 L39 17" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1"/></symbol>
   <symbol id="i-gold" viewBox="0 0 40 54">${cyl(4,8,32,32,"#f3df2c","#fff07a","#c4ab00")}</symbol>
   <symbol id="i-star" viewBox="0 0 100 100"><polygon points="${star(50,54,47,20,5)}" fill="#c9c400"/><polygon points="${star(50,54,38,16.5,5)}" fill="#f6f24a"/></symbol>
   <symbol id="i-starno" viewBox="0 0 100 100"><polygon points="${star(50,54,47,20,5)}" fill="#8f8f8f"/><polygon points="${star(50,54,38,16.5,5)}" fill="#b5b5b5"/></symbol>
@@ -1256,11 +1324,12 @@ document.querySelectorAll("#ptabs button").forEach(b => b.onclick = () => openTa
 document.querySelectorAll("#utabs button").forEach(b => b.onclick = () => openUTab(b.dataset.utab));
 $("close").onclick = closePane; $("scrim").onclick = closePane;
 
-const walletL = cur => cur === "gold" ? S.gs : cur === "mag" ? lnum(S.magnets) : S.scrap;
-const curIcon = cur => cur === "gold" ? "gold" : cur === "mag" ? "magnet" : "scrap";
+const walletL = cur => cur === "gold" ? S.gs : cur === "mag" ? lnum(S.magnets) : cur === "brick" ? S.bricks : S.scrap;
+const curIcon = cur => cur === "gold" ? "gold" : cur === "mag" ? "magnet" : cur === "brick" ? "brick" : "scrap";
 function spend(cur, c){
   if(cur === "gold") S.gs = lsub(S.gs, c);
   else if(cur === "mag") S.magnets = Math.max(0, Math.round(S.magnets - 10**c));
+  else if(cur === "brick") S.bricks = lsub(S.bricks, c);
   else S.scrap = lsub(S.scrap, c);
 }
 function buildUpgrades(listEl, defs, key, cur){
@@ -1284,7 +1353,7 @@ function refreshUpgrades(defs){
     const d = u.desc(l); if(ds._v !== d){ ds.textContent = d; ds._v = d; }
     const c = costL(u,l);
     const ok = !why && walletL(u.cur) >= c - 1e-9;
-    const bt = why ? "MAX" : `<svg class="ico xs" viewBox="0 0 40 54"><use href="#i-${curIcon(u.cur)}"/></svg>${fmtL(c)}`;
+    const bt = why ? "MAX" : `<svg class="ico xs" viewBox="0 0 40 54"><use href="#i-${curIcon(u.cur)}"/></svg>${fmtS(c, 7)}`;
     if(b._v !== bt){ b.innerHTML = bt; b._v = bt; }
     b.className = "buy" + (why ? " max" : ok ? "" : " poor");
     b.disabled = !ok; if(ok) n++;
@@ -1310,7 +1379,7 @@ function buy(u, key){
 }
 function buyStar(){
   initAudio();
-  if(S.gs < starCostL(S.stars) - 1e-9) return sfx.err();
+  if(S.gs < starPriceL(S.stars) - 1e-9) return sfx.err();
   S.stars++; S.gs = LZ; sfx.prestige(); render();
   toast(`★ Star ${S.stars}! Production ×${fmtL(S.stars)}`);
 }
@@ -1347,7 +1416,7 @@ function showBarrel(t){
 }
 function renderSettings(){
   $("mute").textContent = S.muted ? "Off" : "On";
-  $("stats").innerHTML = `<span>Scrap per second</span><b>${fmtL(prodL())}</b><span>Total scrap earned</span><b>${fmtL(S.totalScrap)}</b><span>Merges</span><b>${fmt(S.merges)}</b><span>Prestiges</span><b>${S.prestiges}</b><span>Best barrel</span><b>#${S.best}</b><span>Level</span><b>${S.level}</b><span>Magnets</span><b>${fmt(S.magnets)}</b>`;
+  $("stats").innerHTML = `<span>Scrap per second</span><b>${fmtL(prodL())}</b><span>Total scrap earned</span><b>${fmtL(S.totalScrap)}</b><span>Merges</span><b>${fmt(S.merges)}</b><span>Prestiges</span><b>${S.prestiges}</b><span>Best barrel</span><b>#${S.best}</b><span>Level</span><b>${S.level}</b><span>Magnets</span><b>${fmt(S.magnets)}</b><span>Scrapyard</span><b>Level ${S.yard}</b><span>Bricks</span><b>${fmtL(S.bricks)}</b>`;
 }
 function showGsInfo(){
   const n = gsTier();
@@ -1363,10 +1432,34 @@ function showStarInfo(){
 }
 $("gsinfo").onclick = showGsInfo;
 $("upstars").onclick = () => showUpgradeStars();
+
+// ---- Scrapyard: a pile of scrap barrels you tap; 10 taps = 1 level ----
+$("yardsvg").innerHTML = [[14,8,.35],[4,36,.45],[30,46,.5],[44,20,1],[62,16,1],[78,24,1],[52,34,1],[70,38,1],[36,40,1],[56,50,1],[86,44,1],[44,56,1],[24,56,1],[70,56,1]]
+  .map(([x,y,o]) => `<use href="#i-scrap" x="${x}" y="${y}" width="20" height="27" opacity="${o}"/>`).join("");
+$("yardpile").onclick = () => {
+  initAudio();
+  if(S.stars < YARD_STARS) return sfx.err();
+  const c = yardTapCostL();
+  if(S.scrap < c - 1e-9){ sfx.err(); return toast("Not enough Scrap for the Scrapyard"); }
+  S.scrap = lsub(S.scrap, c); S.yardTaps++;
+  tone(300 + S.yardTaps * 40, .06, "square", .05);
+  if(S.yardTaps >= 10){ S.yardTaps = 0; S.yard++; sfx.buy(); toast(`Scrapyard Level ${S.yard}! Stars now cost ${(100 - 100*100/(S.yard+99)).toFixed(1)}% less`); }
+  render();
+};
+$("yardinfo").onclick = () => modal({title:"Scrapyard", ok:"Close",
+  text:"Unlocked at 4 Stars. Tap the Scrapyard to throw Scrap into it: every 10 taps it levels up, and each level makes Stars cheaper (cost x100/(level+99)). Each level costs 4x more Scrap than the last."});
+
+// ---- Bricks: spend Levels for a permanent x2 ----
+$("spendlv").onclick = () => {
+  initAudio();
+  if(S.stars < BRICK_STARS || S.level < spendReq()) return sfx.err();
+  modal({title:"Spend Levels?", text:`Your Level goes back to 1, and Bricks are produced x2 faster forever. Next time it needs Level ${spendReq()+1}.`,
+    ok:"Spend", cancel:"Not yet", onOk:() => { S.level = 1; S.xp = 0; S.brickSpends++; sfx.prestige(); render(); }});
+};
 let starWin = null;
 function showUpgradeStars(){
   if(starWin) starWin.remove();
-  const sc = starCostL(S.stars), can = S.gs >= sc - 1e-9;
+  const sc = starPriceL(S.stars), can = S.gs >= sc - 1e-9;
   starWin = modal({title:"Upgrade Stars", ok: can ? `Buy Star ${S.stars+1}` : "Close",
     html:`<div class="dbox starhdr"><div class="bignum"><svg viewBox="0 0 40 54"><use href="#i-gold"/></svg><span>${fmtL(S.gs)}</span></div><button class="sq blue small si">i</button></div>
       <div class="starfield">${starRows()}</div>
@@ -1403,7 +1496,7 @@ function render(){
     if(c._lbl !== txt){ c._lbl = txt; const l = c.firstChild; if(l) l.textContent = txt; }
   });
   // status bars: stars (blue) and pending prestige (orange)
-  const sc2 = starCostL(S.stars), canStar = S.gs >= sc2 - 1e-9, pend = pendingL();
+  const sc2 = starPriceL(S.stars), canStar = S.gs >= sc2 - 1e-9, pend = pendingL();
   $("lvlbar").textContent = `Level ${S.level}`;
   $("lvlfill").style.width = Math.min(100, 100 * S.xp / xpNeed(S.level)) + "%";
   const se = stormEvery(), storming = S.stormT >= se;
@@ -1425,8 +1518,25 @@ function render(){
   $("starboost").textContent = "x" + fmtL(S.stars);
   $("starown").textContent = `Stars owned: ${S.stars} · next one costs ${fmtL(sc2)} Golden Scrap`;
   $("upstars").classList.toggle("glow", canStar);
+  // scrapyard
+  const yardOpen = S.stars >= YARD_STARS;
+  $("yardlvl").textContent = `Level ${S.yard}`;
+  $("yardpile").classList.toggle("locked", !yardOpen);
+  $("yardtxt").textContent = yardOpen ? `Click ${10 - S.yardTaps} times to level up!` : `Unlocks at ${YARD_STARS} Stars`;
+  $("yardcost").textContent = yardOpen ? `Each tap: ${fmtL(yardTapCostL())} Scrap · Stars are ${(100 - 100*100/(S.yard+99)).toFixed(1)}% cheaper` : "";
+  const dk = S.yardTaps + "/" + yardOpen;
+  if($("yarddots")._k !== dk){ $("yarddots")._k = dk; $("yarddots").innerHTML = yardOpen ? Array.from({length:10},(_,i)=>`<i class="${i < S.yardTaps ? "on" : ""}"></i>`).join("") : ""; }
+  // bricks
+  const brickOpen = S.stars >= BRICK_STARS;
+  $("bricks").textContent = brickOpen ? fmtL(S.bricks) : "Locked";
+  $("brickrate").textContent = brickOpen ? `${fmtS(brickRateL())} Bricks/s` : `Unlocks at ${BRICK_STARS} Stars`;
+  $("brickmult").textContent = brickOpen ? `Levels spent: x${fmt(2**S.brickSpends)} · Brick Multiplier: ${S.runBest >= 103 ? "x" + fmtS(brickTierL()) : "from barrel #103"}` : "";
+  $("spendlv").disabled = !brickOpen || S.level < spendReq();
+  $("spendlv").textContent = "Spend Levels";
+  $("spendtxt").textContent = brickOpen ? `Needs Level ${spendReq()} (you're Level ${S.level}). Resets your Level and makes Bricks x2 faster forever.` : "";
+  $("bricknote").textContent = brickOpen ? "Bricks come in every second. Brick upgrades are never reset." : `Bricks unlock at ${BRICK_STARS} Stars. Brick upgrades are never reset.`;
   // badges
-  const nUp = refreshUpgrades(UPG) + refreshUpgrades(MUPG) + refreshUpgrades(GUPG), nGold = (canStar ? 1 : 0) + (pend >= 0 && pend > S.gs ? 1 : 0);
+  const nUp = refreshUpgrades(UPG) + refreshUpgrades(MUPG) + refreshUpgrades(BUPG) + refreshUpgrades(GUPG), nGold = (canStar ? 1 : 0) + (pend >= 0 && pend > S.gs ? 1 : 0);
   $("dot-up").textContent = nUp; $("dot-up").classList.toggle("show", nUp > 0);
   $("dot-gold").textContent = nGold; $("dot-gold").classList.toggle("show", nGold > 0);
   if(pane === "set") renderSettings();
@@ -1501,7 +1611,7 @@ function prestige(){
     big:`<svg class="ico"><use href="#i-gold"/></svg>${fmtL(g)}`, ok:"Prestige", cancel:"Not yet",
     onOk:()=>{
       initAudio();
-      const keep = {gs:ladd(S.gs, g), stars:S.stars, buyMax:S.buyMax, magnets:S.magnets, level:S.level, xp:S.xp, stormT:S.stormT, mup:S.mup, best:S.best, prestiges:S.prestiges+1, merges:S.merges, totalScrap:S.totalScrap, gup:S.gup, muted:S.muted, theme:S.theme};
+      const keep = {gs:ladd(S.gs, g), stars:S.stars, buyMax:S.buyMax, magnets:S.magnets, level:S.level, xp:S.xp, stormT:S.stormT, mup:S.mup, yard:S.yard, yardTaps:S.yardTaps, bricks:S.bricks, brickSpends:S.brickSpends, bup:S.bup, best:S.best, prestiges:S.prestiges+1, merges:S.merges, totalScrap:S.totalScrap, gup:S.gup, muted:S.muted, theme:S.theme};
       S = Object.assign(fresh(), keep);
       S.runBest = spawnTier();
       sel = null; cells.forEach(c=>c._t = -1);
@@ -1591,6 +1701,7 @@ function step(dt){
   }
   if(spawned && !document.hidden) sfx.spawn();
 
+  if(S.stars >= BRICK_STARS) S.bricks = ladd(S.bricks, brickRateL() + Math.log10(dt));
   // storms: magnets rain down for a few seconds every few minutes (only while you're watching)
   if(!document.hidden){
     S.stormT += dt;
@@ -1618,7 +1729,7 @@ function dropStormItem(){
   b.innerHTML = `<svg viewBox="0 0 40 54"><use href="#i-magnet"/></svg>`;
   b.addEventListener("pointerdown", e => {
     e.stopPropagation(); initAudio();
-    const g = stormGain(); S.magnets += g; tone(990,.08,"triangle",.08); tone(1320,.1,"triangle",.06,.05);
+    const g = stormGain() * (Math.random() < 0.01 * S.bup.mag ? 3 : 1); S.magnets += g; tone(990,.08,"triangle",.08); tone(1320,.1,"triangle",.06,.05);
     const r = b.getBoundingClientRect(), f = document.createElement("div");
     f.className = "float"; f.textContent = "+" + g; f.style.left = (r.left + r.width/2) + "px"; f.style.top = r.top + "px"; f.style.translate = "-50% 0";
     document.body.appendChild(f); setTimeout(()=>f.remove(), 1000);
@@ -1640,6 +1751,7 @@ applyTheme();
 $("bulk").textContent = S.buyMax ? "MAX" : "×1";
 buildUpgrades($("ups"), UPG, "up", "scrap");
 buildUpgrades($("mups"), MUPG, "mup", "mag");
+buildUpgrades($("bups"), BUPG, "bup", "brick");
 buildUpgrades($("gups"), GUPG, "gup", "gold");
 liftLow();
 drawGrid(false);
@@ -1647,6 +1759,7 @@ const away = (Date.now() - S.last) / 1000;
 if(away > 30 && S.grid.some(Boolean)){
   const secs = Math.min(away, 8*3600), earned = prodL() + Math.log10(secs * offEff(S.up.offline));
   S.scrap = ladd(S.scrap, earned); S.runScrap = ladd(S.runScrap, earned); S.totalScrap = ladd(S.totalScrap, earned);
+  if(S.stars >= BRICK_STARS) S.bricks = ladd(S.bricks, brickRateL() + Math.log10(secs * offEff(S.up.offline)));
   modal({title:"Welcome back!", text:`You were away for ${fmtTime(away)}. Your barrels worked at ${Math.round(offEff(S.up.offline)*100)}% efficiency and made:`,
     big:`<svg class="ico"><use href="#i-scrap"/></svg>${fmtL(earned)}`, ok:"Collect"});
 }
