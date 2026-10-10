@@ -369,6 +369,8 @@ document.getElementById("defs").insertAdjacentHTML("beforeend",
      <stop offset="0" stop-color="#000" stop-opacity=".16"/><stop offset=".17" stop-color="#fff" stop-opacity=".3"/>
      <stop offset=".3" stop-color="#fff" stop-opacity="0"/><stop offset=".55" stop-color="#000" stop-opacity="0"/>
      <stop offset=".78" stop-color="#000" stop-opacity=".2"/><stop offset="1" stop-color="#000" stop-opacity=".42"/></linearGradient>
+   <radialGradient id="rg-glow"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><radialGradient id="rg-violet"><stop offset="0" stop-color="#d9b8ff" stop-opacity=".9"/><stop offset="1" stop-color="#d9b8ff" stop-opacity="0"/></radialGradient><radialGradient id="rg-cyan"><stop offset="0" stop-color="#7ff6ff" stop-opacity=".95"/><stop offset="1" stop-color="#7ff6ff" stop-opacity="0"/></radialGradient><radialGradient id="rg-yellow"><stop offset="0" stop-color="#ffe36e" stop-opacity="1"/><stop offset="1" stop-color="#ffe36e" stop-opacity="0"/></radialGradient><radialGradient id="rg-green"><stop offset="0" stop-color="#7cff3a" stop-opacity=".9"/><stop offset="1" stop-color="#7cff3a" stop-opacity="0"/></radialGradient>
+   <linearGradient id="lg-gold" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#ffe9a0"/><stop offset=".45" stop-color="#e9b830"/><stop offset="1" stop-color="#b8860b"/></linearGradient>
    <linearGradient id="g-face" x1="0" x2="1" y1="0" y2="0">
      <stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".3" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".14"/></linearGradient>`);
 
@@ -974,11 +976,208 @@ const ITEMS = [
         ${[0,1,2].map(i=>{const a=i*2*Math.PI/3-Math.PI/2;return `<path d="M50 60 L${(50+12*Math.cos(a)).toFixed(1)} ${(60+12*Math.sin(a)).toFixed(1)}" stroke="#5c6672" stroke-width="3"/><circle cx="${(50+12*Math.cos(a)).toFixed(1)}" cy="${(60+12*Math.sin(a)).toFixed(1)}" r="2.2" fill="#e2465b"/>`}).join("")}
         <circle cx="50" cy="60" r="4.5" fill="#5c6672"/><circle cx="50" cy="60" r="2" fill="#f2c230"/>`,
   top:`${[[36,22],[48,22],[60,22],[42,18],[54,18],[48,14]].map(([x,y])=>`<path d="M${x-6} ${y} L${x-4} ${y-4} H${x+4} L${x+6} ${y} Z" fill="#f2c230" stroke-width="1"/><path d="M${x-3} ${y-3} h4" stroke="#fff6b0" stroke-width="1"/>`).join("")}`,
-  over:`<polygon points="${star(70,8,4,1.2,4)}" fill="#fff" stroke="none"/>` }
+  over:`<polygon points="${star(70,8,4,1.2,4)}" fill="#fff" stroke="none"/>` },
+
+// ---------- 81-110: wonders (glow, gems, smoke, inner light) ----------
+{ name:"Future Sight", shape:"gumball", fill:"#6b4bd6", lid:"#c9a24a", inner:"#a07c2a",
+  deco:`<circle cx="50" cy="36" r="26" fill="url(#rg-violet)"/>
+        <path d="M34 40 Q42 26 52 36 Q60 46 68 32" fill="none" stroke="#e9d8ff" stroke-width="3" stroke-opacity=".7"/>
+        <circle cx="50" cy="36" r="8" fill="url(#rg-glow)"/>
+        ${dots([[36,26],[62,24],[66,44],[34,48],[56,52]],1.2,"#fff")}
+        <path d="M30 22 Q26 30 28 40" fill="none" stroke="#fff" stroke-width="3" stroke-opacity=".8"/>
+        <rect x="0" y="58" width="100" height="42" fill="#c9a24a"/><rect x="0" y="58" width="100" height="4" fill="#a07c2a"/>
+        <path d="M30 70 H70 M28 80 H72" stroke="#a07c2a" stroke-width="2"/>${dots([[36,75],[50,75],[64,75]],2.2,"#e2465b")}`,
+  top:`<polygon points="${star(50,4,5,1.4,4)}" fill="#fff" stroke="none"/>` },
+{ name:"Liquid Courage", shape:"churn", fill:"#e9f6ff", lid:"#8a5a30", inner:"#6b4423",
+  deco:`<rect x="0" y="44" width="100" height="56" fill="#e2465b"/><path d="M0 44 q8 -4 16 0 t16 0 t16 0 t16 0 t16 0 t16 0" fill="#ff7a8a"/>
+        <circle cx="50" cy="66" r="14" fill="url(#rg-glow)" opacity=".6"/>
+        ${[[34,58,2.2],[60,70,1.6],[46,78,1.8],[64,54,1.2],[40,70,1.3]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="#fff" stroke-width="1"/>`).join("")}
+        <path d="M28 46 Q26 64 30 80" fill="none" stroke="#fff" stroke-width="3" stroke-opacity=".7"/>
+        <rect x="34" y="28" width="32" height="12" rx="1.5" fill="#f4e2c0" transform="rotate(-6 50 34)"/><text x="50" y="37" font-size="6.5" font-weight="800" text-anchor="middle" fill="#7a2a2a" stroke="none" font-family="Open Sans,system-ui,sans-serif" transform="rotate(-6 50 34)">BRAVE</text>`,
+  top:`<path d="M44 14 Q44 4 50 4 Q56 4 56 14 Z" fill="#a5743f" stroke="none"/><path d="M47 6 H53" stroke="#7a4a20" stroke-width="1"/>` },
+{ name:"Hatch Plan", shape:"capsule", fill:"#2fa06a", lid:"#8a5a30", inner:"#ff9a2e",
+  deco:`${[[30,34],[52,28],[66,46],[40,54],[60,68],[32,74],[48,84]].map(([x,y])=>`<path d="M${x} ${y} l5 -4 l5 4 l-5 4 Z" fill="#1e7a4a"/><path d="M${x+2} ${y} l3 -2" stroke="#7ee0a8" stroke-width="1"/>`).join("")}
+        <path d="M44 30 L48 40 L42 48 L50 56" fill="none" stroke="#ffe36e" stroke-width="2.5"/><path d="M44 30 L48 40 L42 48 L50 56" fill="none" stroke="#ff9a2e" stroke-width="1"/>
+        <path d="M28 26 Q24 50 30 74" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="3"/>`,
+  top:`<path d="M30 18 Q34 10 40 16 Q44 6 50 14 Q56 6 60 16 Q66 10 70 18 Z" fill="#2fa06a" stroke="none"/><circle cx="50" cy="16" r="5" fill="url(#rg-glow)" stroke="none"/>` },
+{ name:"Wish Granted", shape:"lamp", fill:"#7b3fc4", lid:"#f2c14e", inner:"#c8961f",
+  deco:`<path d="M42 16 L36 56" stroke="#f2c14e" stroke-width="2"/><path d="M58 16 L64 56" stroke="#f2c14e" stroke-width="2"/>
+        ${[[50,26],[46,40],[54,48]].map(([x,y])=>`<polygon points="${star(x,y,4,1.6,4)}" fill="#ffe36e"/>`).join("")}
+        <rect x="0" y="58" width="100" height="42" fill="#f2c14e"/><rect x="0" y="58" width="100" height="3" fill="#c8961f"/>
+        <circle cx="50" cy="76" r="5" fill="#3ef2ff"/><circle cx="48.5" cy="74.5" r="1.4" fill="#fff"/><path d="M30 68 H70 M30 86 H70" stroke="#c8961f" stroke-width="1.6"/>`,
+  top:`<path d="M50 12 Q40 4 46 -2 Q54 2 50 6 Q58 2 60 -4" fill="none" stroke="#c9b8ff" stroke-width="3" stroke-opacity=".8"/>` },
+{ name:"X Marks the Spot", shape:"can", fill:"#e9d29a", lid:"#8a5a30", inner:"#6b4423",
+  deco:`<path d="M0 30 Q50 34 100 30 M0 70 Q50 74 100 70" stroke="#c9a868" stroke-width="1.6" fill="none"/>
+        <path d="M34 36 Q40 50 48 44 T60 58 Q56 66 64 70" fill="none" stroke="#7a4a20" stroke-width="1.8" stroke-dasharray="3 2.5"/>
+        <path d="M60 64 L68 72 M68 64 L60 72" stroke="#c0263a" stroke-width="3"/>
+        <path d="M36 40 l3 -6 l3 6 Z" fill="#2fa06a"/><path d="M32 54 q4 -4 8 0 q-4 3 -8 0 Z" fill="#4fb3ff"/>
+        <circle cx="62" cy="34" r="5" fill="none" stroke="#7a4a20" stroke-width="1.2"/><path d="M62 29 v10 M57 34 h10" stroke="#7a4a20" stroke-width="1"/>`,
+  top:`<circle cx="50" cy="14" r="5" fill="#d9c08a" stroke="none"/><path d="M45 14 a5 5 0 0 0 10 0" fill="none" stroke="#b89a5a" stroke-width="1"/>` },
+{ name:"Hex Libris", shape:"tbox", fill:"#5a1f6b", lid:"#efe2c4", inner:"#d9c79e",
+  deco:`<rect x="30" y="14" width="5" height="78" fill="#3e1250"/>
+        <rect x="38" y="22" width="24" height="54" rx="2" fill="none" stroke="#f2c14e" stroke-width="1.5"/>
+        <circle cx="50" cy="48" r="9" fill="url(#rg-glow)" opacity=".7"/>
+        <polygon points="${star(50,48,9,3.6,5)}" fill="none" stroke="#f2c14e" stroke-width="1.6"/><circle cx="50" cy="48" r="10.5" fill="none" stroke="#f2c14e" stroke-width="1.2"/>
+        <path d="M40 24 l4 4 M60 24 l-4 4 M40 74 l4 -4 M60 74 l-4 -4" stroke="#f2c14e" stroke-width="1.6"/>`,
+  over:`<path d="M66 18 V90" stroke="#efe2c4" stroke-width="1"/><path d="M68 20 L74 14 M68 34 L74 28 M68 48 L74 42 M68 62 L74 56 M68 76 L74 70" stroke="#d9c79e" stroke-width="1.2"/>` },
+{ name:"Will-o'-Wisp", shape:"lamp", fill:"#20364a", lid:"#3d4a3e", inner:"#2a332b",
+  deco:`<circle cx="50" cy="34" r="14" fill="url(#rg-cyan)"/><circle cx="50" cy="34" r="5" fill="#e9fdff"/>
+        <path d="M50 40 Q44 48 48 54 Q42 52 44 46" fill="none" stroke="#7ff6ff" stroke-width="1.5" opacity=".8"/>
+        ${dots([[40,24],[60,26],[58,46],[42,46]],1,"#bffcff")}
+        <rect x="0" y="58" width="100" height="42" fill="#3d4a3e"/><path d="M30 66 H70 M30 76 H70 M30 86 H70" stroke="#556b57" stroke-width="2"/>` },
+{ name:"Shroom Service", shape:"capsule", fill:"#f4ead6", lid:"#e2465b", inner:"#c0263a",
+  deco:`<path d="M42 90 V72 Q42 66 50 66 Q58 66 58 72 V90 Z" fill="#8a5a30"/><circle cx="54" cy="80" r="1.2" fill="#f2c230"/>
+        <circle cx="36" cy="50" r="5" fill="#cfeaf7"/><path d="M36 45 V55 M31 50 H41" stroke="#8a5a30" stroke-width="1.4"/><circle cx="36" cy="50" r="5" fill="none" stroke="#8a5a30" stroke-width="1.4"/>
+        <circle cx="64" cy="54" r="4" fill="#cfeaf7"/><circle cx="64" cy="54" r="4" fill="none" stroke="#8a5a30" stroke-width="1.4"/>
+        <path d="M24 86 Q30 80 36 86 M64 86 Q70 80 76 86" fill="none" stroke="#5fbf3a" stroke-width="2.5"/>`,
+  top:`<path d="M18 26 Q18 2 50 0 Q82 2 82 26 Q50 34 18 26 Z" fill="#e2465b" stroke="none"/>
+       ${[[32,14,4.5],[50,8,5],[68,15,4],[42,22,3],[60,24,3.2]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" stroke="none"/>`).join("")}
+       <path d="M24 18 Q30 6 44 3" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="2"/>` },
+{ name:"Mimic", shape:"wbox", fill:"#7a4a2a", planks:1, lid:"#5a3618", inner:"#3e2615",
+  deco:`<rect x="12" y="46" width="64" height="5" fill="#f2c14e"/><rect x="18" y="46" width="5" height="44" fill="#f2c14e"/><rect x="65" y="46" width="5" height="44" fill="#f2c14e"/>
+        <path d="M14 51 H74 L70 60 Q44 66 18 60 Z" fill="#3a0a14"/>
+        ${[18,26,34,42,50,58,66].map(x=>`<polygon points="${x},51 ${x+4},51 ${x+2},57" fill="#fff"/>`).join("")}
+        <path d="M30 60 Q44 72 56 62 Q50 70 40 68 Z" fill="#e2465b"/>
+        <circle cx="30" cy="76" r="4" fill="#ffe36e"/><circle cx="58" cy="76" r="4" fill="#ffe36e"/><path d="M30 73 v6 M58 73 v6" stroke="#1d1a24" stroke-width="1.6"/>`,
+  over:`<path d="M12 46 Q12 28 44 28 Q76 28 76 46 L74 44 Q60 36 44 36 Q24 36 14 44 Z" fill="#7a4a2a" stroke="none"/>
+        ${[22,32,42,52,62].map(x=>`<polygon points="${x},40 ${x+4},40 ${x+2},45" fill="#fff" stroke="none"/>`).join("")}` },
+{ name:"Boo Jar", shape:"can", fill:"#dff3ee", lid:"#9aa4ae", inner:"#7d8794",
+  deco:`<path d="M38 72 V44 Q38 32 50 32 Q62 32 62 44 V72 L58 68 L54 72 L50 68 L46 72 L42 68 Z" fill="#fff" opacity=".9"/>
+        <ellipse cx="45" cy="46" rx="2.4" ry="3.4" fill="#1d1a24"/><ellipse cx="55" cy="46" rx="2.4" ry="3.4" fill="#1d1a24"/><ellipse cx="50" cy="56" rx="3" ry="4" fill="#1d1a24"/>
+        <circle cx="50" cy="50" r="22" fill="url(#rg-cyan)" opacity=".35"/>
+        <path d="M33 20 V82" stroke="#fff" stroke-width="3" stroke-opacity=".8"/>
+        <rect x="38" y="76" width="24" height="8" rx="1" fill="#f4e2c0"/><text x="50" y="81.8" font-size="4.6" font-weight="800" text-anchor="middle" fill="#7a2a2a" stroke="none" font-family="Open Sans,system-ui,sans-serif">CAUGHT!</text>` },
+{ name:"Unit 91", shape:"tbox", fill:"#9aa4ae", lid:"#b7c2cf", inner:"#7d8896",
+  deco:`<rect x="33" y="20" width="30" height="20" rx="4" fill="#1d2330"/><rect x="37" y="26" width="8" height="4" rx="2" fill="#ff4d6d"/><rect x="51" y="26" width="8" height="4" rx="2" fill="#ff4d6d"/>
+        <path d="M40 35 h16" stroke="#ff4d6d" stroke-width="1.5" stroke-dasharray="2 1.5"/>
+        <rect x="35" y="46" width="26" height="22" rx="2" fill="#7d8896"/><circle cx="48" cy="57" r="6" fill="#3ef2ff"/><circle cx="48" cy="57" r="2.6" fill="#e9fdff"/>
+        ${dots([[38,49],[58,49],[38,65],[58,65]],1.2,"#5c6672")}
+        <text x="48" y="80" font-size="7" font-weight="800" text-anchor="middle" fill="#2b2e35" stroke="none" font-family="Open Sans,system-ui,sans-serif">U-91</text>`,
+  over:`${tube("M30 50 Q20 52 18 64","#7d8896",4)}${tube("M76 44 Q86 48 86 60","#7d8896",4)}<circle cx="18" cy="66" r="3" fill="#5c6672" stroke="none"/><circle cx="86" cy="62" r="3" fill="#5c6672" stroke="none"/>`,
+  top:`<path d="M58 6 V0" stroke="#5c6672" stroke-width="1.5"/><circle cx="58" cy="0" r="1.8" fill="#ff4d6d" stroke="none"/>` },
+{ name:"Abduction", shape:"globe", fill:"#0e1638", lid:"#9aa4ae", inner:"#6b7682",
+  deco:`${dots([[24,40],[70,32],[78,58],[30,70],[60,78],[40,30]],1,"#fff")}
+        <polygon points="44,44 56,44 70,86 30,86" fill="#bff7a0" opacity=".45"/>
+        <path d="M26 86 Q50 78 74 86 V100 H26 Z" fill="#3d7a2a"/>
+        <path d="M46 80 q2 -6 6 -2 q2 4 -2 6 Z" fill="#fff"/><path d="M47 76 l2 -3" stroke="#fff" stroke-width="1"/>
+        <ellipse cx="50" cy="40" rx="16" ry="5" fill="#9aa4ae"/><ellipse cx="50" cy="37" rx="7" ry="5" fill="#bff7f0"/>
+        ${dots([[38,41],[46,43],[54,43],[62,41]],1.3,"#ffe36e")}
+        <path d="M22 26 Q16 42 20 60" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="3"/>` },
+{ name:"Houston", shape:"globe", fill:"#f2f4f7", lid:"#c7ced6", inner:"#9aa4ae",
+  deco:`<ellipse cx="50" cy="52" rx="26" ry="22" fill="#c7ced6"/><ellipse cx="50" cy="52" rx="22" ry="18" fill="#1d2440"/>
+        <path d="M32 58 Q50 30 70 46 Q62 64 32 58 Z" fill="#ffb347" opacity=".75"/><path d="M36 42 Q44 34 54 36" fill="none" stroke="#fff" stroke-width="2.5" stroke-opacity=".8"/>
+        ${dots([[60,62],[44,64]],1,"#fff")}
+        <rect x="28" y="78" width="44" height="6" fill="#e2465b"/><rect x="70" y="40" width="6" height="10" rx="1" fill="#c7ced6"/><circle cx="73" cy="38" r="2" fill="#3ef27a"/>` },
+{ name:"Jurassic Amber", shape:"capsule", fill:"#f2a31a", lid:"#c27a10", inner:"#9a5a08",
+  deco:`<circle cx="50" cy="52" r="24" fill="url(#rg-glow)" opacity=".5"/>
+        <path d="M44 50 Q50 44 56 50" fill="none" stroke="#3a2410" stroke-width="2"/><ellipse cx="50" cy="52" rx="3" ry="6" fill="#3a2410"/>
+        <path d="M47 50 L38 44 M53 50 L62 44 M47 54 L40 58 M53 54 L60 58 M48 57 L44 64 M52 57 L56 64" stroke="#3a2410" stroke-width="1"/>
+        <ellipse cx="44" cy="46" rx="5" ry="2.2" fill="#fff" opacity=".5" transform="rotate(-30 44 46)"/><ellipse cx="56" cy="46" rx="5" ry="2.2" fill="#fff" opacity=".5" transform="rotate(30 56 46)"/>
+        ${dots([[32,72],[66,30],[70,70]],1.6,"#ffd27a")}
+        <path d="M30 30 Q26 50 30 70" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="3"/>` },
+{ name:"Hot Topic", shape:"cone", fill:"#6b4a3a", lid:"#ff7a1a", inner:"#ffd23f",
+  deco:`<path d="M40 18 L36 40 L44 34 L42 56" fill="none" stroke="#ff7a1a" stroke-width="4"/><path d="M58 18 L62 34 L56 44" fill="none" stroke="#ff7a1a" stroke-width="3"/>
+        <path d="M20 70 Q30 64 40 70 Q50 64 60 70 Q70 64 80 70 V100 H20 Z" fill="#4a3226"/>
+        <path d="M40 18 L36 40 L44 34 L42 56" fill="none" stroke="#ffd23f" stroke-width="1.2"/>
+        <path d="M66 50 q4 4 0 8" fill="none" stroke="#3d7a2a" stroke-width="2.5"/>`,
+  top:`<path d="M42 16 Q38 4 46 0 Q48 8 52 2 Q60 6 56 16 Z" fill="#9aa4ae" opacity=".8" stroke="none"/><circle cx="50" cy="18" r="4" fill="url(#rg-glow)" stroke="none"/>` },
+{ name:"Shake It", shape:"gumball", fill:"#cfeaf7", lid:"#8a5a30", inner:"#6b4423",
+  deco:`<path d="M30 52 Q50 46 70 52 V62 H30 Z" fill="#fff"/>
+        <path d="M42 52 V42 L50 36 L58 42 V52 Z" fill="#e2465b"/><path d="M40 43 L50 34 L60 43" fill="none" stroke="#fff" stroke-width="2.4"/><rect x="48" y="45" width="4" height="7" fill="#8a5a30"/>
+        <path d="M34 52 L36 44 L38 52 Z M62 52 L64 42 L66 52 Z" fill="#2fa06a"/>
+        ${dots([[32,28],[44,20],[58,24],[68,34],[36,38],[62,46],[52,30],[40,28],[66,26]],1.3,"#fff")}
+        <path d="M30 22 Q24 30 26 44" fill="none" stroke="#fff" stroke-width="3" stroke-opacity=".9"/>
+        <rect x="0" y="58" width="100" height="42" fill="#8a5a30"/><rect x="0" y="58" width="100" height="3" fill="#6b4423"/>
+        <path d="M32 72 h36" stroke="#f2c14e" stroke-width="2"/><text x="50" y="84" font-size="5.5" font-weight="800" text-anchor="middle" fill="#f2c14e" stroke="none" font-family="Open Sans,system-ui,sans-serif">WINTER</text>` },
+{ name:"Cursed Idol", shape:"tbox", fill:"#e9b830", lid:"#f2c14e", inner:"#c8961f",
+  deco:`<rect x="30" y="14" width="36" height="78" fill="url(#lg-gold)"/>
+        <path d="M38 30 h8 M52 30 h8" stroke="#7a5a10" stroke-width="2.5"/>
+        <circle cx="42" cy="36" r="3" fill="#2fbf71"/><circle cx="56" cy="36" r="3" fill="#2fbf71"/><circle cx="42" cy="36" r="5" fill="url(#rg-green)"/><circle cx="56" cy="36" r="5" fill="url(#rg-green)"/>
+        <path d="M48 40 L46 50 H52 Z" fill="#c8961f"/><path d="M41 56 Q49 62 57 56 V60 Q49 66 41 60 Z" fill="#7a5a10"/>
+        <path d="M36 70 H62 M36 76 H62 M36 82 H62" stroke="#c8961f" stroke-width="1.6"/>
+        <path d="M33 16 V90" stroke="#fff" stroke-opacity=".45" stroke-width="2"/>`,
+  over:`<polygon points="${star(22,24,5,1.4,4)}" fill="#fff" stroke="none"/><polygon points="${star(84,60,4,1.2,4)}" fill="#fff" stroke="none"/>` },
+{ name:"Tiny Tree", shape:"tub", fill:"#3a5a8a", lid:"#3a5a8a", inner:"#5a3a22",
+  deco:`<path d="M14 50 H86" stroke="#2a4a7a" stroke-width="2"/>${[24,36,48,60,72].map(x=>`<path d="M${x} 58 q4 -6 8 0 q-4 6 -8 0" fill="none" stroke="#9fc4ee" stroke-width="1.5"/>`).join("")}`,
+  top:`<path d="M50 38 Q46 26 52 18 Q56 26 50 30 Q60 24 66 26" fill="none" stroke="#6b4423" stroke-width="4"/>
+       <ellipse cx="38" cy="18" rx="12" ry="6" fill="#3d9a4a" stroke="none"/><ellipse cx="58" cy="10" rx="14" ry="7" fill="#45b357" stroke="none"/><ellipse cx="70" cy="24" rx="9" ry="5" fill="#3d9a4a" stroke="none"/>
+       <ellipse cx="54" cy="8" rx="6" ry="2.4" fill="#7ad48a" stroke="none"/><circle cx="34" cy="36" r="2" fill="#9aa4ae" stroke="none"/>` },
+{ name:"Solved?", shape:"box", fill:"#2b2e35", lid:"#2b2e35", inner:"#2b2e35",
+  deco:`${[0,1,2].map(r=>[0,1,2].map(c=>`<rect x="${27+c*16}" y="${28+r*20}" width="14" height="18" rx="2" fill="${["#e2465b","#2fbf71","#3b82f6","#f2c230","#ff8a1f","#fff","#2fbf71","#e2465b","#f2c230"][r*3+c]}"/>`).join("")).join("")}`,
+  top:`${[0,1,2].map(r=>[0,1,2].map(c=>`<polygon points="${23+c*16-r*4},${24-r*3} ${37+c*16-r*4},${24-r*3} ${40+c*16-r*4},${21.5-r*3} ${26+c*16-r*4},${21.5-r*3}" fill="${["#fff","#f2c230","#3b82f6","#e2465b","#fff","#2fbf71","#ff8a1f","#3b82f6","#fff"][r*3+c]}" stroke="none"/>`).join("")).join("")}` },
+{ name:"Centennial", shape:"trophy", fill:"#f2c14e", lid:"#fff3b0", inner:"#e9b830",
+  deco:`<text x="50" y="40" font-size="20" font-weight="800" text-anchor="middle" fill="#fff8d6" stroke="none" font-family="Open Sans,system-ui,sans-serif">100</text>
+        <path d="M24 44 Q50 54 76 44" fill="none" stroke="#c8961f" stroke-width="2"/>
+        <rect x="0" y="58" width="100" height="5" fill="#c8961f"/><rect x="0" y="70" width="100" height="30" fill="#2b2b33"/>
+        <rect x="36" y="77" width="28" height="9" rx="1" fill="#f2c14e"/>`,
+  under:`${[[18,8,"#e2465b"],[84,6,"#3b82f6"],[30,2,"#2fbf71"],[72,0,"#ff7ad9"]].map(([x,y,c])=>`<ellipse cx="${x}" cy="${y+6}" rx="6" ry="7.5" fill="${c}" stroke="none"/><path d="M${x} ${y+13.5} Q${x+3} ${y+22} ${x<50?40:60} 22" fill="none" stroke="#9aa4ae" stroke-width=".8"/>`).join("")}`,
+  over:`<polygon points="${star(14,40,4,1.2,4)}" fill="#fff" stroke="none"/><polygon points="${star(88,44,5,1.4,4)}" fill="#fff" stroke="none"/>` },
+{ name:"Message Received", shape:"churn", fill:"#cfeaf7", lid:"#8a5a30", inner:"#6b4423",
+  deco:`<path d="M22 70 q6 -4 12 0 t12 0 t12 0 t12 0 t12 0 V100 H22 Z" fill="#4fb3ff"/>
+        <path d="M34 66 H66 L62 72 H38 Z" fill="#8a5a30"/><path d="M49 66 V44 M49 46 L62 60 H49 M49 50 L38 62 H49" fill="#fff" stroke="#6b4423" stroke-width="1"/>
+        <path d="M49 44 l5 2 l-5 2 Z" fill="#e2465b"/>
+        <rect x="56" y="34" width="12" height="6" rx="3" fill="#f4e2c0" transform="rotate(20 62 37)"/>
+        <path d="M28 40 Q26 60 30 80" fill="none" stroke="#fff" stroke-width="3" stroke-opacity=".8"/>`,
+  top:`<path d="M44 14 Q44 6 50 6 Q56 6 56 14 Z" fill="#a5743f" stroke="none"/>` },
+{ name:"Signal Fire", shape:"bucket", fill:"#5c6672", hoops:[30,70], hoop:"#3d4552", hw:4, lid:"#3d4552", inner:"#2b2e35",
+  deco:`${dots([[30,50],[44,52],[58,50],[70,52],[36,82],[64,82]],1.6,"#3d4552")}
+        <path d="M30 40 L70 40" stroke="#ff9a2e" stroke-width="1.4" opacity=".6"/>`,
+  top:`<path d="M24 22 Q28 6 38 12 Q38 0 50 -2 Q50 8 58 4 Q66 2 64 12 Q74 8 76 22 Z" fill="#ff7a1a" stroke="none"/>
+       <path d="M32 22 Q36 10 44 14 Q46 4 52 8 Q56 2 58 12 Q66 10 68 22 Z" fill="#ffd23f" stroke="none"/>
+       <path d="M42 22 Q46 14 50 16 Q54 12 58 22 Z" fill="#fff6c2" stroke="none"/>` },
+{ name:"Hoard Keeper", shape:"drum", fill:"#8a5a30", planks:1, hoops:[28,74], hoop:"#f2c14e", hw:5, lid:"#73492b", inner:"#f2c14e",
+  deco:`${dots([[36,52],[52,46],[64,58]],3,"#f2c14e")}`,
+  over:`<path d="M12 70 Q8 50 22 44 Q40 38 58 50 Q76 62 88 46 Q92 40 86 34" fill="none" stroke="#2f8a4a" stroke-width="9"/>
+        <path d="M12 70 Q8 50 22 44 Q40 38 58 50 Q76 62 88 46 Q92 40 86 34" fill="none" stroke="#45b357" stroke-width="5"/>
+        ${[[20,46],[34,42],[48,46],[62,54],[76,54]].map(([x,y])=>`<polygon points="${x},${y-6} ${x+3},${y-11} ${x+5},${y-5}" fill="#e2465b" stroke="none"/>`).join("")}
+        <path d="M82 30 Q88 22 96 26 Q94 34 86 36 Z" fill="#45b357" stroke="none"/><circle cx="90" cy="28" r="1.4" fill="#ffe36e" stroke="none"/>
+        <path d="M95 30 l4 1 M95 32 l4 2" stroke="#ff7a1a" stroke-width="1.2"/>
+        <path d="M14 72 L8 78 M14 72 L16 80" stroke="#2f8a4a" stroke-width="2"/>` },
+{ name:"Tick Tock Heart", shape:"globe", fill:"#c0263a", lid:"#c8961f", inner:"#a07c2a",
+  deco:`${[[38,48,10],[60,56,8],[48,70,7]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="#f2c14e" stroke-width="3" stroke-dasharray="3 2"/><circle cx="${x}" cy="${y}" r="${r*.45}" fill="#f2c14e"/>`).join("")}
+        <path d="M24 36 Q20 56 28 74" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="3"/>
+        <circle cx="50" cy="50" r="30" fill="url(#rg-glow)" opacity=".2"/>` },
+{ name:"Glow Getter", shape:"can", fill:"#1d2a3a", lid:"#9aa4ae", inner:"#7d8794",
+  deco:`${[[38,32],[58,40],[44,52],[62,62],[36,70],[52,78],[60,28]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="5" fill="url(#rg-yellow)"/><circle cx="${x}" cy="${y}" r="1.4" fill="#fff9c2"/>`).join("")}
+        <path d="M32 20 V84" stroke="#fff" stroke-width="2.5" stroke-opacity=".5"/>
+        <path d="M30 84 Q40 78 50 84 Q60 78 70 84 V100 H30 Z" fill="#3d7a2a"/>`,
+  top:`<path d="M30 12 H70" stroke="#5c6672" stroke-width="2" stroke-dasharray="3 2"/>` },
+{ name:"Watching You", shape:"tbox", fill:"#5a3a1e", lid:"#7a5230", inner:"#5a3a1e",
+  deco:`<rect x="34" y="20" width="28" height="56" fill="#c8961f"/><rect x="37" y="23" width="22" height="50" fill="#2b2338"/>
+        <path d="M40 73 V46 Q40 34 48 34 Q56 34 56 46 V73 Z" fill="#4a3a5a"/>
+        <ellipse cx="45" cy="44" rx="2.6" ry="1.6" fill="#ffe36e"/><ellipse cx="51" cy="44" rx="2.6" ry="1.6" fill="#ffe36e"/><circle cx="45.6" cy="44" r=".9" fill="#1d1a24"/><circle cx="51.6" cy="44" r=".9" fill="#1d1a24"/>
+        <path d="M44 52 Q48 50 52 52" fill="none" stroke="#2b2338" stroke-width="1.2"/>
+        <rect x="40" y="80" width="16" height="5" rx="1" fill="#f2c14e"/>` },
+{ name:"Rune Time", shape:"hex", fill:"#6b7682", lid:"#7d8794", inner:"#5c6672",
+  deco:`${[[50,40],[50,62]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="8" fill="url(#rg-cyan)"/>`).join("")}
+        <path d="M46 34 L50 46 L54 34 M44 40 H56 M46 58 V68 L54 58 V68" fill="none" stroke="#7ff6ff" stroke-width="2"/>
+        <path d="M30 26 l4 8 M70 30 l-6 6 M28 72 l6 -4 M70 74 l-4 -6" stroke="#4a525e" stroke-width="2"/>
+        <path d="M22 80 Q34 74 40 82 Q50 76 58 84 Q70 78 78 82 V100 H22 Z" fill="#3d7a2a" opacity=".85"/>` },
+{ name:"Shell Shock", shape:"wbox", fill:"#f4c6c0", lid:"#f9d8d2", inner:"#e9a8a0",
+  deco:`${[16,26,36,46,56,66].map(x=>`<path d="M${x+5} 90 L${44} 54" stroke="#e9a8a0" stroke-width="2.2"/>`).join("")}
+        <path d="M12 54 Q44 46 76 54" fill="none" stroke="#e9a8a0" stroke-width="2"/>`,
+  over:`<path d="M14 46 Q14 20 50 18 Q86 20 86 42 Z" fill="#f9d8d2" stroke="none"/>
+        ${[24,36,50,64,76].map(x=>`<path d="M${x} 42 L50 20" stroke="#e9a8a0" stroke-width="1.8"/>`).join("")}
+        <circle cx="48" cy="44" r="7" fill="#fdfdff" stroke="none"/><circle cx="48" cy="44" r="10" fill="url(#rg-glow)" opacity=".7" stroke="none"/><circle cx="46" cy="42" r="2" fill="#fff" stroke="none"/>` },
+{ name:"Bottled Storm", shape:"can", fill:"#2a3550", lid:"#8a5a30", inner:"#6b4423",
+  deco:`<ellipse cx="50" cy="30" rx="18" ry="8" fill="#5c6a8a"/><ellipse cx="42" cy="28" rx="10" ry="6" fill="#6f7ea0"/><ellipse cx="58" cy="26" rx="9" ry="5" fill="#6f7ea0"/>
+        <path d="M52 34 L44 52 H52 L46 72" fill="none" stroke="#ffe36e" stroke-width="3.5"/><path d="M52 34 L44 52 H52 L46 72" fill="none" stroke="#fff" stroke-width="1.2"/>
+        <circle cx="47" cy="54" r="12" fill="url(#rg-yellow)" opacity=".6"/>
+        <path d="M36 40 l-2 6 M60 44 l-2 6 M38 62 l-2 6 M62 64 l-2 6" stroke="#9fc4ee" stroke-width="1.4"/>
+        <path d="M32 20 V84" stroke="#fff" stroke-width="2.5" stroke-opacity=".45"/>` },
+{ name:"Royal Treatment", shape:"tub", fill:"#7b2a9a", lid:"#9a3ac0", inner:"#7b2a9a",
+  deco:`<path d="M14 40 H86" stroke="#f2c14e" stroke-width="3"/>${[20,30,40,50,60,70,80].map(x=>`<circle cx="${x}" cy="46" r="2.2" fill="#f2c14e"/>`).join("")}
+        <path d="M14 76 Q50 86 86 76" fill="none" stroke="#f2c14e" stroke-width="2"/>${[[18,82],[82,82]].map(([x,y])=>`<path d="M${x} ${y} l-2 8 M${x} ${y} l2 8 M${x} ${y} v9" stroke="#f2c14e" stroke-width="1.4"/>`).join("")}
+        <polygon points="${star(50,62,6,2.6,5)}" fill="#f2c14e"/>`,
+  top:`<path d="M30 30 L32 10 L41 20 L50 4 L59 20 L68 10 L70 30 Q50 36 30 30 Z" fill="#f2c14e" stroke="none"/>
+       <path d="M30 30 Q50 36 70 30 V34 Q50 40 30 34 Z" fill="#c8961f" stroke="none"/>
+       <circle cx="50" cy="20" r="3.4" fill="#e2465b" stroke="none"/><circle cx="38" cy="24" r="2.2" fill="#4fb3ff" stroke="none"/><circle cx="62" cy="24" r="2.2" fill="#2fbf71" stroke="none"/>
+       ${[[32,10],[50,4],[68,10]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2" fill="#fff6c2" stroke="none"/>`).join("")}
+       <polygon points="${star(80,8,4,1.2,4)}" fill="#fff" stroke="none"/>` }
 ];
 const MAX = ITEMS.length;
 // barrels get more detailed as you go; the first barrel of each era gets a special announcement
-const ERAS = {21:"Everyday objects", 51:"Deluxe objects"};
+const ERAS = {21:"Everyday objects", 51:"Deluxe objects", 81:"Wonders"};
 // no black outlines (SC2's newer barrels don't use them): details get a faint dark edge instead
 const SVG_CACHE = ITEMS.map(it => `<svg viewBox="0 0 100 100" aria-hidden="true"><g stroke="#000" stroke-opacity=".3" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">${barrel(it)}</g></svg>`);
 const svgFor = t => SVG_CACHE[t-1];
