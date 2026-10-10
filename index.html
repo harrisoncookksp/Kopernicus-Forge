@@ -63,6 +63,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 .cell.match .item{animation:bob .45s ease-in-out infinite alternate}
 @keyframes bob{to{transform:translateY(-4%)}}
 .cell.dragging .item{opacity:.25}
+.item.slot{animation:none;pointer-events:none}
 .item svg,.ghost svg,.pic svg,.detail svg{width:100%;height:100%;display:block;overflow:visible}
 @keyframes pop{from{transform:scale(.3)}65%{transform:scale(1.12)}to{transform:scale(1)}}
 .ghost{position:fixed;pointer-events:none;z-index:50;transform:translate(-50%,-55%) scale(1.15)}
@@ -975,6 +976,13 @@ function fmtL(l){
   return m.toFixed(3) + "e" + (x < 1e6 ? x : fmtL(Math.log10(x)));
 }
 const fmt = n => fmtL(lnum(n));
+// short form for tight spots (per-barrel labels): switch to 1.234e12 above a billion
+function fmtS(l){
+  if(l < 9) return fmtL(l);
+  let x = Math.floor(l), m = 10**(l - x);
+  if(m >= 9.9995){ m = 1; x++; }
+  return m.toFixed(3) + "e" + (x < 1e6 ? x : fmtL(Math.log10(x)));
+}
 function fmtTime(s){
   s = Math.floor(s);
   const h = Math.floor(s/3600), m = Math.floor(s%3600/60);
@@ -1170,8 +1178,10 @@ function drawCell(i, anim=true){
   c.classList.toggle("sel", sel === i);
   if(c._t === t) return;
   c._t = t; c._lbl = null;
-  c.innerHTML = `<span class="plabel"></span>` + (t ? `<div class="item"${anim?"":' style="animation:none"'} title="#${t} ${nameOf(t)}">${svgFor(t)}</div>` : "");
+  c.innerHTML = `<span class="plabel"></span>` + (t ? `<div class="item"${anim?"":' style="animation:none"'} title="#${t} ${nameOf(t)}">${svgFor(t)}</div>` : EMPTY_SLOT);
 }
+// empty spot: a faint silhouette of a basic barrel, a little lighter than the board
+const EMPTY_SLOT = `<div class="item slot"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M20 18 A30 10 0 0 1 80 18 V21 Q80 23 79.4 24 V86 A30 9 0 0 1 20.6 86 V24 Q20 23 20 21 Z" fill="#fff" opacity=".2"/></svg></div>`;
 function drawGrid(anim=true){ for(let i=0;i<SLOTS;i++) drawCell(i, anim); }
 // light up the barrels you can merge the held/selected barrel into
 function markMatches(from){
@@ -1389,7 +1399,7 @@ function render(){
   // per-barrel production above each barrel
   const m = multL();
   cells.forEach((c,i) => {
-    const t = S.grid[i], txt = t ? "+" + fmtL(tierL(t) + m) : "";
+    const t = S.grid[i], txt = t ? "+" + fmtS(tierL(t) + m) : "";
     if(c._lbl !== txt){ c._lbl = txt; const l = c.firstChild; if(l) l.textContent = txt; }
   });
   // status bars: stars (blue) and pending prestige (orange)
