@@ -2,132 +2,203 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Scrap Forge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap">
 <style>
 :root{
-  --bg:#f3efe7; --panel:#fffaf1; --panel2:#efe7d8; --ink:#231f2b; --muted:#6d6577;
-  --line:#d8cdb9; --cell:#e6dccb; --cell-hi:#d4c6ad; --accent:#e2683c; --accent-ink:#fff;
-  --gold:#c9961a; --gold-bg:#fff2c9; --ok:#2f9e63; --bad:#c2414b;
+  --bg:#c9d3e3; --app:#e6ecf5; --hud:#ffffff; --hud2:#f1f4fa; --slot:#d3dcea; --slot-in:#bfcadb;
+  --ink:#1b2333; --muted:#5b6780; --panel:#f6f8fc; --row:#ffffff; --line:#c8d1df;
+  --accent:#f59e0b; --accent-dk:#c27803; --accent-ink:#2a1a00; --gold:#b8860b; --gold-hi:#f2c14e;
+  --good:#1f9d57; --shadow:rgba(20,30,50,.18); --scrim:rgba(10,15,25,.45);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#17141c; --panel:#211d28; --panel2:#2a2533; --ink:#efe9f5; --muted:#a59cb2;
-    --line:#3a3346; --cell:#2b2535; --cell-hi:#3b3349; --accent:#ff8152; --accent-ink:#1a1016;
-    --gold:#ffcc4d; --gold-bg:#3a2f12; --ok:#54d18f; --bad:#ff6b76;
+    --bg:#0f141e; --app:#1a2231; --hud:#222c3e; --hud2:#1d2636; --slot:#273247; --slot-in:#1a2232;
+    --ink:#f4f6fb; --muted:#93a0b8; --panel:#1f2839; --row:#29344a; --line:#35425a;
+    --accent:#ffb02e; --accent-dk:#cc8410; --accent-ink:#2a1a00; --gold:#ffd447; --gold-hi:#ffe48a;
+    --good:#5fd38a; --shadow:rgba(0,0,0,.45); --scrim:rgba(0,0,0,.55);
   }
 }
 :root[data-theme="dark"]{
-  --bg:#17141c; --panel:#211d28; --panel2:#2a2533; --ink:#efe9f5; --muted:#a59cb2;
-  --line:#3a3346; --cell:#2b2535; --cell-hi:#3b3349; --accent:#ff8152; --accent-ink:#1a1016;
-  --gold:#ffcc4d; --gold-bg:#3a2f12; --ok:#54d18f; --bad:#ff6b76;
+  --bg:#0f141e; --app:#1a2231; --hud:#222c3e; --hud2:#1d2636; --slot:#273247; --slot-in:#1a2232;
+  --ink:#f4f6fb; --muted:#93a0b8; --panel:#1f2839; --row:#29344a; --line:#35425a;
+  --accent:#ffb02e; --accent-dk:#cc8410; --accent-ink:#2a1a00; --gold:#ffd447; --gold-hi:#ffe48a;
+  --good:#5fd38a; --shadow:rgba(0,0,0,.45); --scrim:rgba(0,0,0,.55);
 }
 *{box-sizing:border-box}
-html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font:15px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh;-webkit-tap-highlight-color:transparent}
-button{font:inherit;color:inherit}
-header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
-header h1{font-size:20px;margin:0 auto 0 0;letter-spacing:.5px}
-.stat{display:flex;flex-direction:column;align-items:flex-end}
-.stat b{font-size:20px;font-variant-numeric:tabular-nums}
-.stat span{font-size:12px;color:var(--muted)}
-.stat.gold b{color:var(--gold)}
-main{display:grid;grid-template-columns:minmax(0,520px) minmax(0,420px);gap:20px;justify-content:center;padding:16px}
-@media (max-width:900px){main{grid-template-columns:minmax(0,1fr)}}
-.board-wrap{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
-.spawnbar{height:8px;border-radius:4px;background:var(--panel2);overflow:hidden;margin-bottom:10px}
-.spawnbar i{display:block;height:100%;width:0;background:var(--accent)}
-#grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;touch-action:none;user-select:none;-webkit-user-select:none}
-.cell{aspect-ratio:1;border-radius:12px;background:var(--cell);position:relative;cursor:grab;transition:background .12s}
-.cell.target{background:var(--cell-hi);outline:3px dashed var(--accent);outline-offset:-3px}
-.cell.sel{outline:3px solid var(--accent);outline-offset:-3px}
-.cell.dragging .item{opacity:.25}
-.item{position:absolute;inset:6%;animation:pop .22s ease-out}
-.item svg,.ghost svg{width:100%;height:100%;display:block;overflow:visible}
-.tier{position:absolute;right:4px;bottom:3px;font-size:11px;font-weight:700;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:0 4px;line-height:15px;pointer-events:none}
-@keyframes pop{from{transform:scale(.4)}70%{transform:scale(1.12)}to{transform:scale(1)}}
-.ghost{position:fixed;pointer-events:none;z-index:50;transform:translate(-50%,-50%) scale(1.1);filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))}
-.float{position:fixed;pointer-events:none;z-index:60;font-weight:800;color:var(--accent);animation:up 1s ease-out forwards;text-shadow:0 1px 0 var(--panel)}
-@keyframes up{to{transform:translateY(-40px);opacity:0}}
-.hint{font-size:12px;color:var(--muted);margin:10px 2px 0}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;align-self:start}
-.tabs{display:flex;border-bottom:1px solid var(--line)}
-.tabs button{flex:1;padding:10px 4px;background:none;border:0;border-bottom:3px solid transparent;cursor:pointer;color:var(--muted);font-weight:600}
-.tabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
-.tab{padding:12px;display:none}
-.tab.on{display:block}
-.upg{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--panel2)}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:500 15px/1.3 "Fredoka",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.stage{position:relative;flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+#app{position:relative;max-width:460px;height:100dvh;margin:0 auto;background:var(--app);display:flex;flex-direction:column;overflow:hidden}
+@media (min-width:600px){#app{height:min(100dvh,900px);margin-top:max(0px,calc((100dvh - 900px)/2));border-radius:22px;box-shadow:0 20px 60px var(--shadow)}}
+
+/* HUD */
+.hud{background:var(--hud);padding:14px 16px 12px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center}
+.hud .main{display:flex;align-items:center;gap:8px;min-width:0}
+.hud .main b{font-size:34px;font-weight:700;letter-spacing:.3px;font-variant-numeric:tabular-nums;line-height:1}
+.hud .rate{grid-column:1;color:var(--muted);font-size:14px;padding-left:40px}
+.hud .rate b{color:var(--ink);font-weight:600}
+.hud .gold{grid-column:2;grid-row:1/3;display:flex;flex-direction:column;align-items:flex-end;background:var(--hud2);border:1px solid var(--line);border-radius:12px;padding:6px 10px}
+.hud .gold div{display:flex;align-items:center;gap:5px}
+.hud .gold b{font-size:20px;font-weight:700;color:var(--gold)}
+.hud .gold small{color:var(--muted);font-size:12px}
+.ico{width:30px;height:30px;flex:none}
+.ico.sm{width:20px;height:20px}
+.ico.xs{width:15px;height:15px;vertical-align:-2px}
+
+/* FIELD */
+.field{flex:1;display:flex;align-items:center;justify-content:center;padding:12px 16px 6px;min-height:0}
+#grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(5,1fr);gap:8px;width:100%;max-width:min(100%,calc((100dvh - 330px) * .8));aspect-ratio:4/5;touch-action:none;user-select:none;-webkit-user-select:none}
+.cell{position:relative;border-radius:16px;background:var(--slot);box-shadow:inset 0 3px 0 var(--slot-in);cursor:grab}
+.cell.target{background:var(--slot-in);outline:3px solid var(--accent);outline-offset:-3px}
+.cell.sel{outline:3px solid var(--accent);outline-offset:-3px;background:var(--slot-in)}
+.cell.full::before{content:"";position:absolute;left:22%;right:22%;bottom:7%;height:9%;border-radius:50%;background:var(--shadow)}
+.cell.dragging .item{opacity:.2}
+.item{position:absolute;inset:4% 8% 6%;animation:pop .22s ease-out}
+.item svg,.ghost svg,.pic svg,.mini svg{width:100%;height:100%;display:block;overflow:visible}
+.tier{position:absolute;left:5px;top:4px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--hud);border:1px solid var(--line);font-size:12px;font-weight:700;line-height:18px;text-align:center;pointer-events:none}
+@keyframes pop{from{transform:scale(.3)}65%{transform:scale(1.12)}to{transform:scale(1)}}
+.ghost{position:fixed;pointer-events:none;z-index:50;transform:translate(-50%,-55%) scale(1.15);filter:drop-shadow(0 10px 10px var(--shadow))}
+.float{position:fixed;pointer-events:none;z-index:60;font-weight:700;font-size:18px;color:var(--accent);animation:up 1s ease-out forwards;-webkit-text-stroke:3px var(--app);paint-order:stroke fill}
+@keyframes up{to{transform:translateY(-44px);opacity:0}}
+
+/* SPAWN BAR */
+.spawn{display:flex;align-items:center;gap:10px;padding:6px 16px 10px}
+.mini{width:38px;height:38px;flex:none}
+.bar{flex:1;height:22px;border-radius:11px;background:var(--slot);box-shadow:inset 0 2px 0 var(--slot-in);overflow:hidden;position:relative}
+.bar i{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(var(--gold-hi),var(--accent));border-radius:11px}
+.bar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--ink)}
+
+/* DOCK */
+.dock{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:8px 12px calc(12px + env(safe-area-inset-bottom));background:var(--hud);border-top:1px solid var(--line)}
+.dock button{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 6px;border-radius:14px;background:var(--hud2);border:1px solid var(--line);font-size:12px;font-weight:600;color:var(--muted);box-shadow:0 3px 0 var(--line)}
+.dock button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
+.dock button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent-dk);box-shadow:0 3px 0 var(--accent-dk)}
+.dock svg{width:26px;height:26px}
+.dot{position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:#e2465b;border:2px solid var(--hud);display:none}
+.dot.show{display:block}
+
+/* SHEET */
+.scrim{position:absolute;inset:0;background:var(--scrim);opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;height:80%;background:var(--panel);border-radius:22px 22px 0 0;z-index:30;transform:translateY(105%);transition:transform .25s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;box-shadow:0 -8px 30px var(--shadow)}
+.sheet.on{transform:none}
+.sheet header{display:flex;align-items:center;padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.sheet h2{margin:0;font-size:22px;font-weight:700;flex:1}
+.close{width:36px;height:36px;border-radius:12px;background:var(--row);border:1px solid var(--line);font-size:20px;line-height:1}
+.pane{display:none;overflow-y:auto;padding:12px 14px 20px;flex:1}
+.pane.on{display:block}
+
+.upg{display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;background:var(--row);border:1px solid var(--line);margin-bottom:8px}
+.upg .ic{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none;color:#fff}
+.upg .ic svg{width:26px;height:26px}
 .upg .txt{flex:1;min-width:0}
-.upg .nm{font-weight:700}
-.upg .nm small{color:var(--muted);font-weight:500;margin-left:4px}
+.upg .nm{font-weight:700;font-size:16px}
+.upg .lv{font-size:12px;color:var(--muted);font-weight:600;margin-left:4px}
 .upg .ds{font-size:13px;color:var(--muted)}
-.buy{min-width:96px;padding:8px 10px;border-radius:9px;border:0;background:var(--accent);color:var(--accent-ink);font-weight:700;cursor:pointer;font-variant-numeric:tabular-nums}
-.buy:disabled{opacity:.4;cursor:not-allowed}
-.gold .buy,.buy.goldbtn{background:var(--gold);color:#1d1606}
-.prest{background:var(--gold-bg);border:1px solid var(--gold);border-radius:10px;padding:12px;margin-bottom:12px}
-.prest p{margin:0 0 8px;font-size:13px}
-.prest .big{font-size:22px;font-weight:800;color:var(--gold)}
-.prest .buy{width:100%}
-.note{font-size:12px;color:var(--muted);margin:4px 0 10px}
-#book{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}
-.card{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:6px;text-align:center;font-size:12px}
-.card .pic{aspect-ratio:1;padding:6px}
-.card.locked .pic svg{filter:brightness(0);opacity:.18}
-.card b{display:block;font-size:12px;line-height:1.2;min-height:2.4em}
-.card span{color:var(--muted)}
-.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.row button{padding:8px 12px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);cursor:pointer}
-.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:80;font-weight:600;max-width:calc(100vw - 32px);text-align:center;animation:tin .25s ease-out}
-@keyframes tin{from{transform:translate(-50%,20px);opacity:0}}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:90;padding:16px}
-.modal>div{background:var(--panel);border-radius:14px;padding:20px;max-width:360px;width:100%;text-align:center;border:1px solid var(--line)}
-.modal h2{margin:0 0 8px}
-.modal .buy{margin-top:12px}
+.buy{min-width:92px;padding:9px 10px;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:15px;box-shadow:0 3px 0 var(--accent-dk);display:flex;align-items:center;justify-content:center;gap:4px;font-variant-numeric:tabular-nums}
+.buy:active{transform:translateY(2px);box-shadow:0 1px 0 var(--accent-dk)}
+.buy:disabled{filter:grayscale(1);opacity:.45;cursor:not-allowed;transform:none}
+.buy.gold{background:var(--gold-hi);box-shadow:0 3px 0 var(--gold)}
+.prest{background:var(--row);border:2px solid var(--gold);border-radius:16px;padding:14px;margin-bottom:12px;text-align:center}
+.prest p{margin:0 0 6px;font-size:13px;color:var(--muted)}
+.prest .big{display:flex;align-items:center;justify-content:center;gap:6px;font-size:30px;font-weight:700;color:var(--gold);margin:4px 0 10px}
+.prest .buy{width:100%;padding:12px;font-size:17px}
+.note{font-size:12px;color:var(--muted);margin:2px 2px 10px}
+#book{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.card{background:var(--row);border:1px solid var(--line);border-radius:12px;padding:6px 4px;text-align:center}
+.card .pic{aspect-ratio:1;padding:2px 8px}
+.card.locked .pic svg{filter:brightness(0);opacity:.2}
+.card b{display:block;font-size:11px;line-height:1.15;min-height:2.3em;margin-top:2px}
+.card span{font-size:10px;color:var(--muted)}
+.setrow{display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--row);border:1px solid var(--line);border-radius:14px;margin-bottom:8px}
+.setrow button{min-width:90px;padding:8px 12px;border-radius:10px;background:var(--hud2);border:1px solid var(--line);font-weight:600}
+.setrow button.danger{color:#e2465b}
+.stats{display:grid;grid-template-columns:1fr auto;gap:6px 12px;padding:12px;background:var(--row);border:1px solid var(--line);border-radius:14px;font-size:14px}
+.stats span{color:var(--muted)}
+
+.toast{position:absolute;left:50%;top:110px;transform:translateX(-50%);background:var(--ink);color:var(--app);padding:10px 16px;border-radius:12px;z-index:40;font-weight:600;width:max-content;max-width:calc(100% - 32px);text-align:center;animation:tin .25s ease-out;box-shadow:0 6px 20px var(--shadow)}
+.toast .mini{display:inline-block;width:28px;height:28px;vertical-align:middle;margin-right:6px}
+@keyframes tin{from{transform:translate(-50%,-12px);opacity:0}}
+.modal{position:absolute;inset:0;background:var(--scrim);display:flex;align-items:center;justify-content:center;z-index:60;padding:20px}
+.modal>div{background:var(--panel);border-radius:20px;padding:22px;width:100%;max-width:340px;text-align:center;border:1px solid var(--line)}
+.modal h3{margin:0 0 8px;font-size:22px}
+.modal p{margin:0 0 14px;color:var(--muted)}
+.modal .big{font-size:28px;font-weight:700;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:6px}
+.modal .row{display:flex;gap:8px}
+.modal .row .buy{flex:1;padding:12px}
+.modal .row .buy.alt{background:var(--row);color:var(--ink);box-shadow:0 3px 0 var(--line);border:1px solid var(--line)}
 </style>
 </head>
 <body>
-<header>
-  <h1>Scrap Forge</h1>
-  <div class="stat"><b id="scrap">0</b><span>Scrap</span></div>
-  <div class="stat"><b id="sps">0</b><span>per second</span></div>
-  <div class="stat gold"><b id="gs">0</b><span>Golden Scrap (<span id="gsb">+0%</span>)</span></div>
-</header>
-<main>
-  <section class="board-wrap">
-    <div class="spawnbar"><i id="spawnfill"></i></div>
-    <div id="grid"></div>
-    <p class="hint">Drag one item onto an identical one to merge it into the next tier (or tap one, then tap the other). Each tier makes 3× the scrap of the one before it.</p>
-  </section>
-  <section class="panel">
-    <div class="tabs">
-      <button data-tab="up" class="on">Upgrades</button>
-      <button data-tab="gold">Golden</button>
-      <button data-tab="col">Collection</button>
+<!-- shared clip paths: every barrel uses one of these two silhouettes so all tiers share size and perspective -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <clipPath id="c-keg"><path d="M27 18 Q13 51 27 84 Q50 92 73 84 Q87 51 73 18 Z"/></clipPath>
+  <clipPath id="c-drum"><path d="M23 18 V84 Q50 92 77 84 V18 Z"/></clipPath>
+  <symbol id="i-scrap" viewBox="0 0 32 32"><path d="M16 3 L19 7 L24 5 L24 10 L29 12 L26 16 L29 20 L24 22 L24 27 L19 25 L16 29 L13 25 L8 27 L8 22 L3 20 L6 16 L3 12 L8 10 L8 5 L13 7 Z" fill="#9aa7b8" stroke="#1d1a24" stroke-width="2" stroke-linejoin="round"/><circle cx="16" cy="16" r="5" fill="#5c6878" stroke="#1d1a24" stroke-width="2"/></symbol>
+  <symbol id="i-gold" viewBox="0 0 32 32"><path d="M16 3 L19 7 L24 5 L24 10 L29 12 L26 16 L29 20 L24 22 L24 27 L19 25 L16 29 L13 25 L8 27 L8 22 L3 20 L6 16 L3 12 L8 10 L8 5 L13 7 Z" fill="#ffd447" stroke="#1d1a24" stroke-width="2" stroke-linejoin="round"/><circle cx="16" cy="16" r="5" fill="#d99a10" stroke="#1d1a24" stroke-width="2"/><path d="M9 9 L12 11" stroke="#fff" stroke-width="2" stroke-linecap="round"/></symbol>
+</defs></svg>
+
+<div id="app">
+<div class="stage">
+  <header class="hud">
+    <div class="main"><svg class="ico"><use href="#i-scrap"/></svg><b id="scrap">0</b></div>
+    <div class="rate"><b id="sps">0</b> scrap / sec</div>
+    <div class="gold">
+      <div><svg class="ico sm"><use href="#i-gold"/></svg><b id="gs">0</b></div>
+      <small id="gsb">+0% production</small>
     </div>
-    <div class="tab on" id="tab-up"><div id="ups"></div></div>
-    <div class="tab gold" id="tab-gold">
+  </header>
+
+  <div class="field"><div id="grid"></div></div>
+
+  <div class="spawn">
+    <div class="mini" id="nextpic"></div>
+    <div class="bar"><i id="spawnfill"></i><span id="spawnlbl"></span></div>
+  </div>
+
+  <div class="scrim" id="scrim"></div>
+  <section class="sheet" id="sheet">
+    <header><h2 id="sheettitle"></h2><button class="close" id="close" aria-label="Close">✕</button></header>
+    <div class="pane" id="pane-up"><div id="ups"></div></div>
+    <div class="pane" id="pane-gold">
       <div class="prest">
-        <p>Prestige resets your scrap, board and normal upgrades. You get Golden Scrap based on the scrap earned this run. Each Golden Scrap permanently boosts production.</p>
-        <p>You'd get <span class="big" id="pend">0</span> Golden Scrap</p>
-        <button class="buy goldbtn" id="prestige">Prestige</button>
+        <p>Prestige resets your scrap, barrels and upgrades.<br>Golden Scrap stays forever and boosts all production.</p>
+        <div class="big"><svg class="ico"><use href="#i-gold"/></svg><span id="pend">0</span></div>
+        <button class="buy gold" id="prestige">Prestige</button>
       </div>
-      <p class="note">Spending Golden Scrap on these upgrades lowers its production bonus, so pick carefully.</p>
+      <p class="note">Spending Golden Scrap on these lowers its production bonus, so spend wisely.</p>
       <div id="gups"></div>
     </div>
-    <div class="tab" id="tab-col">
-      <p class="note" id="colcount"></p>
-      <div id="book"></div>
-      <div class="row">
-        <button id="mute">Sound: on</button>
-        <button id="theme">Theme: auto</button>
-        <button id="wipe">Reset save</button>
-      </div>
+    <div class="pane" id="pane-col"><p class="note" id="colcount"></p><div id="book"></div></div>
+    <div class="pane" id="pane-set">
+      <div class="setrow"><span>Sound</span><button id="mute"></button></div>
+      <div class="setrow"><span>Theme</span><button id="theme"></button></div>
+      <div class="stats" id="stats"></div>
+      <div class="setrow" style="margin-top:8px"><span>Delete all progress</span><button class="danger" id="wipe">Reset</button></div>
     </div>
   </section>
-</main>
+</div>
+
+  <nav class="dock">
+    <button data-pane="up"><span class="dot" id="dot-up"></span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.2L3 17.8V21h3.2l6.3-6.3a4 4 0 0 0 5.2-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg>Upgrades</button>
+    <button data-pane="gold"><span class="dot" id="dot-gold"></span>
+      <svg viewBox="0 0 32 32"><use href="#i-gold"/></svg>Golden</button>
+    <button data-pane="col">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21a2 2 0 0 1 2-2h13v2"/><path d="M9 8h6"/></svg>Barrels</button>
+    <button data-pane="set">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>Settings</button>
+  </nav>
+
+</div>
+
 <script>
 "use strict";
-// ---------- helpers for drawing ----------
+// ================= DRAWING HELPERS =================
 function star(cx,cy,ro,ri,n,rot=-90){
   const p=[];
   for(let i=0;i<n*2;i++){
@@ -136,232 +207,143 @@ function star(cx,cy,ro,ri,n,rot=-90){
   }
   return p.join(" ");
 }
-// draws a path as a thick tube with a dark outline
-function tube(d,color,w=6){
-  return `<path d="${d}" fill="none" stroke-width="${w+5}"/><path d="${d}" fill="none" stroke="${color}" stroke-width="${w}"/>`;
+function sector(cx,cy,r1,r2,a1,a2){
+  const P=(r,a)=>[(cx+r*Math.cos(a*Math.PI/180)).toFixed(2),(cy+r*Math.sin(a*Math.PI/180)).toFixed(2)].join(" ");
+  return `M${P(r1,a1)} L${P(r2,a1)} A${r2} ${r2} 0 0 1 ${P(r2,a2)} L${P(r1,a2)} A${r1} ${r1} 0 0 0 ${P(r1,a1)} Z`;
+}
+function stripes(y,h,step,w,color){
+  let s="";
+  for(let x=-40;x<140;x+=step) s+=`<polygon points="${x},${y} ${x+w},${y} ${x+w-h*.6},${y+h} ${x-h*.6},${y+h}" fill="${color}"/>`;
+  return s;
+}
+const hoop = (y,c,w=5) => `<path d="M0 ${y} Q50 ${y+14} 100 ${y}" fill="none" stroke="${c}" stroke-width="${w}"/>`;
+const PLANKS = `<path d="M38 18 Q35 52 38 90 M50 18 V92 M62 18 Q65 52 62 90" fill="none" stroke="#000" stroke-opacity=".28" stroke-width="1.6"/>`;
+const SHAPE = {
+  keg:{d:"M27 18 Q13 51 27 84 Q50 92 73 84 Q87 51 73 18 Z", rx:23},
+  drum:{d:"M23 18 V84 Q50 92 77 84 V18 Z", rx:27},
+};
+// Every barrel: same silhouette box, same 3/4-front perspective (lid ellipse on top, curved hoops).
+// o.shape: "keg" | "drum"; o.fill body colour; o.hoops [y...]; o.deco = painted on body (clipped);
+// o.lid / o.inner = lid colours; o.top = drawn on the lid.
+function barrel(o){
+  const s = SHAPE[o.shape];
+  return `
+  <g clip-path="url(#c-${o.shape})" stroke="none">
+    <rect width="100" height="100" fill="${o.fill}"/>
+    ${o.planks ? PLANKS : ""}
+    ${o.deco || ""}
+    ${(o.hoops||[]).map(y => hoop(y, o.hoop, o.hw)).join("")}
+    <path d="M28 0 H37 Q33 50 37 100 H28 Z" fill="#fff" opacity=".22"/>
+    <path d="M63 0 H100 V100 H63 Q72 50 63 0 Z" fill="#000" opacity=".2"/>
+  </g>
+  <path d="${s.d}" fill="none"/>
+  <ellipse cx="50" cy="18" rx="${s.rx}" ry="7" fill="${o.lid}"/>
+  <ellipse cx="50" cy="18" rx="${s.rx-5}" ry="4.2" fill="${o.inner}" stroke-width="2"/>
+  ${o.top || ""}`;
 }
 
-// ================= ITEMS =================
-// Each entry is one tier: a name and a hand-drawn SVG (viewBox 0 0 100 100).
-// The outline colour/width is inherited, so use stroke="none" for shapes without an outline.
-// To add more tiers, append to the end of this list.
+// ================= BARRELS =================
+// One entry per tier. To add more, append to the end.
 const ITEMS = [
-{ name:"Nailed It", svg:`
-  <path d="M22 50 l-7 -3 M21 58 h-8 M22 66 l-7 3" fill="none" stroke-width="2.5"/>
-  ${tube("M41 28 L41 56 Q41 72 58 76 L74 79","#a9b3bd",6)}
-  <path d="M73 73 L88 80 L72 86 Z" fill="#a9b3bd"/>
-  <rect x="27" y="18" width="28" height="10" rx="3" fill="#c3ccd5"/>
-  <path d="M31 21.5 h14" stroke="#fff" stroke-opacity=".7" stroke-width="2"/>`},
-{ name:"Cap-tivating", svg:`
-  <polygon points="${star(50,52,37,31,20)}" fill="#d8342f"/>
-  <circle cx="50" cy="52" r="23" fill="#ee5148"/>
-  <polygon points="${star(50,53,11,4.5,5)}" fill="#fff" stroke-width="2"/>
-  <path d="M33 40 Q40 32 52 31" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="4"/>`},
-{ name:"Can-didate", svg:`
-  <path d="M28 24 V78 Q50 88 72 78 V24" fill="#c7cdd4"/>
-  <path d="M28 38 Q50 46 72 38 V62 Q50 70 28 62 Z" fill="#f0a032"/>
-  <circle cx="50" cy="53" r="6" fill="#fff" stroke-width="2"/>
-  <rect x="33" y="28" width="5" height="50" fill="#fff" opacity=".45" stroke="none"/>
-  <path d="M61 72 l4 -6 l3 5" fill="none" stroke-width="2"/>
-  <ellipse cx="50" cy="24" rx="22" ry="7" fill="#e6e9ee"/>
-  <ellipse cx="50" cy="24" rx="15" ry="4" fill="#cfd4da" stroke-width="2"/>
-  <path d="M49 23 q8 -7 13 -1" fill="none" stroke-width="2.5"/>`},
-{ name:"A Screw Loose", svg:`
-  <path d="M18 28 q-6 8 0 16 M82 72 q6 -8 0 -16 M12 24 q-8 12 0 24" fill="none" stroke-width="2.5"/>
-  <g transform="rotate(-28 50 50)">
-    <path d="M40 30 L60 30 L58 36 L62 40 L58 46 L62 50 L58 56 L62 60 L58 66 L60 70 L50 90 L40 70 L42 66 L38 60 L42 56 L38 50 L42 46 L38 40 L42 36 Z" fill="#c9a443"/>
-    <path d="M30 31 Q30 13 50 13 Q70 13 70 31 Z" fill="#e2bf5c"/>
-    <path d="M40 22 H60" stroke-width="3.5"/>
-    <path d="M35 27 Q36 19 44 17" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="2.5"/>
-  </g>`},
-{ name:"Quackers", svg:`
-  <path d="M14 88 q8 -4 16 0 t16 0 t16 0 t16 0 t16 0" fill="none" stroke="#4fb3ff" stroke-width="3"/>
-  <path d="M78 58 L92 44 L88 66 Z" fill="#ffd23f"/>
-  <ellipse cx="54" cy="68" rx="32" ry="17" fill="#ffd23f"/>
-  <circle cx="38" cy="40" r="17" fill="#ffd23f"/>
-  <path d="M23 39 Q9 40 12 47 Q20 51 27 46 Z" fill="#ff8a1f"/>
-  <circle cx="35" cy="36" r="3.2" fill="#1d1a24" stroke="none"/>
-  <circle cx="36" cy="35" r="1" fill="#fff" stroke="none"/>
-  <path d="M50 66 Q62 56 76 64 Q64 76 50 66 Z" fill="#f5bf12"/>
-  <ellipse cx="42" cy="30" rx="5" ry="2.5" fill="#fff" opacity=".6" stroke="none"/>`},
-{ name:"Bright Idea", svg:`
-  <path d="M50 4 v8 M20 16 l6 6 M80 16 l-6 6 M8 42 h8 M84 42 h8" stroke="#f7c600" stroke-width="4"/>
-  <path d="M50 18 A24 24 0 0 1 63 62 L62 70 H38 L37 62 A24 24 0 0 1 50 18 Z" fill="#fff4a3"/>
-  <path d="M43 64 L43 50 L46 44 L50 52 L54 44 L57 50 L57 64" fill="none" stroke="#e07b00" stroke-width="2.5"/>
-  <path d="M37 30 Q33 38 35 46" fill="none" stroke="#fff" stroke-width="4"/>
-  <rect x="38" y="70" width="24" height="6" fill="#9aa4ae"/>
-  <rect x="40" y="76" width="20" height="6" fill="#8a949e"/>
-  <path d="M44 82 H56 L53 88 H47 Z" fill="#4a4f57"/>`},
-{ name:"Toast of the Town", svg:`
-  <path d="M36 12 q-3 -3 0 -6 q3 -3 0 -6 M64 18 q3 -3 0 -6 q-3 -3 0 -6" fill="none" stroke-width="2"/>
-  <rect x="27" y="16" width="20" height="32" rx="7" fill="#c98a3d"/>
-  <rect x="30.5" y="19.5" width="13" height="25" rx="4" fill="#f1cd8c" stroke="none"/>
-  <rect x="53" y="22" width="20" height="28" rx="7" fill="#b9762c"/>
-  <rect x="56.5" y="25.5" width="13" height="21" rx="4" fill="#e6b56e" stroke="none"/>
-  <rect x="14" y="38" width="72" height="42" rx="14" fill="#7fd0c3"/>
-  <rect x="25" y="37" width="24" height="5" rx="2" fill="#1d1a24"/>
-  <rect x="51" y="37" width="24" height="5" rx="2" fill="#1d1a24"/>
-  <rect x="85" y="50" width="8" height="7" rx="2" fill="#d9534f"/>
-  <circle cx="28" cy="64" r="5" fill="#fff"/>
-  <path d="M28 64 l2 -3" stroke-width="2"/>
-  <path d="M20 50 Q20 45 25 45" fill="none" stroke="#fff" stroke-width="3"/>
-  <rect x="22" y="80" width="10" height="5" rx="1" fill="#555"/>
-  <rect x="68" y="80" width="10" height="5" rx="1" fill="#555"/>`},
-{ name:"Give It the Boot", svg:`
-  <path d="M30 16 H56 V56 Q78 56 86 66 Q90 74 84 78 H22 Q17 78 18 72 L22 58 Q29 40 30 16 Z" fill="#7b4a2a"/>
-  <path d="M17 76 H87 Q89 85 80 87 H22 Q14 86 17 76 Z" fill="#3b2a20"/>
-  <rect x="27" y="11" width="32" height="9" rx="3" fill="#5c351d"/>
-  <path d="M36 26 l14 6 M36 32 l14 -6 M36 38 l14 6 M36 44 l14 -6" stroke="#f2e3c6" stroke-width="2.5"/>
-  <rect x="22" y="58" width="13" height="11" fill="#a36b3b" stroke-width="2" transform="rotate(-8 28 63)"/>
-  <rect x="24.5" y="60.5" width="8" height="6" fill="none" stroke="#f2e3c6" stroke-width="1" stroke-dasharray="2 2" transform="rotate(-8 28 63)"/>
-  <ellipse cx="74" cy="68" rx="8" ry="5.5" fill="#1d1a24"/>
-  <circle cx="74" cy="68.5" r="4" fill="#f1b38a" stroke-width="2"/>`},
-{ name:"Wake-Up Call", svg:`
-  <path d="M12 46 q-4 6 0 12 M88 46 q4 6 0 12 M6 40 q-6 10 0 22 M94 40 q6 10 0 22" fill="none" stroke-width="2.5"/>
-  <path d="M30 80 l-6 8 M70 80 l6 8" stroke-width="5"/>
-  <circle cx="28" cy="26" r="10" fill="#f2c14e"/>
-  <circle cx="72" cy="26" r="10" fill="#f2c14e"/>
-  <path d="M50 16 V26" stroke-width="3"/><circle cx="50" cy="13" r="4" fill="#f2c14e"/>
-  <circle cx="50" cy="55" r="28" fill="#e2465b"/>
-  <circle cx="50" cy="55" r="21" fill="#fffaf0"/>
-  <path d="M50 38 v4 M50 68 v4 M33 55 h4 M63 55 h4" stroke-width="2.5"/>
-  <path d="M50 55 V43 M50 55 L60 59" stroke-width="3"/>
-  <circle cx="50" cy="55" r="2.5" fill="#1d1a24"/>`},
-{ name:"Rewind Time", svg:`
-  <path d="M72 76 Q88 94 66 91 Q50 89 60 80" fill="none" stroke="#6b3e26" stroke-width="2.5"/>
-  <rect x="12" y="24" width="76" height="52" rx="6" fill="#34404f"/>
-  <rect x="18" y="29" width="64" height="30" rx="3" fill="#f4e2c0"/>
-  <rect x="19.5" y="33" width="61" height="5" fill="#e85d75" stroke="none"/>
-  <rect x="19.5" y="38" width="61" height="3" fill="#f2a541" stroke="none"/>
-  <rect x="30" y="44" width="40" height="12" rx="6" fill="#1d1a24"/>
-  <rect x="42" y="46" width="16" height="8" fill="#6b3e26" stroke="none"/>
-  <circle cx="38" cy="50" r="5" fill="#fff" stroke-width="2"/>
-  <circle cx="62" cy="50" r="5" fill="#fff" stroke-width="2"/>
-  <path d="M26 76 L31 66 H69 L74 76" fill="#2a3340"/>
-  <circle cx="17" cy="29" r="1.8" fill="#aab" stroke="none"/><circle cx="83" cy="29" r="1.8" fill="#aab" stroke="none"/>
-  <circle cx="17" cy="71" r="1.8" fill="#aab" stroke="none"/><circle cx="83" cy="71" r="1.8" fill="#aab" stroke="none"/>`},
-{ name:"Moth Magnet", svg:`
-  <circle cx="50" cy="56" r="36" fill="#ffcf5a" opacity=".25" stroke="none"/>
-  <path d="M36 22 Q50 2 64 22" fill="none" stroke-width="4"/>
-  <path d="M32 26 L50 15 L68 26 Z" fill="#3d4a3e"/>
-  <rect x="30" y="26" width="40" height="6" rx="2" fill="#556b57"/>
-  <rect x="34" y="32" width="32" height="40" fill="#ffe9a6"/>
-  <path d="M50 43 Q59 54 54 62 Q50 66 46 62 Q41 54 50 43 Z" fill="#ff9a2e"/>
-  <path d="M50 52 Q53 57 51 61 Q49 62 48 60 Q47 56 50 52 Z" fill="#fff2a0" stroke="none"/>
-  <path d="M42 32 V72 M58 32 V72" stroke-width="2.5"/>
-  <rect x="30" y="72" width="40" height="8" rx="2" fill="#556b57"/>
-  <rect x="34" y="80" width="32" height="5" fill="#3d4a3e"/>
-  <path d="M80 28 q6 -8 10 -1 q-5 5 -10 1 Z M80 28 q-6 -8 -10 -1 q5 5 10 1 Z" fill="#d8cdb8" stroke-width="1.5"/>
-  <path d="M80 24 v8" stroke-width="2"/>`},
-{ name:"Prickly Customer", svg:`
-  ${tube("M38 52 H31 Q27 52 27 48 V36","#4caf6a",8)}
-  ${tube("M60 44 H68 Q72 44 72 40 V28","#4caf6a",8)}
-  <rect x="38" y="16" width="22" height="54" rx="11" fill="#4caf6a"/>
-  <path d="M49 22 V66" stroke="#3a8f55" stroke-width="2"/>
-  <path d="M41 28 l-4 -2 M57 32 l4 -2 M41 56 l-4 1 M57 58 l4 1 M22 38 h-4 M77 30 h4 M27 31 l-2 -3 M72 23 l2 -3" stroke-width="2"/>
-  <circle cx="45" cy="40" r="2.2" fill="#1d1a24" stroke="none"/><circle cx="54" cy="40" r="2.2" fill="#1d1a24" stroke="none"/>
-  <path d="M41 34 l6 2.5 M58 34 l-6 2.5" stroke-width="2"/>
-  <path d="M45 49 q4.5 -3 9 0" fill="none" stroke-width="2"/>
-  <polygon points="${star(49,15,8,3.5,5)}" fill="#ff6fa3" stroke-width="2"/>
-  <circle cx="49" cy="15" r="2.5" fill="#ffe14d" stroke="none"/>
-  <path d="M28 66 H70 L64 90 H34 Z" fill="#d0703d"/>
-  <rect x="25" y="63" width="48" height="9" rx="2" fill="#e0844f"/>`},
-{ name:"Handheld Hero", svg:`
-  <rect x="24" y="8" width="52" height="84" rx="8" fill="#c4c4d4"/>
-  <rect x="30" y="14" width="40" height="34" rx="4" fill="#545a6b"/>
-  <rect x="35" y="18" width="30" height="26" fill="#9bbc0f" stroke-width="2"/>
-  <path d="M50 39 L43 32 Q40 28 44 26 Q48 25 50 29 Q52 25 56 26 Q60 28 57 32 Z" fill="#306230" stroke="none"/>
-  <path d="M33 60 h6 v-6 h6 v6 h6 v6 h-6 v6 h-6 v-6 h-6 Z" fill="#2b2b36" stroke-width="2"/>
-  <circle cx="62" cy="66" r="5" fill="#a8324a"/><circle cx="70" cy="57" r="5" fill="#a8324a"/>
-  <rect x="38" y="78" width="9" height="3.5" rx="1.7" fill="#6a6a80" stroke-width="1.5"/>
-  <rect x="50" y="78" width="9" height="3.5" rx="1.7" fill="#6a6a80" stroke-width="1.5"/>
-  <path d="M62 86 l8 -8 M66 89 l7 -7" stroke-width="2"/>`},
-{ name:"Anchor Management", svg:`
-  ${tube("M50 23 V85 M34 33 H66 M18 63 Q22 86 50 86 Q78 86 82 63","#6c7f95",6)}
-  ${tube("M50 9 a7 7 0 1 0 0.1 0","#6c7f95",4)}
-  <path d="M10 68 L18 54 L28 66 Z" fill="#6c7f95"/>
-  <path d="M90 68 L82 54 L72 66 Z" fill="#6c7f95"/>
-  ${tube("M43 40 Q62 44 56 54 Q48 62 60 70","#c79a5b",3.5)}`},
-{ name:"Head Unit", svg:`
-  <path d="M50 10 V22" stroke-width="3"/><circle cx="50" cy="9" r="5" fill="#ff4d6d"/>
-  <rect x="13" y="40" width="10" height="22" rx="3" fill="#9aa5b4"/>
-  <rect x="77" y="40" width="10" height="22" rx="3" fill="#9aa5b4"/>
-  <rect x="21" y="22" width="58" height="60" rx="10" fill="#b7c2cf"/>
-  <rect x="28" y="32" width="44" height="22" rx="8" fill="#2a3140"/>
-  <circle cx="40" cy="43" r="6" fill="#3ef2ff" stroke="none"/><circle cx="60" cy="43" r="6" fill="#3ef2ff" stroke="none"/>
-  <circle cx="42" cy="41" r="1.8" fill="#fff" stroke="none"/><circle cx="62" cy="41" r="1.8" fill="#fff" stroke="none"/>
-  <rect x="34" y="62" width="32" height="11" rx="3" fill="#2a3140"/>
-  <path d="M40 63 v9 M46 63 v9 M52 63 v9 M58 63 v9" stroke="#6c7a8d" stroke-width="2"/>
-  <circle cx="27" cy="28" r="2" fill="#6c7a8d" stroke="none"/><circle cx="73" cy="28" r="2" fill="#6c7a8d" stroke="none"/>
-  <circle cx="27" cy="76" r="2" fill="#6c7a8d" stroke="none"/><circle cx="73" cy="76" r="2" fill="#6c7a8d" stroke="none"/>
-  <ellipse cx="68" cy="60" rx="4" ry="3" fill="#b5652d" opacity=".55" stroke="none"/>`},
-{ name:"Gem Dandy", svg:`
-  <circle cx="50" cy="52" r="38" fill="#b07cff" opacity=".18" stroke="none"/>
-  <polygon points="28,80 21,47 31,30 40,48 40,80" fill="#8a5ad6"/>
-  <polygon points="60,80 62,41 72,26 81,44 76,80" fill="#9b6ef0"/>
-  <polygon points="38,84 36,34 50,9 64,34 62,84" fill="#c4a2ff"/>
-  <path d="M50 9 V84 M36 34 L50 44 L64 34" fill="none" stroke-width="2"/>
-  <path d="M42 30 L46 22" stroke="#fff" stroke-width="3"/>
-  <polygon points="${star(16,22,7,2,4)}" fill="#fff" stroke-width="1.5"/>
-  <polygon points="${star(86,16,5,1.5,4)}" fill="#fff" stroke-width="1.5"/>
-  <path d="M12 86 Q20 76 32 80 Q50 73 68 80 Q82 76 88 86 Z" fill="#6b6f7a"/>`},
-{ name:"Rocket Science", svg:`
-  <path d="M41 74 Q50 100 59 74 Z" fill="#ff9a2e"/>
-  <path d="M45 74 Q50 90 55 74 Z" fill="#ffe36e" stroke="none"/>
-  <path d="M35 56 L20 80 L39 73 Z" fill="#e2465b"/>
-  <path d="M65 56 L80 80 L61 73 Z" fill="#e2465b"/>
-  <path d="M50 5 Q71 24 66 75 H34 Q29 24 50 5 Z" fill="#eef1f5"/>
-  <path d="M50 5 Q60 13 64.5 26 H35.5 Q40 13 50 5 Z" fill="#e2465b"/>
-  <circle cx="50" cy="44" r="9" fill="#4fb3ff"/>
-  <path d="M45 41 Q47 38 50 38" fill="none" stroke="#fff" stroke-width="2.5"/>
-  <rect x="47" y="58" width="6" height="18" rx="2" fill="#e2465b"/>
-  <path d="M40 30 Q38 50 40 70" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="3"/>`},
-{ name:"Royal Pain", svg:`
-  <path d="M24 52 Q24 26 50 26 Q76 26 76 52 Q76 64 68 68 V81 H32 V68 Q24 64 24 52 Z" fill="#f1ece2"/>
-  <path d="M28 30 L31 9 L42 21 L50 4 L58 21 L69 9 L72 30 Z" fill="#f2c14e"/>
-  <circle cx="50" cy="21" r="3.2" fill="#e2465b" stroke-width="1.5"/>
-  <circle cx="38" cy="25" r="2.2" fill="#4fb3ff" stroke-width="1.5"/><circle cx="62" cy="25" r="2.2" fill="#4fb3ff" stroke-width="1.5"/>
-  <ellipse cx="40" cy="51" rx="7.5" ry="8.5" fill="#1d1a24"/>
-  <ellipse cx="60" cy="51" rx="7.5" ry="8.5" fill="#1d1a24"/>
-  <circle cx="41" cy="52" r="2.2" fill="#ff3b3b" stroke="none"/><circle cx="61" cy="52" r="2.2" fill="#ff3b3b" stroke="none"/>
-  <path d="M50 60 L46 67 H54 Z" fill="#1d1a24"/>
-  <path d="M32 72 H68 M38 72 V81 M44 72 V81 M50 72 V81 M56 72 V81 M62 72 V81" stroke-width="2"/>
-  <path d="M68 36 L63 42 L67 46" fill="none" stroke-width="2"/>`},
-{ name:"Ring Leader", svg:`
-  <polygon points="${star(14,16,6,1.6,4)}" fill="#fff" stroke-width="1.5"/>
-  <polygon points="${star(88,84,5,1.4,4)}" fill="#fff" stroke-width="1.5"/>
-  <circle cx="84" cy="20" r="2" fill="#fff" stroke-width="1"/><circle cx="12" cy="80" r="1.6" fill="#fff" stroke-width="1"/>
-  <g transform="rotate(-18 50 50)">${tube("M10 50 A40 12 0 0 1 90 50","#e9c98b",5)}</g>
-  <circle cx="50" cy="50" r="24" fill="#f08a5d"/>
-  <path d="M28 42 Q50 38 72 42" fill="none" stroke="#c75d3a" stroke-width="4"/>
-  <path d="M27.5 55 Q50 59 72.5 55" fill="none" stroke="#ffb38a" stroke-width="4"/>
-  <circle cx="50" cy="50" r="24" fill="none"/>
-  <circle cx="41" cy="39" r="5" fill="#fff" opacity=".35" stroke="none"/>
-  <g transform="rotate(-18 50 50)">${tube("M10 50 A40 12 0 0 0 90 50","#e9c98b",5)}</g>`},
-{ name:"Jarred Singularity", svg:`
-  <path d="M32 22 H68 V28 Q80 34 80 50 V78 Q80 90 68 90 H32 Q20 90 20 78 V50 Q20 34 32 28 Z" fill="#cde8f2" fill-opacity=".55" stroke="none"/>
-  <ellipse cx="50" cy="60" rx="23" ry="8" fill="#ff9a2e" stroke-width="2"/>
-  <ellipse cx="50" cy="60" rx="16" ry="5" fill="#ffd36e" stroke="none"/>
-  <circle cx="50" cy="60" r="11" fill="none" stroke="#ffe9b0" stroke-width="1.5"/>
-  <circle cx="50" cy="60" r="9" fill="#0b0710" stroke="none"/>
-  <path d="M30 40 q10 4 13 13 M70 44 q-8 2 -10 10 M36 82 q6 -6 9 -14" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="1.5"/>
-  <circle cx="30" cy="40" r="1.8" fill="#fff" stroke="none"/><circle cx="70" cy="44" r="1.5" fill="#fff" stroke="none"/><circle cx="36" cy="82" r="1.5" fill="#fff" stroke="none"/>
-  <path d="M26 46 V76" stroke="#fff" stroke-opacity=".75" stroke-width="4"/>
-  <path d="M32 22 H68 V28 Q80 34 80 50 V78 Q80 90 68 90 H32 Q20 90 20 78 V50 Q20 34 32 28 Z" fill="none"/>
-  <rect x="29" y="10" width="42" height="12" rx="3" fill="#8b6b4a"/>
-  <path d="M35 10 V22 M43 10 V22 M51 10 V22 M59 10 V22 M65 10 V22" stroke="#6b4f35" stroke-width="1.5"/>
-  <rect x="38" y="74" width="24" height="8" rx="1" fill="#f4e2c0" stroke-width="1.5"/>
-  <text x="50" y="79.6" font-size="4.6" font-weight="700" text-anchor="middle" fill="#1d1a24" stroke="none" font-family="system-ui,sans-serif">DO NOT OPEN</text>`},
+{ name:"Starter Keg", shape:"keg", fill:"#b9793f", planks:1, hoops:[30,70], hoop:"#4a4f57", lid:"#c98b4f", inner:"#8a5a2c",
+  top:`<circle cx="60" cy="18" r="2.4" fill="#5a3a1c" stroke-width="1.5"/>` },
+{ name:"Steel Yourself", shape:"drum", fill:"#8e9aa7", hoops:[30,70], hoop:"#6b7785", hw:4, lid:"#a9b4c0", inner:"#7b8794",
+  deco:`<rect x="38" y="46" width="24" height="13" rx="2" fill="#c7ced6" stroke="#1d1a24" stroke-width="2"/>
+        <circle cx="41" cy="49" r="1.2" fill="#555"/><circle cx="59" cy="49" r="1.2" fill="#555"/><circle cx="41" cy="56" r="1.2" fill="#555"/><circle cx="59" cy="56" r="1.2" fill="#555"/>`,
+  top:`<circle cx="62" cy="18" r="2.6" fill="#5c6672" stroke-width="1.5"/>` },
+{ name:"Hazard Pay", shape:"drum", fill:"#f2c230", hoops:[40,62], hoop:"#1d1a24", hw:3, lid:"#f7d65a", inner:"#c99a12",
+  deco:`<rect x="0" y="40" width="100" height="22" fill="#f2c230"/>${stripes(40,22,12,6,"#1d1a24")}` },
+{ name:"Glow-Ahead", shape:"drum", fill:"#4b5d3a", hoops:[32,76], hoop:"#34432a", lid:"#7cff3a", inner:"#57d61c",
+  deco:`<path d="M27 18 V30 a3 3 0 0 0 6 0 V18 Z M45 18 V36 a3.5 3.5 0 0 0 7 0 V18 Z M64 18 V27 a3 3 0 0 0 6 0 V18 Z" fill="#7cff3a"/>
+        <circle cx="50" cy="56" r="13" fill="#d7f23a" stroke="#1d1a24" stroke-width="2"/>
+        <path d="${sector(50,56,3.6,10.5,-120,-60)} ${sector(50,56,3.6,10.5,0,60)} ${sector(50,56,3.6,10.5,120,180)}" fill="#1d1a24"/>
+        <circle cx="50" cy="56" r="2.2" fill="#1d1a24"/>`,
+  top:`<circle cx="44" cy="17" r="1.6" fill="#c8ff9e" stroke="none"/><circle cx="56" cy="19" r="1.1" fill="#c8ff9e" stroke="none"/>` },
+{ name:"Red Alert", shape:"drum", fill:"#d63a3a", hoops:[30,74], hoop:"#9e2525", lid:"#e35a5a", inner:"#a52828",
+  deco:`<polygon points="50,39 65,54 50,69 35,54" fill="#fff" stroke="#1d1a24" stroke-width="2"/>
+        <path d="M50 46 Q57 54 54 60 Q51 64 49 61 Q46 64 46 59 Q44 54 50 46 Z" fill="#d63a3a"/>` },
+{ name:"Over the Barrel", shape:"drum", fill:"#2f7fd6", hoops:[30,74], hoop:"#1f5ea3", lid:"#4a97e6", inner:"#2766ad",
+  deco:`<path d="M-4 46 q8 -6 16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0" fill="none" stroke="#fff" stroke-width="3.5"/>
+        <path d="M-4 58 q8 -6 16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0" fill="none" stroke="#9fd0ff" stroke-width="3"/>` },
+{ name:"Kind of a Big Dill", shape:"keg", fill:"#6aa84f", planks:1, hoops:[28,74], hoop:"#b08a3a", lid:"#7cbf5e", inner:"#4e8a36",
+  deco:`<ellipse cx="50" cy="52" rx="7.5" ry="14" transform="rotate(28 50 52)" fill="#3f7d2b" stroke="#1d1a24" stroke-width="2"/>
+        <circle cx="47" cy="46" r="1.3" fill="#8fd16a"/><circle cx="52" cy="53" r="1.3" fill="#8fd16a"/><circle cx="49" cy="59" r="1.3" fill="#8fd16a"/><circle cx="55" cy="47" r="1.1" fill="#8fd16a"/>` },
+{ name:"Yo Ho Ho", shape:"keg", fill:"#5e3a22", planks:1, hoops:[28,74], hoop:"#2b2b2b", lid:"#73492b", inner:"#3e2615",
+  deco:`<rect x="35" y="39" width="30" height="28" rx="2" fill="#efdcb0" stroke="#1d1a24" stroke-width="2" transform="rotate(-4 50 53)"/>
+        <path d="M42 59 L58 66 M58 59 L42 66" stroke="#1d1a24" stroke-width="5" stroke-linecap="round"/>
+        <path d="M42 59 L58 66 M58 59 L42 66" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M43 50 Q43 42 50 42 Q57 42 57 50 Q57 54 54 55 V58 H46 V55 Q43 54 43 50 Z" fill="#fff" stroke="#1d1a24" stroke-width="1.8"/>
+        <circle cx="47.5" cy="50" r="2" fill="#1d1a24"/><circle cx="52.5" cy="50" r="2" fill="#1d1a24"/>` },
+{ name:"Sweet Spot", shape:"drum", fill:"#ffffff", lid:"#ffffff", inner:"#f2d6d6",
+  deco:stripes(0,100,16,7,"#e2465b") },
+{ name:"Hide & Seek", shape:"drum", fill:"#6b7a45", hoops:[30,74], hoop:"#3c4426", lid:"#7b8a52", inner:"#505a33",
+  deco:`<path d="M20 36 Q30 30 38 38 Q44 46 34 50 Q22 52 20 44 Z" fill="#4a5530"/>
+        <path d="M52 40 Q62 34 72 42 Q80 50 70 54 Q58 56 54 50 Z" fill="#9a8a5a"/>
+        <path d="M30 58 Q40 54 48 62 Q50 70 40 70 Q28 70 30 62 Z" fill="#2f3520"/>
+        <path d="M58 62 Q66 58 76 64 Q78 72 68 72 Q58 72 58 66 Z" fill="#4a5530"/>
+        <path d="M42 46 Q48 44 50 50 Q46 54 42 50 Z" fill="#2f3520"/>` },
+{ name:"Chill Pill", shape:"drum", fill:"#bfe6ff", hoops:[76], hoop:"#8cc4e8", lid:"#e8f7ff", inner:"#a6d6f5",
+  deco:`<polygon points="24,22 28,36 32,22 36,30 40,22 45,40 50,22 54,32 58,22 63,38 68,22 72,30 76,22" fill="#fff"/>
+        <path d="M50 46 V70 M39.6 52 L60.4 64 M39.6 64 L60.4 52 M46 48 l4 4 l4 -4 M46 68 l4 -4 l4 4" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/>`,
+  top:`<path d="M24 18 q3 -6 9 -3 q4 -6 10 -2 q5 -5 11 -1 q5 -5 10 -1 q5 -3 9 3 q-10 6 -26 6 q-16 0 -23 -2 Z" fill="#fff" stroke-width="2"/>` },
+{ name:"Hot Stuff", shape:"keg", fill:"#2d2629", hoops:[28,74], hoop:"#1a1517", lid:"#3a3134", inner:"#ff8a1f",
+  deco:`<path d="M30 30 L38 42 L34 52 L42 64 L38 80 M58 26 L54 38 L62 48 L58 58 L66 70 M46 44 L52 50 L50 58" fill="none" stroke="#ff7a1a" stroke-width="3.5" stroke-linejoin="round"/>
+        <path d="M30 30 L38 42 L34 52 L42 64 L38 80 M58 26 L54 38 L62 48 L58 58 L66 70 M46 44 L52 50 L50 58" fill="none" stroke="#ffd23f" stroke-width="1.3" stroke-linejoin="round"/>`,
+  top:`<ellipse cx="50" cy="18" rx="10" ry="2.4" fill="#ffd23f" stroke="none"/><circle cx="44" cy="17" r="1.5" fill="#fff3a0" stroke="none"/><circle cx="57" cy="19" r="1.2" fill="#fff3a0" stroke="none"/>` },
+{ name:"Space Cask-et", shape:"keg", fill:"#2a1f4f", hoops:[28,74], hoop:"#8d7ad6", hw:3, lid:"#3a2c6b", inner:"#160f30",
+  deco:`<ellipse cx="40" cy="48" rx="16" ry="10" fill="#7b4bd6" opacity=".6"/>
+        <ellipse cx="58" cy="60" rx="14" ry="8" fill="#e05ac0" opacity=".45"/>
+        <polygon points="${star(48,52,6,1.8,4)}" fill="#fff"/>
+        <circle cx="34" cy="38" r="1.3" fill="#fff"/><circle cx="64" cy="44" r="1" fill="#fff"/><circle cx="60" cy="68" r="1.4" fill="#fff"/><circle cx="36" cy="66" r="1" fill="#fff"/><circle cx="56" cy="34" r="1" fill="#fff"/>` },
+{ name:"Gold Standard", shape:"drum", fill:"#f2c14e", hoops:[30,74], hoop:"#c8961f", lid:"#ffd96b", inner:"#c8961f",
+  deco:`<circle cx="50" cy="53" r="12" fill="#ffd96b" stroke="#b8860b" stroke-width="2.5"/>
+        <circle cx="50" cy="53" r="8.5" fill="none" stroke="#b8860b" stroke-width="1.2"/>
+        <text x="50" y="58.5" font-size="15" font-weight="700" text-anchor="middle" fill="#b8860b" font-family="Fredoka,system-ui,sans-serif">$</text>
+        <polygon points="${star(66,40,4,1.2,4)}" fill="#fff"/>` },
+{ name:"Barrel-bot", shape:"drum", fill:"#9aa5b4", hoops:[30,74], hoop:"#6c7785", lid:"#b7c2cf", inner:"#7d8896",
+  deco:`<rect x="34" y="40" width="32" height="22" rx="5" fill="#1d2330" stroke="#1d1a24" stroke-width="2"/>
+        <circle cx="43" cy="49" r="3.2" fill="#3ef2ff"/><circle cx="57" cy="49" r="3.2" fill="#3ef2ff"/>
+        <path d="M43 56 Q50 60 57 56" fill="none" stroke="#3ef2ff" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="28" cy="40" r="1.4" fill="#5c6672"/><circle cx="28" cy="52" r="1.4" fill="#5c6672"/><circle cx="28" cy="64" r="1.4" fill="#5c6672"/>
+        <circle cx="72" cy="40" r="1.4" fill="#5c6672"/><circle cx="72" cy="52" r="1.4" fill="#5c6672"/><circle cx="72" cy="64" r="1.4" fill="#5c6672"/>`,
+  top:`<circle cx="50" cy="17" r="2.8" fill="#ff4d6d" stroke-width="1.5"/>` },
+{ name:"Fun Guy", shape:"keg", fill:"#8a6a45", planks:1, hoops:[28], hoop:"#4a4f57", lid:"#9b7a52", inner:"#6b4f30",
+  deco:`<path d="M10 82 Q22 70 30 76 Q38 66 46 74 Q56 68 62 76 Q72 68 90 80 V100 H10 Z" fill="#5d9a3a"/>
+        <path d="M14 46 Q20 40 26 46 Q24 54 16 52 Z" fill="#5d9a3a"/>
+        <rect x="63" y="58" width="5" height="10" rx="1.5" fill="#f1ece2" stroke="#1d1a24" stroke-width="1.5"/>
+        <path d="M57 60 Q65 47 74 60 Z" fill="#e2465b" stroke="#1d1a24" stroke-width="2"/>
+        <circle cx="62" cy="56" r="1.4" fill="#fff"/><circle cx="68" cy="54" r="1.2" fill="#fff"/>
+        <rect x="45" y="66" width="3.5" height="7" rx="1" fill="#f1ece2" stroke="#1d1a24" stroke-width="1.2"/>
+        <path d="M41 67 Q46.7 58 52.5 67 Z" fill="#e2465b" stroke="#1d1a24" stroke-width="1.6"/>`,
+  top:`<path d="M30 17 Q36 12 42 16 Q40 20 32 20 Z" fill="#5d9a3a" stroke-width="1.5"/>` },
+{ name:"Pit Stop", shape:"drum", fill:"#222222", lid:"#333333", inner:"#111111",
+  deco:`<rect x="0" y="34" width="100" height="6" fill="#e2465b"/><rect x="0" y="66" width="100" height="6" fill="#e2465b"/>
+        ${[0,1,2].map(r=>Array.from({length:8},(_,c)=>(c+r)%2?`<rect x="${20+c*8}" y="${42+r*8}" width="8" height="8" fill="#fff"/>`:"").join("")).join("")}` },
+{ name:"Synthwave", shape:"drum", fill:"#1b1035", hoops:[30,74], hoop:"#ff4fd8", hw:2.5, lid:"#2a1a50", inner:"#120a26",
+  deco:`<circle cx="50" cy="54" r="13" fill="#ff9a3c"/>
+        <rect x="30" y="55" width="40" height="2" fill="#1b1035"/><rect x="30" y="59.5" width="40" height="2.5" fill="#1b1035"/><rect x="30" y="64" width="40" height="3" fill="#1b1035"/>
+        <path d="M50 67 L20 84 M50 67 L36 90 M50 67 L64 90 M50 67 L80 84 M0 72 H100" stroke="#3ef2ff" stroke-width="1.2" fill="none"/>`,
+  top:`<ellipse cx="50" cy="18" rx="22" ry="4.2" fill="none" stroke="#ff4fd8" stroke-width="1.2"/>` },
+{ name:"Cut Above", shape:"drum", fill:"#6fd6e8", lid:"#b8f2fb", inner:"#5cc8dd",
+  deco:`<polygon points="20,18 50,42 20,62" fill="#8fe6f3"/><polygon points="80,18 50,42 80,62" fill="#4fb9cf"/>
+        <polygon points="20,62 50,42 80,62 50,92" fill="#5cc8dd"/><polygon points="20,62 50,92 20,92" fill="#3ea8c0"/>
+        <path d="M20 18 L50 42 L80 18 M50 42 V92 M20 62 L50 42 L80 62 M20 62 L50 92 L80 62" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1.4"/>
+        <polygon points="${star(40,34,5,1.3,4)}" fill="#fff"/>` },
+{ name:"Barrel Royale", shape:"keg", fill:"#5a2a82", planks:1, hoops:[28,74], hoop:"#f2c14e", hw:6, lid:"#6b3596", inner:"#f2c14e",
+  deco:`<path d="M37 61 L39 44 L45 51 L50 40 L55 51 L61 44 L63 61 Z" fill="#f2c14e" stroke="#1d1a24" stroke-width="2"/>
+        <circle cx="50" cy="54" r="2.4" fill="#e2465b" stroke="#1d1a24" stroke-width="1"/>
+        <circle cx="43" cy="56" r="1.6" fill="#4fb3ff"/><circle cx="57" cy="56" r="1.6" fill="#4fb3ff"/>
+        <circle cx="34" cy="35" r="1.8" fill="#e2465b"/><circle cx="50" cy="38" r="1.8" fill="#4fb3ff"/><circle cx="66" cy="35" r="1.8" fill="#e2465b"/>` },
 ];
 const MAX = ITEMS.length;
-const SVG_CACHE = ITEMS.map(it => `<svg viewBox="0 0 100 100" aria-hidden="true"><g stroke="#1d1a24" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">${it.svg}</g></svg>`);
+const SVG_CACHE = ITEMS.map(it => `<svg viewBox="0 0 100 100" aria-hidden="true"><g stroke="#1d1a24" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">${barrel(it)}</g></svg>`);
 const svgFor = t => SVG_CACHE[t-1];
 
 // ================= STATE =================
 const SAVE_KEY = "scrapforge-v1";
 const SLOTS = 20;
 const fresh = () => ({
-  scrap:0, runScrap:0, gs:0, best:1, prestiges:0,
+  scrap:0, runScrap:0, totalScrap:0, gs:0, best:1, prestiges:0, merges:0,
   up:{spawn:0,tier:0,mult:0,auto:0,double:0,lucky:0,offline:0},
   gup:{touch:0,gains:0,head:0},
   grid:Array(SLOTS).fill(0), spawnT:0, autoT:0, last:Date.now(), muted:false, theme:"auto"
@@ -405,28 +387,39 @@ const mult = () => 1.5 ** S.up.mult * (1 + S.gs * gsPer());
 const prod = () => S.grid.reduce((a,t) => a + (t ? baseProd(t) : 0), 0) * mult();
 const pendingGS = () => Math.floor(Math.sqrt(S.runScrap / 1e5) * (1 + 0.25*S.gup.gains));
 
+const ic = d => `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
 const UPG = [
-  {id:"spawn", name:"Faster Spawn", base:15, grow:1.55, max:30,
-   desc:l=>`New item every ${spawnInterval(l).toFixed(2)}s`},
-  {id:"tier", name:"Better Spawns", base:400, grow:18, max:12,
-   desc:()=>`Items arrive at tier ${spawnTier()}`, can:()=>spawnTier() < MAX-1},
-  {id:"mult", name:"Scrap Press", base:100, grow:5,
+  {id:"spawn", name:"Faster Spawn", base:15, grow:1.55, max:30, color:"#3b82f6",
+   icon:ic(`<circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/>`),
+   desc:l=>`New barrel every ${spawnInterval(l).toFixed(2)}s`},
+  {id:"tier", name:"Better Barrels", base:400, grow:18, max:12, color:"#8b5cf6",
+   icon:ic(`<path d="M12 19V5M5 12l7-7 7 7"/>`),
+   desc:()=>`Barrels spawn at tier ${spawnTier()}`, can:()=>spawnTier() < MAX-1},
+  {id:"mult", name:"Scrap Press", base:100, grow:5, color:"#ef4444",
+   icon:ic(`<path d="M6 6l12 12M18 6L6 18"/>`),
    desc:l=>`×${fmt(1.5**l)} scrap production`},
-  {id:"auto", name:"Auto-Merger", base:1500, grow:4, max:15,
+  {id:"auto", name:"Auto-Merger", base:1500, grow:4, max:15, color:"#10b981",
+   icon:ic(`<path d="M4 8h12l-3-3M20 16H8l3 3"/>`),
    desc:l=>l ? `Merges a pair every ${autoInterval(l).toFixed(1)}s` : "Merges matching pairs for you"},
-  {id:"double", name:"Twin Drop", base:250, grow:3, max:10,
-   desc:l=>`${l*5}% chance to spawn two items`},
-  {id:"lucky", name:"Lucky Merge", base:4000, grow:6, max:10,
+  {id:"double", name:"Twin Drop", base:250, grow:3, max:10, color:"#f59e0b",
+   icon:ic(`<circle cx="8" cy="12" r="4"/><circle cx="16" cy="12" r="4"/>`),
+   desc:l=>`${l*5}% chance to spawn two barrels`},
+  {id:"lucky", name:"Lucky Merge", base:4000, grow:6, max:10, color:"#22c55e",
+   icon:ic(`<path d="M12 12c-4-6-9-2-5 2M12 12c6-4 2-9-2-5M12 12c4 6 9 2 5-2M12 12c-6 4-2 9 2 5M12 12l3 9"/>`),
    desc:l=>`${l*2}% chance a merge skips a tier`},
-  {id:"offline", name:"Night Shift", base:800, grow:4, max:9,
+  {id:"offline", name:"Night Shift", base:800, grow:4, max:9, color:"#6366f1",
+   icon:ic(`<path d="M20 14A8 8 0 1 1 10 4a6 6 0 0 0 10 10z"/>`),
    desc:l=>`Earn ${Math.round(offEff(l)*100)}% while away (up to 8h)`},
 ];
 const GUPG = [
-  {id:"touch", name:"Golden Touch", base:3, grow:2.5,
+  {id:"touch", name:"Golden Touch", base:3, grow:2.5, color:"#d99a10",
+   icon:ic(`<path d="M12 3l2.5 6 6.5.5-5 4.2 1.6 6.3L12 16.6 6.4 20l1.6-6.3-5-4.2 6.5-.5z"/>`),
    desc:l=>`Each Golden Scrap gives +${(1+0.5*l).toFixed(1)}%`},
-  {id:"gains", name:"Golden Gains", base:5, grow:3,
+  {id:"gains", name:"Golden Gains", base:5, grow:3, color:"#d99a10",
+   icon:ic(`<path d="M12 5v14M5 12h14"/>`),
    desc:l=>`+${l*25}% Golden Scrap from prestige`},
-  {id:"head", name:"Head Start", base:10, grow:5, max:5,
+  {id:"head", name:"Head Start", base:10, grow:5, max:5, color:"#d99a10",
+   icon:ic(`<path d="M5 21V4M5 4h12l-2 4 2 4H5"/>`),
    desc:l=>`+${l} permanent spawn tier`},
 ];
 const cost = (u,l) => Math.ceil(u.base * u.grow ** l);
@@ -446,9 +439,9 @@ function tone(f, dur, type="sine", vol=.12, delay=0, f2){
   o.connect(g).connect(ac.destination); o.start(t0); o.stop(t0+dur+.02);
 }
 const sfx = {
-  merge:t=>{ const f = 260 * 2 ** (Math.min(t,30)/8); tone(f,.12,"triangle",.14); tone(f*1.5,.16,"sine",.09,.05); },
-  spawn:()=>tone(700,.05,"sine",.03,0,900),
-  move:()=>tone(420,.05,"sine",.05),
+  merge:t=>{ const f = 200 * 2 ** (Math.min(t,30)/8); tone(f,.1,"square",.06); tone(f*1.5,.16,"triangle",.1,.05); },
+  spawn:()=>tone(500,.06,"triangle",.04,0,300),
+  move:()=>tone(380,.05,"triangle",.05),
   buy:()=>{ tone(880,.07,"square",.04); tone(1320,.1,"square",.04,.06); },
   err:()=>tone(140,.15,"sawtooth",.05),
   discover:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.18,"triangle",.1,i*.08)),
@@ -457,7 +450,7 @@ const sfx = {
 
 // ================= UI =================
 const $ = id => document.getElementById(id);
-const gridEl = $("grid");
+const app = $("app"), gridEl = $("grid");
 const cells = [];
 for(let i=0;i<SLOTS;i++){
   const c = document.createElement("div");
@@ -468,51 +461,78 @@ let sel = null;
 function drawCell(i, anim=true){
   const c = cells[i], t = S.grid[i];
   c.classList.toggle("sel", sel === i);
-  if((c._t|0) === t) return;
+  if(c._t === t) return;
   c._t = t;
+  c.classList.toggle("full", !!t);
   c.innerHTML = t ? `<div class="item"${anim?"":' style="animation:none"'} title="#${t} ${ITEMS[t-1].name}">${svgFor(t)}</div><span class="tier">${t}</span>` : "";
 }
 function drawGrid(anim=true){ for(let i=0;i<SLOTS;i++) drawCell(i, anim); }
 
-function toast(msg){
-  document.querySelectorAll(".toast").forEach(e=>e.remove());
-  const d = document.createElement("div"); d.className = "toast"; d.textContent = msg;
-  document.body.appendChild(d); setTimeout(()=>d.remove(), 2600);
+function toast(html){
+  app.querySelectorAll(".toast").forEach(e=>e.remove());
+  const d = document.createElement("div"); d.className = "toast"; d.innerHTML = html;
+  app.appendChild(d); setTimeout(()=>d.remove(), 2600);
 }
 function floatText(i, txt){
   const r = cells[i].getBoundingClientRect(), d = document.createElement("div");
   d.className = "float"; d.textContent = txt;
-  d.style.left = (r.left + r.width/2 - 20) + "px"; d.style.top = (r.top + 4) + "px";
+  d.style.left = (r.left + r.width/2) + "px"; d.style.top = (r.top + 4) + "px"; d.style.translate = "-50% 0";
   document.body.appendChild(d); setTimeout(()=>d.remove(), 1000);
 }
-function modal(title, body, btn="Nice"){
+function modal({title, text, big, ok="OK", cancel, onOk}){
   const m = document.createElement("div"); m.className = "modal";
-  m.innerHTML = `<div><h2></h2><p></p><button class="buy">${btn}</button></div>`;
-  m.querySelector("h2").textContent = title; m.querySelector("p").textContent = body;
-  m.querySelector("button").onclick = () => m.remove();
-  document.body.appendChild(m);
+  m.innerHTML = `<div><h3></h3><p></p>${big?`<div class="big">${big}</div>`:""}<div class="row">${cancel?`<button class="buy alt">${cancel}</button>`:""}<button class="buy ok">${ok}</button></div></div>`;
+  m.querySelector("h3").textContent = title; m.querySelector("p").textContent = text;
+  m.querySelector(".ok").onclick = () => { m.remove(); onOk && onOk(); };
+  const c = m.querySelector(".alt"); if(c) c.onclick = () => m.remove();
+  app.appendChild(m);
 }
 
-function buildUpgrades(listEl, defs, levels, gold){
+// sheet
+const TITLES = {up:"Upgrades", gold:"Golden Scrap", col:"Barrel Collection", set:"Settings"};
+let pane = null;
+function openPane(p){
+  if(pane === p){ closePane(); return; }
+  pane = p;
+  document.querySelectorAll(".dock button").forEach(b => b.classList.toggle("on", b.dataset.pane === p));
+  document.querySelectorAll(".pane").forEach(x => x.classList.toggle("on", x.id === "pane-"+p));
+  $("sheettitle").textContent = TITLES[p];
+  $("sheet").classList.add("on"); $("scrim").classList.add("on");
+  if(p === "col") renderBook();
+  if(p === "set") renderSettings();
+}
+function closePane(){
+  pane = null;
+  document.querySelectorAll(".dock button").forEach(b => b.classList.remove("on"));
+  $("sheet").classList.remove("on"); $("scrim").classList.remove("on");
+}
+document.querySelectorAll(".dock button").forEach(b => b.onclick = () => { initAudio(); openPane(b.dataset.pane); });
+$("close").onclick = closePane; $("scrim").onclick = closePane;
+
+function buildUpgrades(listEl, defs, key, gold){
   listEl.innerHTML = "";
   for(const u of defs){
     const row = document.createElement("div"); row.className = "upg";
-    row.innerHTML = `<div class="txt"><div class="nm"></div><div class="ds"></div></div><button class="buy"></button>`;
-    row.querySelector("button").onclick = () => buy(u, levels, gold);
-    u.el = row; listEl.appendChild(row);
+    row.innerHTML = `<div class="ic" style="background:${u.color}">${u.icon}</div><div class="txt"><div class="nm"></div><div class="ds"></div></div><button class="buy${gold?" gold":""}"></button>`;
+    row.querySelector("button").onclick = () => buy(u, S[key], gold);
+    u.el = row; u.gold = gold; listEl.appendChild(row);
   }
 }
 function refreshUpgrades(defs, levels, wallet){
+  let any = false;
   for(const u of defs){
     const l = levels[u.id], maxed = (u.max && l >= u.max) || (u.can && !u.can());
     const nm = u.el.querySelector(".nm"), ds = u.el.querySelector(".ds"), b = u.el.querySelector("button");
-    const n = `${u.name}<small>Lv ${l}${u.max?"/"+u.max:""}</small>`;
+    const n = `${u.name}<span class="lv">Lv ${l}${u.max?" / "+u.max:""}</span>`;
     if(nm._v !== n){ nm.innerHTML = n; nm._v = n; }
     const d = u.desc(l); if(ds._v !== d){ ds.textContent = d; ds._v = d; }
-    const c = cost(u,l), bt = maxed ? "MAX" : fmt(c);
-    if(b._v !== bt){ b.textContent = bt; b._v = bt; }
-    b.disabled = maxed || wallet() < c;
+    const c = cost(u,l);
+    const bt = maxed ? "MAX" : `<svg class="ico xs"><use href="#i-${u.gold?"gold":"scrap"}"/></svg>${fmt(c)}`;
+    if(b._v !== bt){ b.innerHTML = bt; b._v = bt; }
+    const ok = !maxed && wallet() >= c;
+    b.disabled = !ok; if(ok) any = true;
   }
+  return any;
 }
 function buy(u, levels, gold){
   initAudio();
@@ -540,27 +560,36 @@ function renderBook(){
     c.querySelector("b").textContent = known ? ITEMS[i].name : "???";
     c.querySelector("span").textContent = `#${t} · ${fmt(baseProd(t))}/s`;
   });
-  $("colcount").textContent = `Discovered ${S.best} of ${MAX}. Each tier makes 3× the one before it.`;
+  $("colcount").textContent = `Discovered ${S.best} of ${MAX} barrels. Each tier makes 3× the one before it.`;
+}
+function renderSettings(){
+  $("mute").textContent = S.muted ? "Off" : "On";
+  $("theme").textContent = S.theme[0].toUpperCase() + S.theme.slice(1);
+  $("stats").innerHTML = `<span>Total scrap earned</span><b>${fmt(S.totalScrap)}</b><span>Merges</span><b>${fmt(S.merges)}</b><span>Prestiges</span><b>${S.prestiges}</b><span>Best barrel</span><b>#${S.best}</b>`;
 }
 
+let lastNext = 0;
 function render(){
   $("scrap").textContent = fmt(S.scrap);
   $("sps").textContent = fmt(prod());
   $("gs").textContent = fmt(S.gs);
-  $("gsb").textContent = "+" + fmt(S.gs * gsPer() * 100) + "%";
+  $("gsb").textContent = "+" + fmt(S.gs * gsPer() * 100) + "% production";
   $("pend").textContent = fmt(pendingGS());
   $("prestige").disabled = pendingGS() < 1;
-  $("spawnfill").style.width = Math.min(100, S.spawnT / spawnInterval(S.up.spawn) * 100) + "%";
-  refreshUpgrades(UPG, S.up, ()=>S.scrap);
-  refreshUpgrades(GUPG, S.gup, ()=>S.gs);
+  const si = spawnInterval(S.up.spawn), full = !S.grid.includes(0);
+  $("spawnfill").style.width = Math.min(100, S.spawnT / si * 100) + "%";
+  $("spawnlbl").textContent = full ? "Board full! Merge some barrels" : `Next barrel in ${Math.max(0, si - S.spawnT).toFixed(1)}s`;
+  if(lastNext !== spawnTier()){ lastNext = spawnTier(); $("nextpic").innerHTML = svgFor(lastNext); }
+  $("dot-up").classList.toggle("show", refreshUpgrades(UPG, S.up, ()=>S.scrap));
+  $("dot-gold").classList.toggle("show", refreshUpgrades(GUPG, S.gup, ()=>S.gs) || pendingGS() >= Math.max(1, S.gs));
 }
 
 // ================= GAME ACTIONS =================
 function discover(t){
   if(t > S.best){
     S.best = t; sfx.discover();
-    toast(`New discovery: #${t} ${ITEMS[t-1].name}!`);
-    renderBook();
+    toast(`<span class="mini">${svgFor(t)}</span>New barrel: #${t} ${ITEMS[t-1].name}!`);
+    if(pane === "col") renderBook();
   }
 }
 function spawnOne(){
@@ -573,11 +602,11 @@ function spawnOne(){
 }
 function merge(a, b){
   const t = S.grid[a];
-  if(t >= MAX){ sfx.err(); toast("That's the top tier for now. More designs coming!"); return false; }
+  if(t >= MAX){ sfx.err(); toast("That's the top barrel for now. More designs coming!"); return false; }
   let nt = t + 1;
   const lucky = nt < MAX && Math.random() < S.up.lucky*0.02;
   if(lucky) nt++;
-  S.grid[b] = nt; S.grid[a] = 0;
+  S.grid[b] = nt; S.grid[a] = 0; S.merges++;
   drawCell(a); drawCell(b);
   sfx.merge(nt); discover(nt);
   floatText(b, lucky ? `LUCKY! #${nt}` : `#${nt}`);
@@ -594,22 +623,25 @@ function autoMerge(){
   let best = null;
   S.grid.forEach((t,i)=>{
     if(!t || t >= MAX) return;
-    if(seen[t] != null && (!best || t < S.grid[best[0]])) best = [seen[t], i];
-    else if(seen[t] == null) seen[t] = i;
+    if(seen[t] != null){ if(!best || t < S.grid[best[0]]) best = [seen[t], i]; }
+    else seen[t] = i;
   });
   if(best) merge(best[1], best[0]);
 }
 function prestige(){
   const g = pendingGS();
   if(g < 1) return;
-  if(!confirm(`Prestige for ${fmt(g)} Golden Scrap? This resets scrap, the board and normal upgrades.`)) return;
-  initAudio();
-  const keep = {gs:S.gs+g, best:S.best, prestiges:S.prestiges+1, gup:S.gup, muted:S.muted, theme:S.theme};
-  S = Object.assign(fresh(), keep);
-  sel = null; cells.forEach(c=>c._t = -1);
-  drawGrid(); sfx.prestige(); render();
-  toast(`+${fmt(g)} Golden Scrap. Production is now ×${fmt(mult())}`);
-  save();
+  modal({title:"Prestige?", text:"Your scrap, barrels and normal upgrades will reset. You'll receive:",
+    big:`<svg class="ico"><use href="#i-gold"/></svg>${fmt(g)}`, ok:"Prestige", cancel:"Not yet",
+    onOk:()=>{
+      initAudio();
+      const keep = {gs:S.gs+g, best:S.best, prestiges:S.prestiges+1, merges:S.merges, totalScrap:S.totalScrap, gup:S.gup, muted:S.muted, theme:S.theme};
+      S = Object.assign(fresh(), keep);
+      sel = null; cells.forEach(c=>c._t = -1);
+      drawGrid(); sfx.prestige(); closePane(); render();
+      toast(`+${fmt(g)} Golden Scrap! Production ×${fmt(mult())}`);
+      save();
+    }});
 }
 
 // ================= INPUT =================
@@ -635,7 +667,7 @@ window.addEventListener("pointermove", e=>{
   if(!drag.moved && Math.hypot(e.clientX-drag.x, e.clientY-drag.y) > 6){
     drag.moved = true;
     const r = cells[drag.from].getBoundingClientRect(), g = document.createElement("div");
-    g.className = "ghost"; g.style.width = r.width*.88 + "px"; g.style.height = r.height*.88 + "px";
+    g.className = "ghost"; g.style.width = r.width*.85 + "px"; g.style.height = r.height*.85 + "px";
     g.innerHTML = svgFor(S.grid[drag.from]);
     document.body.appendChild(g); drag.ghost = g;
     cells[drag.from].classList.add("dragging");
@@ -659,32 +691,24 @@ function endDrag(e, cancel){
   if(d.ghost) d.ghost.remove();
   if(cancel) return;
   if(d.moved){ drop(d.from, cellAt(e.clientX, e.clientY)); return; }
-  // tap-to-select
   if(sel !== null && sel !== d.from){ const s = sel; sel = null; drop(s, d.from); drawCell(s); drawCell(d.from); }
   else { const prev = sel; sel = sel === d.from ? null : d.from; if(prev !== null) drawCell(prev); drawCell(d.from); }
 }
 window.addEventListener("pointerup", e=>endDrag(e,false));
 window.addEventListener("pointercancel", e=>endDrag(e,true));
 
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick = ()=>{
-  document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on", x===b));
-  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on", t.id === "tab-"+b.dataset.tab));
-  if(b.dataset.tab === "col") renderBook();
-});
 $("prestige").onclick = prestige;
-function applyPrefs(){
-  $("mute").textContent = "Sound: " + (S.muted ? "off" : "on");
-  $("theme").textContent = "Theme: " + S.theme;
+function applyTheme(){
   if(S.theme === "auto") document.documentElement.removeAttribute("data-theme");
   else document.documentElement.setAttribute("data-theme", S.theme);
 }
-$("mute").onclick = ()=>{ S.muted = !S.muted; applyPrefs(); save(); };
-$("theme").onclick = ()=>{ S.theme = {auto:"light", light:"dark", dark:"auto"}[S.theme] || "auto"; applyPrefs(); save(); };
-$("wipe").onclick = ()=>{
-  if(!confirm("Delete ALL progress, including Golden Scrap and your collection?")) return;
-  try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
-  S = fresh(); sel = null; cells.forEach(c=>c._t = -1); drawGrid(); renderBook(); applyPrefs(); render();
-};
+$("mute").onclick = ()=>{ S.muted = !S.muted; renderSettings(); save(); };
+$("theme").onclick = ()=>{ S.theme = {auto:"light", light:"dark", dark:"auto"}[S.theme] || "auto"; applyTheme(); renderSettings(); save(); };
+$("wipe").onclick = ()=> modal({title:"Reset everything?", text:"This deletes ALL progress, including Golden Scrap and your barrel collection.", ok:"Delete", cancel:"Cancel",
+  onOk:()=>{
+    try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+    S = fresh(); sel = null; cells.forEach(c=>c._t = -1); drawGrid(); applyTheme(); renderSettings(); spawnOne(); render();
+  }});
 
 // ================= LOOP =================
 let lastTick = Date.now();
@@ -692,7 +716,7 @@ function tick(){
   const now = Date.now(), dt = Math.min(3600, (now - lastTick) / 1000);
   lastTick = now;
   const gain = prod() * dt;
-  S.scrap += gain; S.runScrap += gain;
+  S.scrap += gain; S.runScrap += gain; S.totalScrap += gain;
 
   S.spawnT += dt;
   const si = spawnInterval(S.up.spawn);
@@ -715,16 +739,16 @@ function tick(){
 
 // ================= BOOT =================
 load();
-applyPrefs();
-buildUpgrades($("ups"), UPG, S.up, false);
-buildUpgrades($("gups"), GUPG, S.gup, true);
+applyTheme();
+buildUpgrades($("ups"), UPG, "up", false);
+buildUpgrades($("gups"), GUPG, "gup", true);
 drawGrid(false);
-renderBook();
 const away = (Date.now() - S.last) / 1000;
 if(away > 30 && prod() > 0){
   const secs = Math.min(away, 8*3600), earned = prod() * secs * offEff(S.up.offline);
-  S.scrap += earned; S.runScrap += earned;
-  modal("Welcome back!", `You were away for ${fmtTime(away)}. Your board earned ${fmt(earned)} scrap at ${Math.round(offEff(S.up.offline)*100)}% efficiency.`);
+  S.scrap += earned; S.runScrap += earned; S.totalScrap += earned;
+  modal({title:"Welcome back!", text:`You were away for ${fmtTime(away)}. Your barrels worked at ${Math.round(offEff(S.up.offline)*100)}% efficiency and made:`,
+    big:`<svg class="ico"><use href="#i-scrap"/></svg>${fmt(earned)}`, ok:"Collect"});
 }
 if(!S.grid.some(Boolean)) spawnOne();
 render();
