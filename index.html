@@ -339,13 +339,35 @@ const MAX = ITEMS.length;
 const SVG_CACHE = ITEMS.map(it => `<svg viewBox="0 0 100 100" aria-hidden="true"><g stroke="#1d1a24" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">${barrel(it)}</g></svg>`);
 const svgFor = t => SVG_CACHE[t-1];
 
+// ================= BIG NUMBERS =================
+// All currencies are stored as log10(value) so they can grow far past 1e308.
+// LZ stands for zero (finite, so it survives JSON saves).
+const LZ = -9e15, L3 = Math.log10(3);
+const ladd = (a,b) => { if(a < b) [a,b] = [b,a]; if(b <= LZ) return a; return a + Math.log10(1 + 10**(b-a)); };
+const lsub = (a,b) => { if(b <= LZ) return a; if(b >= a) return LZ; const r = a + Math.log10(1 - 10**(b-a)); return isFinite(r) ? r : LZ; };
+const lnum = n => n > 0 ? Math.log10(n) : LZ;
+const SUF = ["","K","M","B","T","Qa","Qi","Sx","Sp","Oc","No","Dc","UDc","DDc","TDc","QaDc","QiDc","SxDc","SpDc","OcDc","NoDc","Vg"];
+function fmtL(l){
+  if(l < -1) return "0";
+  if(l < 3){ const n = 10**l; return n < 10 && n % 1 > 0.05 ? n.toFixed(1) : Math.floor(n + 1e-9).toString(); }
+  const e = Math.floor(l/3);
+  if(e < SUF.length) return (10**(l - e*3)).toFixed(2).replace(/\.?0+$/,"") + SUF[e];
+  const x = Math.floor(l); return (10**(l - x)).toFixed(2) + "e" + x.toLocaleString("en-US");
+}
+const fmt = n => fmtL(lnum(n));
+function fmtTime(s){
+  s = Math.floor(s);
+  const h = Math.floor(s/3600), m = Math.floor(s%3600/60);
+  return h ? `${h}h ${m}m` : m ? `${m}m ${s%60}s` : `${s}s`;
+}
+
 // ================= STATE =================
-const SAVE_KEY = "scrapforge-v1";
+const SAVE_KEY = "scrapforge-v2";
 const SLOTS = 20;
 const fresh = () => ({
-  scrap:0, runScrap:0, totalScrap:0, gs:0, best:1, prestiges:0, merges:0,
+  scrap:LZ, runScrap:LZ, totalScrap:LZ, gs:LZ, best:1, runBest:1, prestiges:0, merges:0,
   up:{spawn:0,tier:0,mult:0,auto:0,double:0,lucky:0,offline:0},
-  gup:{touch:0,gains:0,head:0},
+  gup:{touch:0,gains:0,head:0,lag:0},
   grid:Array(SLOTS).fill(0), spawnT:0, autoT:0, last:Date.now(), muted:false, theme:"auto"
 });
 let S = fresh();
@@ -357,72 +379,79 @@ function load(){
     S = Object.assign(f, d, {up:Object.assign(f.up, d.up||{}), gup:Object.assign(f.gup, d.gup||{})});
     if(!Array.isArray(S.grid) || S.grid.length!==SLOTS) S.grid = f.grid;
     S.grid = S.grid.map(t => Math.max(0, Math.min(MAX, t|0)));
+    for(const k of ["scrap","runScrap","totalScrap","gs"]) if(typeof S[k] !== "number" || !isFinite(S[k])) S[k] = LZ;
   }catch(e){ S = fresh(); }
 }
 function save(){ S.last = Date.now(); try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){} }
 
-// ================= NUMBERS =================
-const SUF = ["","K","M","B","T","Qa","Qi","Sx","Sp","Oc","No","Dc"];
-function fmt(n){
-  if(!isFinite(n)) return "∞";
-  if(n < 1000) return n < 10 && n % 1 ? n.toFixed(1) : Math.floor(n).toString();
-  const e = Math.floor(Math.log10(n)/3);
-  if(e < SUF.length) return (n/10**(e*3)).toFixed(2).replace(/\.?0+$/,"") + SUF[e];
-  return n.toExponential(2).replace("+","");
-}
-function fmtTime(s){
-  s = Math.floor(s);
-  const h = Math.floor(s/3600), m = Math.floor(s%3600/60);
-  return h ? `${h}h ${m}m` : m ? `${m}m ${s%60}s` : `${s}s`;
-}
-
 // ================= FORMULAS =================
-const baseProd = t => 3 ** (t-1);
-const spawnInterval = l => 5 * 0.92 ** l;
-const autoInterval = l => 8 * 0.85 ** (l-1);
+// Balance rule: anything that speeds up tier progress is either hard-capped (spawn speed,
+// auto-merge, chances) or priced off the value of barrels, so it scales to any number of tiers.
+// The spawn tier must stay at least lagMin() tiers below your best barrel this run. Reaching a new
+// tier takes ~2^gap spawns, so this gap is the real difficulty curve: the gap grows by 1 every time your
+// best barrel doubles (50 -> 6, 100 -> 7, 200 -> 8 ... 3200 -> 12), which doubles the time per tier no
+// matter how big your multipliers get.
+const lagMin = () => Math.max(3, 5 + Math.max(0, Math.floor(Math.log2(S.runBest / 25))) - S.gup.lag);
+// BB_K: Better Barrels price outgrows barrel output by this much per level, so the gap between your
+// best barrel and the spawn tier slowly widens (that gap is the difficulty). GS_X: prestige exponent.
+const BAL = {BB_K:0.3, GS_X:0.3, GS_MIN:6};
+const tierL = t => (t-1) * L3;                              // log10 of a tier's base scrap/sec
+const spawnInterval = l => 5 * 0.93 ** l;                   // 5s -> ~1.2s at max
+const autoInterval = l => 10 * 0.88 ** (l-1);               // 10s -> ~1.7s at max
 const offEff = l => Math.min(1, 0.1 + 0.1*l);
-const spawnTier = () => Math.min(MAX-1, 1 + S.up.tier + S.gup.head);
+const spawnTier = () => Math.max(1, Math.min(MAX-1, 1 + S.up.tier + S.gup.head));
 const gsPer = () => 0.01 * (1 + 0.5*S.gup.touch);
-const mult = () => 1.5 ** S.up.mult * (1 + S.gs * gsPer());
-const prod = () => S.grid.reduce((a,t) => a + (t ? baseProd(t) : 0), 0) * mult();
-const pendingGS = () => Math.floor(Math.sqrt(S.runScrap / 1e5) * (1 + 0.25*S.gup.gains));
+const gsMultL = () => ladd(0, S.gs + Math.log10(gsPer())); // log10(1 + GS * per)
+const multL = () => S.up.mult * Math.log10(1.25) + gsMultL();
+const prodL = () => S.grid.reduce((a,t) => t ? ladd(a, tierL(t)) : a, LZ) + multL();
+function pendingL(){
+  if(S.runScrap < BAL.GS_MIN) return LZ;
+  const g = BAL.GS_X * (S.runScrap - BAL.GS_MIN) + Math.log10(1 + 0.25*S.gup.gains);   // (runScrap / 1M) ^ GS_X
+  return g < 15 ? lnum(Math.floor(10**g)) : g;
+}
 
 const ic = d => `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
 const UPG = [
-  {id:"spawn", name:"Faster Spawn", base:15, grow:1.55, max:30, color:"#3b82f6",
+  {id:"spawn", name:"Faster Spawn", base:20, grow:2.4, max:20, color:"#3b82f6",
    icon:ic(`<circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/>`),
    desc:l=>`New barrel every ${spawnInterval(l).toFixed(2)}s`},
-  {id:"tier", name:"Better Barrels", base:400, grow:18, max:12, color:"#8b5cf6",
+  {id:"tier", name:"Better Barrels", color:"#8b5cf6",
    icon:ic(`<path d="M12 19V5M5 12l7-7 7 7"/>`),
-   desc:()=>`Barrels spawn at tier ${spawnTier()}`, can:()=>spawnTier() < MAX-1},
-  {id:"mult", name:"Scrap Press", base:100, grow:5, color:"#ef4444",
+   // costs ~2 minutes of output from a barrel 6 tiers above the new spawn tier
+   costL:l => Math.log10(120) + tierL(l + 2 + 6) + BAL.BB_K * (l + 2) * L3,
+   lock:() => spawnTier() >= MAX-1 ? "MAX" : spawnTier() + 1 > S.runBest - lagMin() ? `Need #${spawnTier() + 1 + lagMin()}` : null,
+   desc:()=>`Spawns tier ${spawnTier()}. Lower barrels get lifted to it`},
+  {id:"mult", name:"Scrap Press", base:500, grow:12, color:"#ef4444",
    icon:ic(`<path d="M6 6l12 12M18 6L6 18"/>`),
-   desc:l=>`×${fmt(1.5**l)} scrap production`},
-  {id:"auto", name:"Auto-Merger", base:1500, grow:4, max:15, color:"#10b981",
+   desc:l=>`×${fmtL(l*Math.log10(1.25))} scrap (+25% per level)`},
+  {id:"auto", name:"Auto-Merger", base:3000, grow:5, max:15, color:"#10b981",
    icon:ic(`<path d="M4 8h12l-3-3M20 16H8l3 3"/>`),
    desc:l=>l ? `Merges a pair every ${autoInterval(l).toFixed(1)}s` : "Merges matching pairs for you"},
-  {id:"double", name:"Twin Drop", base:250, grow:3, max:10, color:"#f59e0b",
+  {id:"double", name:"Twin Drop", base:800, grow:4, max:10, color:"#f59e0b",
    icon:ic(`<circle cx="8" cy="12" r="4"/><circle cx="16" cy="12" r="4"/>`),
-   desc:l=>`${l*5}% chance to spawn two barrels`},
-  {id:"lucky", name:"Lucky Merge", base:4000, grow:6, max:10, color:"#22c55e",
+   desc:l=>`${l*4}% chance to spawn two barrels`},
+  {id:"lucky", name:"Lucky Merge", base:20000, grow:8, max:10, color:"#22c55e",
    icon:ic(`<path d="M12 12c-4-6-9-2-5 2M12 12c6-4 2-9-2-5M12 12c4 6 9 2 5-2M12 12c-6 4-2 9 2 5M12 12l3 9"/>`),
-   desc:l=>`${l*2}% chance a merge skips a tier`},
-  {id:"offline", name:"Night Shift", base:800, grow:4, max:9, color:"#6366f1",
+   desc:l=>`${l}% chance a merge skips a tier`},
+  {id:"offline", name:"Night Shift", base:1000, grow:5, max:9, color:"#6366f1",
    icon:ic(`<path d="M20 14A8 8 0 1 1 10 4a6 6 0 0 0 10 10z"/>`),
    desc:l=>`Earn ${Math.round(offEff(l)*100)}% while away (up to 8h)`},
 ];
 const GUPG = [
-  {id:"touch", name:"Golden Touch", base:3, grow:2.5, color:"#d99a10",
+  {id:"touch", name:"Golden Touch", base:10, grow:4, color:"#d99a10",
    icon:ic(`<path d="M12 3l2.5 6 6.5.5-5 4.2 1.6 6.3L12 16.6 6.4 20l1.6-6.3-5-4.2 6.5-.5z"/>`),
    desc:l=>`Each Golden Scrap gives +${(1+0.5*l).toFixed(1)}%`},
-  {id:"gains", name:"Golden Gains", base:5, grow:3, color:"#d99a10",
+  {id:"gains", name:"Golden Gains", base:25, grow:5, color:"#d99a10",
    icon:ic(`<path d="M12 5v14M5 12h14"/>`),
    desc:l=>`+${l*25}% Golden Scrap from prestige`},
-  {id:"head", name:"Head Start", base:10, grow:5, max:5, color:"#d99a10",
+  {id:"head", name:"Head Start", base:50, grow:10, max:5, color:"#d99a10",
    icon:ic(`<path d="M5 21V4M5 4h12l-2 4 2 4H5"/>`),
    desc:l=>`+${l} permanent spawn tier`},
+  {id:"lag", name:"Tight Ship", base:1e6, grow:1e9, max:3, color:"#d99a10",
+   icon:ic(`<path d="M4 14h16l-2 5H6zM12 14V4l6 7h-6"/>`),
+   desc:()=>`Spawns can be ${lagMin()} tiers below your best (-1 per level)`},
 ];
-const cost = (u,l) => Math.ceil(u.base * u.grow ** l);
+const costL = (u,l) => u.costL ? u.costL(l) : Math.log10(u.base) + l*Math.log10(u.grow);
 
 // ================= SOUND =================
 let ac = null;
@@ -439,7 +468,7 @@ function tone(f, dur, type="sine", vol=.12, delay=0, f2){
   o.connect(g).connect(ac.destination); o.start(t0); o.stop(t0+dur+.02);
 }
 const sfx = {
-  merge:t=>{ const f = 200 * 2 ** (Math.min(t,30)/8); tone(f,.1,"square",.06); tone(f*1.5,.16,"triangle",.1,.05); },
+  merge:t=>{ const f = 200 * 2 ** ((t % 24)/8); tone(f,.1,"square",.06); tone(f*1.5,.16,"triangle",.1,.05); },
   spawn:()=>tone(500,.06,"triangle",.04,0,300),
   move:()=>tone(380,.05,"triangle",.05),
   buy:()=>{ tone(880,.07,"square",.04); tone(1320,.1,"square",.04,.06); },
@@ -514,34 +543,43 @@ function buildUpgrades(listEl, defs, key, gold){
   for(const u of defs){
     const row = document.createElement("div"); row.className = "upg";
     row.innerHTML = `<div class="ic" style="background:${u.color}">${u.icon}</div><div class="txt"><div class="nm"></div><div class="ds"></div></div><button class="buy${gold?" gold":""}"></button>`;
-    row.querySelector("button").onclick = () => buy(u, S[key], gold);
-    u.el = row; u.gold = gold; listEl.appendChild(row);
+    row.querySelector("button").onclick = () => buy(u, key);
+    u.el = row; u.key = key; u.gold = gold; listEl.appendChild(row);
   }
 }
-function refreshUpgrades(defs, levels, wallet){
+// returns the reason an upgrade can't be bought right now, or null
+const blocked = (u, l) => (u.max && l >= u.max) ? "MAX" : u.lock ? u.lock() : null;
+function refreshUpgrades(defs){
   let any = false;
   for(const u of defs){
-    const l = levels[u.id], maxed = (u.max && l >= u.max) || (u.can && !u.can());
+    const l = S[u.key][u.id], why = blocked(u, l);
     const nm = u.el.querySelector(".nm"), ds = u.el.querySelector(".ds"), b = u.el.querySelector("button");
     const n = `${u.name}<span class="lv">Lv ${l}${u.max?" / "+u.max:""}</span>`;
     if(nm._v !== n){ nm.innerHTML = n; nm._v = n; }
     const d = u.desc(l); if(ds._v !== d){ ds.textContent = d; ds._v = d; }
-    const c = cost(u,l);
-    const bt = maxed ? "MAX" : `<svg class="ico xs"><use href="#i-${u.gold?"gold":"scrap"}"/></svg>${fmt(c)}`;
+    const c = costL(u,l);
+    const bt = why || `<svg class="ico xs"><use href="#i-${u.gold?"gold":"scrap"}"/></svg>${fmtL(c)}`;
     if(b._v !== bt){ b.innerHTML = bt; b._v = bt; }
-    const ok = !maxed && wallet() >= c;
+    const ok = !why && (u.gold ? S.gs : S.scrap) >= c - 1e-9;
     b.disabled = !ok; if(ok) any = true;
   }
   return any;
 }
-function buy(u, levels, gold){
+function buy(u, key){
   initAudio();
-  const l = levels[u.id];
-  if((u.max && l >= u.max) || (u.can && !u.can())) return;
-  const c = cost(u,l);
-  if(gold){ if(S.gs < c) return sfx.err(); S.gs -= c; }
-  else { if(S.scrap < c) return sfx.err(); S.scrap -= c; }
-  levels[u.id]++; sfx.buy(); render();
+  const l = S[key][u.id];
+  if(blocked(u, l)) return;
+  const c = costL(u,l);
+  if(u.gold){ if(S.gs < c - 1e-9) return sfx.err(); S.gs = lsub(S.gs, c); }
+  else { if(S.scrap < c - 1e-9) return sfx.err(); S.scrap = lsub(S.scrap, c); }
+  S[key][u.id]++; sfx.buy();
+  if(u.id === "tier" || u.id === "head") liftLow();
+  render();
+}
+// barrels below the spawn tier are useless clutter: upgrade them to the spawn tier
+function liftLow(){
+  const st = spawnTier();
+  S.grid.forEach((t,i) => { if(t && t < st){ S.grid[i] = st; drawCell(i); } });
 }
 
 function renderBook(){
@@ -558,34 +596,36 @@ function renderBook(){
     const t = i+1, known = t <= S.best;
     c.classList.toggle("locked", !known);
     c.querySelector("b").textContent = known ? ITEMS[i].name : "???";
-    c.querySelector("span").textContent = `#${t} · ${fmt(baseProd(t))}/s`;
+    c.querySelector("span").textContent = `#${t} · ${fmtL(tierL(t))}/s`;
   });
   $("colcount").textContent = `Discovered ${S.best} of ${MAX} barrels. Each tier makes 3× the one before it.`;
 }
 function renderSettings(){
   $("mute").textContent = S.muted ? "Off" : "On";
   $("theme").textContent = S.theme[0].toUpperCase() + S.theme.slice(1);
-  $("stats").innerHTML = `<span>Total scrap earned</span><b>${fmt(S.totalScrap)}</b><span>Merges</span><b>${fmt(S.merges)}</b><span>Prestiges</span><b>${S.prestiges}</b><span>Best barrel</span><b>#${S.best}</b>`;
+  $("stats").innerHTML = `<span>Total scrap earned</span><b>${fmtL(S.totalScrap)}</b><span>Merges</span><b>${fmt(S.merges)}</b><span>Prestiges</span><b>${S.prestiges}</b><span>Best barrel</span><b>#${S.best}</b>`;
 }
 
 let lastNext = 0;
 function render(){
-  $("scrap").textContent = fmt(S.scrap);
-  $("sps").textContent = fmt(prod());
-  $("gs").textContent = fmt(S.gs);
-  $("gsb").textContent = "+" + fmt(S.gs * gsPer() * 100) + "% production";
-  $("pend").textContent = fmt(pendingGS());
-  $("prestige").disabled = pendingGS() < 1;
+  $("scrap").textContent = fmtL(S.scrap);
+  $("sps").textContent = fmtL(prodL());
+  $("gs").textContent = fmtL(S.gs);
+  $("gsb").textContent = "+" + fmtL(S.gs + Math.log10(gsPer()) + 2) + "% production";
+  const pend = pendingL();
+  $("pend").textContent = fmtL(pend);
+  $("prestige").disabled = pend < 0;
   const si = spawnInterval(S.up.spawn), full = !S.grid.includes(0);
   $("spawnfill").style.width = Math.min(100, S.spawnT / si * 100) + "%";
   $("spawnlbl").textContent = full ? "Board full! Merge some barrels" : `Next barrel in ${Math.max(0, si - S.spawnT).toFixed(1)}s`;
   if(lastNext !== spawnTier()){ lastNext = spawnTier(); $("nextpic").innerHTML = svgFor(lastNext); }
-  $("dot-up").classList.toggle("show", refreshUpgrades(UPG, S.up, ()=>S.scrap));
-  $("dot-gold").classList.toggle("show", refreshUpgrades(GUPG, S.gup, ()=>S.gs) || pendingGS() >= Math.max(1, S.gs));
+  $("dot-up").classList.toggle("show", refreshUpgrades(UPG));
+  $("dot-gold").classList.toggle("show", refreshUpgrades(GUPG) || pend >= Math.max(0, S.gs));
 }
 
 // ================= GAME ACTIONS =================
 function discover(t){
+  if(t > S.runBest) S.runBest = t;
   if(t > S.best){
     S.best = t; sfx.discover();
     toast(`<span class="mini">${svgFor(t)}</span>New barrel: #${t} ${ITEMS[t-1].name}!`);
@@ -604,7 +644,7 @@ function merge(a, b){
   const t = S.grid[a];
   if(t >= MAX){ sfx.err(); toast("That's the top barrel for now. More designs coming!"); return false; }
   let nt = t + 1;
-  const lucky = nt < MAX && Math.random() < S.up.lucky*0.02;
+  const lucky = nt < MAX && Math.random() < S.up.lucky*0.01;
   if(lucky) nt++;
   S.grid[b] = nt; S.grid[a] = 0; S.merges++;
   drawCell(a); drawCell(b);
@@ -629,17 +669,18 @@ function autoMerge(){
   if(best) merge(best[1], best[0]);
 }
 function prestige(){
-  const g = pendingGS();
-  if(g < 1) return;
+  const g = pendingL();
+  if(g < 0) return;
   modal({title:"Prestige?", text:"Your scrap, barrels and normal upgrades will reset. You'll receive:",
-    big:`<svg class="ico"><use href="#i-gold"/></svg>${fmt(g)}`, ok:"Prestige", cancel:"Not yet",
+    big:`<svg class="ico"><use href="#i-gold"/></svg>${fmtL(g)}`, ok:"Prestige", cancel:"Not yet",
     onOk:()=>{
       initAudio();
-      const keep = {gs:S.gs+g, best:S.best, prestiges:S.prestiges+1, merges:S.merges, totalScrap:S.totalScrap, gup:S.gup, muted:S.muted, theme:S.theme};
+      const keep = {gs:ladd(S.gs, g), best:S.best, prestiges:S.prestiges+1, merges:S.merges, totalScrap:S.totalScrap, gup:S.gup, muted:S.muted, theme:S.theme};
       S = Object.assign(fresh(), keep);
+      S.runBest = spawnTier();
       sel = null; cells.forEach(c=>c._t = -1);
-      drawGrid(); sfx.prestige(); closePane(); render();
-      toast(`+${fmt(g)} Golden Scrap! Production ×${fmt(mult())}`);
+      drawGrid(); spawnOne(); sfx.prestige(); closePane(); render();
+      toast(`+${fmtL(g)} Golden Scrap! Production ×${fmtL(multL())}`);
       save();
     }});
 }
@@ -712,11 +753,9 @@ $("wipe").onclick = ()=> modal({title:"Reset everything?", text:"This deletes AL
 
 // ================= LOOP =================
 let lastTick = Date.now();
-function tick(){
-  const now = Date.now(), dt = Math.min(3600, (now - lastTick) / 1000);
-  lastTick = now;
-  const gain = prod() * dt;
-  S.scrap += gain; S.runScrap += gain; S.totalScrap += gain;
+function step(dt){
+  const g = prodL() + Math.log10(dt);
+  S.scrap = ladd(S.scrap, g); S.runScrap = ladd(S.runScrap, g); S.totalScrap = ladd(S.totalScrap, g);
 
   S.spawnT += dt;
   const si = spawnInterval(S.up.spawn);
@@ -724,7 +763,7 @@ function tick(){
   while(S.spawnT >= si && spawned < SLOTS){
     if(!S.grid.includes(0)){ S.spawnT = si; break; }   // board full: hold the bar at 100%
     S.spawnT -= si; spawned++;
-    if(spawnOne() && Math.random() < S.up.double*0.05) spawnOne();
+    if(spawnOne() && Math.random() < S.up.double*0.04) spawnOne();
   }
   if(spawned && !document.hidden) sfx.spawn();
 
@@ -734,6 +773,11 @@ function tick(){
     let n = 0;
     while(S.autoT >= ai && n++ < 20){ S.autoT -= ai; autoMerge(); }
   }
+}
+function tick(){
+  const now = Date.now(), dt = Math.min(3600, (now - lastTick) / 1000);
+  lastTick = now;
+  if(dt > 0) step(dt);
   render();
 }
 
@@ -742,13 +786,14 @@ load();
 applyTheme();
 buildUpgrades($("ups"), UPG, "up", false);
 buildUpgrades($("gups"), GUPG, "gup", true);
+liftLow();
 drawGrid(false);
 const away = (Date.now() - S.last) / 1000;
-if(away > 30 && prod() > 0){
-  const secs = Math.min(away, 8*3600), earned = prod() * secs * offEff(S.up.offline);
-  S.scrap += earned; S.runScrap += earned; S.totalScrap += earned;
+if(away > 30 && S.grid.some(Boolean)){
+  const secs = Math.min(away, 8*3600), earned = prodL() + Math.log10(secs * offEff(S.up.offline));
+  S.scrap = ladd(S.scrap, earned); S.runScrap = ladd(S.runScrap, earned); S.totalScrap = ladd(S.totalScrap, earned);
   modal({title:"Welcome back!", text:`You were away for ${fmtTime(away)}. Your barrels worked at ${Math.round(offEff(S.up.offline)*100)}% efficiency and made:`,
-    big:`<svg class="ico"><use href="#i-scrap"/></svg>${fmt(earned)}`, ok:"Collect"});
+    big:`<svg class="ico"><use href="#i-scrap"/></svg>${fmtL(earned)}`, ok:"Collect"});
 }
 if(!S.grid.some(Boolean)) spawnOne();
 render();
