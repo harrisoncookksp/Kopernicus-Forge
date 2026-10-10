@@ -216,19 +216,19 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
   <section class="win" id="sheet">
     <header class="wt"><button class="sq blue" id="bulk" title="Buy one / buy max">×1</button><h2 id="sheettitle"></h2><button class="sq red" id="close" aria-label="Close">X</button></header>
     <nav class="tabs" id="ptabs">
-      <button data-ptab="gs" title="Golden Scrap"><svg viewBox="0 0 40 48"><use href="#i-gold"/></svg></button>
+      <button data-ptab="gs" title="Golden Scrap"><svg viewBox="0 0 40 54"><use href="#i-gold"/></svg></button>
       <button data-ptab="star" title="Stars"><svg viewBox="0 0 100 100"><use href="#i-star"/></svg></button>
     </nav>
     <nav class="tabs" id="utabs">
-      <button data-utab="scrap" title="Scrap Upgrades"><svg viewBox="0 0 40 48"><use href="#i-scrap"/></svg></button>
-      <button data-utab="gold" title="Golden Scrap Upgrades"><svg viewBox="0 0 40 48"><use href="#i-gold"/></svg></button>
+      <button data-utab="scrap" title="Scrap Upgrades"><svg viewBox="0 0 40 54"><use href="#i-scrap"/></svg></button>
+      <button data-utab="gold" title="Golden Scrap Upgrades"><svg viewBox="0 0 40 54"><use href="#i-gold"/></svg></button>
     </nav>
     <div class="pane" id="pane-col"><div class="unl" id="colcount"></div><div id="book"></div></div>
     <div class="pane" id="pane-gold">
       <div class="sub-pane" id="pt-gs">
-        <div class="dbox"><div class="lbl">Golden Scrap</div><div class="bignum"><svg viewBox="0 0 40 48"><use href="#i-gold"/></svg><span id="gs2">0</span></div></div>
+        <div class="dbox"><div class="lbl">Golden Scrap</div><div class="bignum"><svg viewBox="0 0 40 54"><use href="#i-gold"/></svg><span id="gs2">0</span></div></div>
         <div class="dark-lbl">After Prestige:</div>
-        <div class="afterrow">+ <svg viewBox="0 0 40 48"><use href="#i-gold"/></svg><span id="pend">0</span><span id="pendx"></span><button class="sq blue small" id="gsinfo">i</button></div>
+        <div class="afterrow">+ <svg viewBox="0 0 40 54"><use href="#i-gold"/></svg><span id="pend">0</span><span id="pendx"></span><button class="sq blue small" id="gsinfo">i</button></div>
         <div class="gbox"><div class="lbl">Boost per Golden Scrap: <span id="gsper"></span></div>
           <div class="two"><div><small>Current Boost:</small><b id="boostnow"></b></div><div><small>Boost after Restart:</small><b id="boostafter"></b></div></div></div>
         <button class="bigbtn" id="prestige">Restart Game</button>
@@ -264,7 +264,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 
   <nav class="dock">
     <button data-pane="col" title="Barrels"><svg viewBox="0 0 64 64"><use href="#i-barrels4"/></svg></button>
-    <button data-pane="gold" title="Prestige"><span class="dot" id="dot-gold"></span><svg viewBox="0 0 40 48"><use href="#i-gold"/></svg></button>
+    <button data-pane="gold" title="Prestige"><span class="dot" id="dot-gold"></span><svg viewBox="0 0 40 54"><use href="#i-gold"/></svg></button>
     <button data-pane="up" title="Upgrades"><span class="dot" id="dot-up"></span><svg viewBox="0 0 64 64"><use href="#i-up"/></svg></button>
     <button data-pane="set" title="Options"><svg viewBox="0 0 64 64"><use href="#i-more"/></svg></button>
   </nav>
@@ -829,8 +829,8 @@ function cyl(x, y, w, h, body, top, rib){
     <ellipse cx="${cx}" cy="${y+.3}" rx="${(rx*.66).toFixed(1)}" ry="${(ry*.62).toFixed(1)}" fill="#1e1e1e"/>`;
 }
 $("defs").insertAdjacentHTML("beforeend", `
-  <symbol id="i-scrap" viewBox="0 0 40 48">${cyl(4,8,32,32,"#8f8f8f","#b4b4b4","#6c6c6c")}</symbol>
-  <symbol id="i-gold" viewBox="0 0 40 48">${cyl(4,8,32,32,"#f3df2c","#fff07a","#c4ab00")}</symbol>
+  <symbol id="i-scrap" viewBox="0 0 40 54">${cyl(4,8,32,32,"#8f8f8f","#b4b4b4","#6c6c6c")}</symbol>
+  <symbol id="i-gold" viewBox="0 0 40 54">${cyl(4,8,32,32,"#f3df2c","#fff07a","#c4ab00")}</symbol>
   <symbol id="i-star" viewBox="0 0 100 100"><polygon points="${star(50,54,47,20,5)}" fill="#c9c400"/><polygon points="${star(50,54,38,16.5,5)}" fill="#f6f24a"/></symbol>
   <symbol id="i-starno" viewBox="0 0 100 100"><polygon points="${star(50,54,47,20,5)}" fill="#8f8f8f"/><polygon points="${star(50,54,38,16.5,5)}" fill="#b5b5b5"/></symbol>
   <symbol id="i-goldpile" viewBox="0 0 64 56">${cyl(4,26,16,20,"#f3df2c","#fff07a","#c4ab00")}${cyl(24,28,16,20,"#f3df2c","#fff07a","#c4ab00")}${cyl(44,26,16,20,"#f3df2c","#fff07a","#c4ab00")}${cyl(14,10,16,20,"#f3df2c","#fff07a","#c4ab00")}${cyl(34,10,16,20,"#f3df2c","#fff07a","#c4ab00")}</symbol>
@@ -947,7 +947,7 @@ function refreshUpgrades(defs){
     const d = u.desc(l); if(ds._v !== d){ ds.textContent = d; ds._v = d; }
     const c = costL(u,l);
     const ok = !why && (u.gold ? S.gs : S.scrap) >= c - 1e-9;
-    const bt = why ? "MAX" : `<svg class="ico xs" viewBox="0 0 40 48"><use href="#i-${u.gold?"gold":"scrap"}"/></svg>${fmtL(c)}`;
+    const bt = why ? "MAX" : `<svg class="ico xs" viewBox="0 0 40 54"><use href="#i-${u.gold?"gold":"scrap"}"/></svg>${fmtL(c)}`;
     if(b._v !== bt){ b.innerHTML = bt; b._v = bt; }
     b.className = "buy" + (why ? " max" : ok ? "" : " poor");
     b.disabled = !ok; if(ok) n++;
@@ -1031,7 +1031,7 @@ function showUpgradeStars(){
   if(starWin) starWin.remove();
   const sc = starCostL(S.stars), can = S.gs >= sc - 1e-9;
   starWin = modal({title:"Upgrade Stars", ok: can ? `Buy Star ${S.stars+1}` : "Close",
-    html:`<div class="dbox starhdr"><div class="bignum"><svg viewBox="0 0 40 48"><use href="#i-gold"/></svg><span>${fmtL(S.gs)}</span></div><button class="sq blue small si">i</button></div>
+    html:`<div class="dbox starhdr"><div class="bignum"><svg viewBox="0 0 40 54"><use href="#i-gold"/></svg><span>${fmtL(S.gs)}</span></div><button class="sq blue small si">i</button></div>
       <div class="starfield">${starRows()}</div>
       <p>Next Star: ${fmtL(sc)} Golden Scrap (spends all)</p>`,
     onOk: () => { starWin = null; if(can){ buyStar(); showUpgradeStars(); } }});
