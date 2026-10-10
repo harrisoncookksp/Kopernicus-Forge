@@ -107,6 +107,14 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .prest p{margin:0 0 6px;font-size:13px;color:var(--muted)}
 .prest .big{display:flex;align-items:center;justify-content:center;gap:6px;font-size:30px;font-weight:700;color:var(--gold);margin:4px 0 10px}
 .prest .buy{width:100%;padding:12px;font-size:17px}
+.prest #gsmulttxt{font-weight:600;color:var(--ink)}
+h3.sub{margin:16px 2px 4px;font-size:17px}
+.gst{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:6px}
+.gst div{background:var(--row);border:1px solid var(--line);border-radius:10px;padding:6px;text-align:center;font-size:12px;color:var(--muted)}
+.gst div b{display:block;font-size:17px;color:var(--ink)}
+.gst div.got{border-color:var(--gold);background:var(--gold-bg,var(--row));color:var(--ink)}
+.gst div.got b{color:var(--gold)}
+.gst div.cur{outline:2px solid var(--gold);outline-offset:-1px}
 .note{font-size:12px;color:var(--muted);margin:2px 2px 10px}
 #book{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .card{background:var(--row);border:1px solid var(--line);border-radius:12px;padding:6px 4px;text-align:center}
@@ -168,8 +176,13 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
       <div class="prest">
         <p>Prestige resets your scrap, barrels and upgrades.<br>Golden Scrap stays forever and boosts all production.</p>
         <div class="big"><svg class="ico"><use href="#i-gold"/></svg><span id="pend">0</span></div>
+        <p id="gsmulttxt"></p>
         <button class="buy gold" id="prestige">Prestige</button>
       </div>
+      <h3 class="sub">Golden Scrap Multipliers</h3>
+      <p class="note">Your highest barrel this run multiplies the Golden Scrap you get when you prestige. The bonus stops growing at barrel #97.</p>
+      <div class="gst" id="gst"></div>
+      <h3 class="sub">Golden Upgrades</h3>
       <p class="note">Spending Golden Scrap on these lowers its production bonus, so spend wisely.</p>
       <div id="gups"></div>
     </div>
@@ -404,9 +417,14 @@ const gsPer = () => 0.01 * (1 + 0.5*S.gup.touch);
 const gsMultL = () => ladd(0, S.gs + Math.log10(gsPer())); // log10(1 + GS * per)
 const multL = () => S.up.mult * Math.log10(1.25) + gsMultL();
 const prodL = () => S.grid.reduce((a,t) => t ? ladd(a, tierL(t)) : a, LZ) + multL();
+// Golden Scrap Multipliers (same thresholds as Scrap Clicker 2): the highest barrel reached this run
+// multiplies the Golden Scrap a prestige gives. They stop growing at barrel #97 (x1024).
+const GS_TIERS = [[49,2],[55,4],[61,8],[67,12],[73,16],[79,48],[85,96],[91,320],[97,1024]];
+const gsTier = () => { let n = 0; for(const [req] of GS_TIERS) if(S.runBest >= req) n++; return n; };
+const gsTierMult = () => gsTier() ? GS_TIERS[gsTier()-1][1] : 1;
 function pendingL(){
   if(S.runScrap < BAL.GS_MIN) return LZ;
-  const g = BAL.GS_X * (S.runScrap - BAL.GS_MIN) + Math.log10(1 + 0.25*S.gup.gains);   // (runScrap / 1M) ^ GS_X
+  const g = BAL.GS_X * (S.runScrap - BAL.GS_MIN) + Math.log10(1 + 0.25*S.gup.gains) + Math.log10(gsTierMult());   // (runScrap / 1M) ^ GS_X
   return g < 15 ? lnum(Math.floor(10**g)) : g;
 }
 
@@ -606,6 +624,16 @@ function renderSettings(){
   $("stats").innerHTML = `<span>Total scrap earned</span><b>${fmtL(S.totalScrap)}</b><span>Merges</span><b>${fmt(S.merges)}</b><span>Prestiges</span><b>${S.prestiges}</b><span>Best barrel</span><b>#${S.best}</b>`;
 }
 
+let gstKey = "";
+function renderGsTiers(){
+  const n = gsTier(), key = n + "/" + S.runBest;
+  if(key === gstKey) return; gstKey = key;
+  $("gst").innerHTML = GS_TIERS.map(([req, m], i) =>
+    `<div class="${i < n ? "got" : ""}${i === n-1 ? " cur" : ""}"><b>×${m}</b>Barrel #${req}${i === GS_TIERS.length-1 ? "+" : ""}</div>`).join("");
+  const next = GS_TIERS[n];
+  $("gsmulttxt").textContent = (n ? `Multiplier ×${gsTierMult()}` : "No multiplier yet")
+    + (next ? ` · reach barrel #${next[0]} for ×${next[1]}` : " · maxed out");
+}
 let lastNext = 0;
 function render(){
   $("scrap").textContent = fmtL(S.scrap);
@@ -614,6 +642,7 @@ function render(){
   $("gsb").textContent = "+" + fmtL(S.gs + Math.log10(gsPer()) + 2) + "% production";
   const pend = pendingL();
   $("pend").textContent = fmtL(pend);
+  renderGsTiers();
   $("prestige").disabled = pend < 0;
   const si = spawnInterval(S.up.spawn), full = !S.grid.includes(0);
   $("spawnfill").style.width = Math.min(100, S.spawnT / si * 100) + "%";
@@ -625,7 +654,11 @@ function render(){
 
 // ================= GAME ACTIONS =================
 function discover(t){
-  if(t > S.runBest) S.runBest = t;
+  if(t > S.runBest){
+    const before = gsTier();
+    S.runBest = t;
+    if(gsTier() > before) toast(`<svg class="ico sm" style="vertical-align:middle"><use href="#i-gold"/></svg> Golden Scrap Multiplier ×${gsTierMult()}!`);
+  }
   if(t > S.best){
     S.best = t; sfx.discover();
     toast(`<span class="mini">${svgFor(t)}</span>New barrel: #${t} ${ITEMS[t-1].name}!`);
