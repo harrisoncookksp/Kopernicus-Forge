@@ -249,7 +249,6 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
     </div>
     <div class="pane" id="pane-set">
       <div class="setrow"><span>Sound</span><button id="mute"></button></div>
-      <div class="setrow"><span>Barrel style</span><button id="style"></button></div>
       <div class="sect">Statistics</div>
       <div class="stats" id="stats"></div>
       <div class="sect">News</div>
@@ -311,33 +310,52 @@ const SHAPE = {
   churn:  {d:"M36 14 V22 Q22 27 22 42 V84 Q50 92 78 84 V42 Q78 27 64 22 V14 Z", top:14, rx:14, ry:4.5, x1:22, x2:78, bot:84},
   capsule:{d:"M24 18 V62 Q24 91 50 91 Q76 91 76 62 V18 Z", top:18, rx:26, ry:7, x1:24, x2:76, bot:88},
   globe:  {d:"M34 18 Q10 32 13 58 Q18 88 50 88 Q82 88 87 58 Q90 32 66 18 Z", top:18, rx:16, ry:5, x1:12, x2:88, bot:86},
+  // flat-sided bodies like SC2's newer barrels: a front-facing box and a hex prism
+  box:    {poly:"box", d:"M20 26 L32 16 H82 V80 L70 90 H20 Z"},
+  hex:    {poly:"hex", d:"M22 20 L36 12 H64 L78 20 V84 L64 92 H36 L22 84 Z"},
 };
 // shared clip paths + shading gradient, generated once
 document.getElementById("defs").insertAdjacentHTML("beforeend",
   Object.entries(SHAPE).map(([k,s]) => `<clipPath id="c-${k}"><path d="${s.d}"/></clipPath>`).join("") +
   `<linearGradient id="g-shade" x1="0" x2="1" y1="0" y2="0">
-     <stop offset="0" stop-color="#000" stop-opacity=".22"/><stop offset=".2" stop-color="#fff" stop-opacity=".34"/>
-     <stop offset=".34" stop-color="#fff" stop-opacity="0"/><stop offset=".62" stop-color="#000" stop-opacity="0"/>
-     <stop offset="1" stop-color="#000" stop-opacity=".34"/></linearGradient>`);
+     <stop offset="0" stop-color="#000" stop-opacity=".16"/><stop offset=".17" stop-color="#fff" stop-opacity=".3"/>
+     <stop offset=".3" stop-color="#fff" stop-opacity="0"/><stop offset=".55" stop-color="#000" stop-opacity="0"/>
+     <stop offset=".78" stop-color="#000" stop-opacity=".2"/><stop offset="1" stop-color="#000" stop-opacity=".42"/></linearGradient>
+   <linearGradient id="g-face" x1="0" x2="1" y1="0" y2="0">
+     <stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".3" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".14"/></linearGradient>`);
 
-// o.shape, o.fill, o.deco (painted on the body, clipped), o.hoops [y...] / o.hoop / o.hw,
-// o.lid / o.inner (lid colours), o.top (on the lid), o.under (behind the body), o.over (in front of everything)
+// Styled after Scrap Clicker 2's newer barrels: no outline, lit left side, darker right side,
+// shadow under the lid. o.shape, o.fill, o.deco (painted on the body, clipped), o.hoops [y...] /
+// o.hoop / o.hw, o.lid / o.inner (top colours), o.top (on the top), o.under (behind), o.over (in front)
 function barrel(o){
-  const s = SHAPE[o.shape];
+  const s = SHAPE[o.shape], poly = s.poly;
+  const deco = poly === "box" ? `<g transform="translate(-5 0)">${o.deco || ""}</g>` : (o.deco || "");
+  const hoops = (o.hoops||[]).map(y => poly ? `<path d="M0 ${y} H100" stroke="${o.hoop}" stroke-width="${o.hw||5}"/>` : hoop(y, o.hoop, o.hw)).join("");
+  let fx, topFx;
+  if(poly === "box"){
+    fx = `<rect x="20" y="0" width="50" height="100" fill="url(#g-face)"/><polygon points="70,26 82,16 82,80 70,90" fill="#000" opacity=".32"/>
+      <rect x="20" y="26" width="50" height="4" fill="#000" opacity=".14"/><rect x="20" y="85" width="50" height="5" fill="#000" opacity=".12"/>`;
+    topFx = `<polygon points="20,26 32,16 82,16 70,26" fill="${o.lid}"/><polygon points="27,24.4 35.5,18 75,18 66.5,24.4" fill="${o.inner}"/>
+      <path d="M21 25.6 H69.5" stroke="#fff" stroke-opacity=".5" stroke-width="1.3"/>`;
+  } else if(poly === "hex"){
+    fx = `<polygon points="22,20 36,28 36,92 22,84" fill="#000" opacity=".1"/><polygon points="64,28 78,20 78,84 64,92" fill="#000" opacity=".32"/>
+      <rect x="39" y="0" width="5" height="100" fill="#fff" opacity=".18"/><path d="M22 20 L36 28 H64 L78 20 V24 L64 32 H36 L22 24 Z" fill="#000" opacity=".14"/>
+      <path d="M22 84 L36 92 H64 L78 84 V79 L64 87 H36 L22 79 Z" fill="#000" opacity=".12"/>`;
+    topFx = `<polygon points="22,20 36,12 64,12 78,20 64,28 36,28" fill="${o.lid}"/><polygon points="29.5,20 39,14.8 61,14.8 70.5,20 61,25.2 39,25.2" fill="${o.inner}"/>
+      <path d="M23 20.6 L36 27.6 H64" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.3"/>`;
+  } else {
+    fx = `<rect x="${s.x1}" y="0" width="${s.x2-s.x1}" height="100" fill="url(#g-shade)"/>
+      <path d="M0 ${s.bot-5} Q50 ${s.bot+9} 100 ${s.bot-5} V100 H0 Z" fill="#000" opacity=".14"/>
+      <path d="M0 ${s.top} Q50 ${s.top+2*s.ry+7} 100 ${s.top} V0 H0 Z" fill="#000" opacity=".16"/>`;
+    topFx = `<ellipse cx="50" cy="${s.top}" rx="${s.rx}" ry="${s.ry}" fill="${o.lid}"/>
+      <ellipse cx="50" cy="${s.top+.4}" rx="${(s.rx*.78).toFixed(1)}" ry="${(s.ry*.58).toFixed(1)}" fill="${o.inner}" stroke="none"/>
+      <path d="M${(50-s.rx*.8).toFixed(1)} ${(s.top+s.ry*.55).toFixed(1)} Q50 ${(s.top+s.ry*1.25).toFixed(1)} ${(50+s.rx*.2).toFixed(1)} ${(s.top+s.ry*.98).toFixed(1)}" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.5"/>`;
+  }
   return `${o.under || ""}
   <g clip-path="url(#c-${o.shape})" stroke="none">
     <rect width="100" height="100" fill="${o.fill}"/>
-    ${o.planks ? PLANKS : ""}
-    ${o.deco || ""}
-    ${(o.hoops||[]).map(y => hoop(y, o.hoop, o.hw)).join("")}
-    <rect x="${s.x1}" y="0" width="${s.x2-s.x1}" height="100" fill="url(#g-shade)"/>
-    <path d="M0 ${s.bot-5} Q50 ${s.bot+9} 100 ${s.bot-5} V100 H0 Z" fill="#000" opacity=".12"/>
-  </g>
-  <path d="${s.d}" fill="none"/>
-  <ellipse cx="50" cy="${s.top}" rx="${s.rx}" ry="${s.ry}" fill="${o.lid}"/>
-  <ellipse cx="50" cy="${s.top+.4}" rx="${(s.rx*.78).toFixed(1)}" ry="${(s.ry*.58).toFixed(1)}" fill="${o.inner}" stroke-width="2"/>
-  <path d="M${(50-s.rx*.8).toFixed(1)} ${(s.top+s.ry*.55).toFixed(1)} Q50 ${(s.top+s.ry*1.25).toFixed(1)} ${(50+s.rx*.2).toFixed(1)} ${(s.top+s.ry*.98).toFixed(1)}" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.6"/>
-  ${o.top || ""}${o.over || ""}`;
+    ${o.planks ? PLANKS : ""}${deco}${hoops}${fx}
+  </g>${topFx}${o.top || ""}${o.over || ""}`;
 }
 
 // ================= BARRELS =================
@@ -346,11 +364,11 @@ const ITEMS = [
 // ---------- 1-20: classic barrels ----------
 { name:"Starter Keg", shape:"keg", fill:"#b9793f", planks:1, hoops:[30,70], hoop:"#4a4f57", lid:"#c98b4f", inner:"#8a5a2c",
   deco:`<path d="M44 40 q3 6 0 12 M56 58 q-3 5 0 10" fill="none" stroke="#7a4c22" stroke-width="1.4"/>
-        <circle cx="62" cy="50" r="4" fill="#5a3a1c" stroke="#1d1a24" stroke-width="1.6"/><circle cx="62" cy="50" r="1.6" fill="#3a2410"/>`,
+        <circle cx="62" cy="50" r="4" fill="#5a3a1c" stroke="#000" stroke-opacity=".35" stroke-width="1.6"/><circle cx="62" cy="50" r="1.6" fill="#3a2410"/>`,
   top:`<circle cx="60" cy="18" r="2.4" fill="#5a3a1c" stroke-width="1.5"/>` },
 { name:"Steel Yourself", shape:"drum", fill:"#8e9aa7", hoops:[30,70], hoop:"#6b7785", hw:4, lid:"#a9b4c0", inner:"#7b8794",
   deco:`<path d="M58 18 V90" stroke="#77838f" stroke-width="1.6"/><path d="M58 22 v4 M58 34 v4 M58 76 v4" stroke="#5c6672" stroke-width="2.4"/>
-        <rect x="34" y="45" width="20" height="13" rx="2" fill="#c7ced6" stroke="#1d1a24" stroke-width="2"/>
+        <rect x="34" y="45" width="20" height="13" rx="2" fill="#c7ced6" stroke="#000" stroke-opacity=".35" stroke-width="2"/>
         <path d="M38 50 h12 M38 54 h8" stroke="#77838f" stroke-width="1.5"/>
         ${dots([[36.5,47.5],[51.5,47.5],[36.5,55.5],[51.5,55.5]],1.1,"#555")}`,
   top:`<circle cx="62" cy="18" r="2.6" fill="#5c6672" stroke-width="1.5"/>` },
@@ -359,12 +377,12 @@ const ITEMS = [
         <path d="M44 74 l6 -9 l6 9 Z" fill="#1d1a24"/><path d="M50 69 v2.5 M50 73 v.1" stroke="#f2c230" stroke-width="1.6"/>` },
 { name:"Glow-Ahead", shape:"drum", fill:"#4b5d3a", hoops:[32,78], hoop:"#34432a", lid:"#7cff3a", inner:"#57d61c",
   deco:`<path d="M27 18 V30 a3 3 0 0 0 6 0 V18 Z M45 18 V36 a3.5 3.5 0 0 0 7 0 V18 Z M64 18 V27 a3 3 0 0 0 6 0 V18 Z" fill="#7cff3a"/>
-        <circle cx="50" cy="57" r="13" fill="#d7f23a" stroke="#1d1a24" stroke-width="2"/>
+        <circle cx="50" cy="57" r="13" fill="#d7f23a" stroke="#000" stroke-opacity=".35" stroke-width="2"/>
         <path d="${sector(50,57,3.6,10.5,-120,-60)} ${sector(50,57,3.6,10.5,0,60)} ${sector(50,57,3.6,10.5,120,180)}" fill="#1d1a24"/>
         <circle cx="50" cy="57" r="2.2" fill="#1d1a24"/>`,
   top:`<circle cx="44" cy="17" r="1.6" fill="#c8ff9e" stroke="none"/><circle cx="56" cy="19" r="1.1" fill="#c8ff9e" stroke="none"/>` },
 { name:"Red Alert", shape:"drum", fill:"#d63a3a", hoops:[30,74], hoop:"#9e2525", lid:"#e35a5a", inner:"#a52828",
-  deco:`<polygon points="50,38 66,54 50,70 34,54" fill="#fff" stroke="#1d1a24" stroke-width="2"/>
+  deco:`<polygon points="50,38 66,54 50,70 34,54" fill="#fff" stroke="#000" stroke-opacity=".35" stroke-width="2"/>
         <polygon points="50,41.5 62.5,54 50,66.5 37.5,54" fill="none" stroke="#d63a3a" stroke-width="1.2"/>
         <path d="M50 45 Q57.5 53 54.5 59.5 Q51.5 64 49 61 Q46 64 45.5 58.5 Q44 53 50 45 Z" fill="#d63a3a"/>` },
 { name:"Over the Barrel", shape:"drum", fill:"#2f7fd6", hoops:[28,78], hoop:"#1f5ea3", lid:"#4a97e6", inner:"#2766ad",
@@ -372,14 +390,14 @@ const ITEMS = [
         <path d="M-4 54 q8 -6 16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0" fill="none" stroke="#9fd0ff" stroke-width="3"/>
         <path d="M-4 66 q8 -6 16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="2.5"/>` },
 { name:"Kind of a Big Dill", shape:"keg", fill:"#6aa84f", planks:1, hoops:[28,74], hoop:"#b08a3a", lid:"#7cbf5e", inner:"#4e8a36",
-  deco:`<ellipse cx="50" cy="51" rx="8" ry="15" transform="rotate(28 50 51)" fill="#3f7d2b" stroke="#1d1a24" stroke-width="2"/>
+  deco:`<ellipse cx="50" cy="51" rx="8" ry="15" transform="rotate(28 50 51)" fill="#3f7d2b" stroke="#000" stroke-opacity=".35" stroke-width="2"/>
         ${dots([[46.5,45],[52,52],[48.5,58],[55,46],[44,52]],1.3,"#8fd16a")}
-        <path d="M40 41 q-2 -4 1 -6" fill="none" stroke="#1d1a24" stroke-width="1.6"/>` },
+        <path d="M40 41 q-2 -4 1 -6" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="1.6"/>` },
 { name:"Yo Ho Ho", shape:"keg", fill:"#5e3a22", planks:1, hoops:[28,74], hoop:"#2b2b2b", lid:"#73492b", inner:"#3e2615",
-  deco:`<rect x="35" y="39" width="30" height="28" rx="2" fill="#efdcb0" stroke="#1d1a24" stroke-width="2" transform="rotate(-4 50 53)"/>
-        <path d="M42 59 L58 66 M58 59 L42 66" stroke="#1d1a24" stroke-width="5" stroke-linecap="round"/>
+  deco:`<rect x="35" y="39" width="30" height="28" rx="2" fill="#efdcb0" stroke="#000" stroke-opacity=".35" stroke-width="2" transform="rotate(-4 50 53)"/>
+        <path d="M42 59 L58 66 M58 59 L42 66" stroke="#000" stroke-opacity=".35" stroke-width="5" stroke-linecap="round"/>
         <path d="M42 59 L58 66 M58 59 L42 66" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
-        <path d="M43 50 Q43 42 50 42 Q57 42 57 50 Q57 54 54 55 V58 H46 V55 Q43 54 43 50 Z" fill="#fff" stroke="#1d1a24" stroke-width="1.8"/>
+        <path d="M43 50 Q43 42 50 42 Q57 42 57 50 Q57 54 54 55 V58 H46 V55 Q43 54 43 50 Z" fill="#fff" stroke="#000" stroke-opacity=".35" stroke-width="1.8"/>
         <circle cx="47.5" cy="50" r="2" fill="#1d1a24"/><circle cx="52.5" cy="50" r="2" fill="#1d1a24"/>` },
 { name:"Sweet Spot", shape:"can", fill:"#ffffff", lid:"#ffffff", inner:"#f6dede",
   deco:stripes(0,100,16,7,"#e2465b") + `<circle cx="50" cy="52" r="8" fill="#fff" stroke="#e2465b" stroke-width="2"/><path d="M45 52 q5 -6 10 0 q-5 6 -10 0" fill="#e2465b"/>`,
@@ -389,7 +407,7 @@ const ITEMS = [
         <path d="M52 40 Q62 34 72 42 Q80 50 70 54 Q58 56 54 50 Z" fill="#9a8a5a"/>
         <path d="M30 58 Q40 54 48 62 Q50 70 40 70 Q28 70 30 62 Z" fill="#2f3520"/>
         <path d="M58 62 Q66 58 76 64 Q78 72 68 72 Q58 72 58 66 Z" fill="#4a5530"/>
-        <polygon points="${star(50,50,6,2.4,5)}" fill="#e8e1c4" stroke="#1d1a24" stroke-width="1"/>` },
+        <polygon points="${star(50,50,6,2.4,5)}" fill="#e8e1c4" stroke="#000" stroke-opacity=".35" stroke-width="1"/>` },
 { name:"Chill Pill", shape:"capsule", fill:"#bfe6ff", hoops:[74], hoop:"#8cc4e8", lid:"#e8f7ff", inner:"#a6d6f5",
   deco:`<polygon points="24,22 28,36 32,22 36,30 40,22 45,40 50,22 54,32 58,22 63,38 68,22 72,30 76,22" fill="#fff"/>
         <path d="M50 46 V70 M39.6 52 L60.4 64 M39.6 64 L60.4 52 M46 48 l4 4 l4 -4 M46 68 l4 -4 l4 4" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/>`,
@@ -409,7 +427,7 @@ const ITEMS = [
         <text x="50" y="58.5" font-size="15" font-weight="700" text-anchor="middle" fill="#b8860b" font-family="Open Sans,system-ui,sans-serif">$</text>
         <polygon points="${star(66,40,4,1.2,4)}" fill="#fff"/>` },
 { name:"Barrel-bot", shape:"capsule", fill:"#9aa5b4", hoops:[30], hoop:"#6c7785", lid:"#b7c2cf", inner:"#7d8896",
-  deco:`<rect x="33" y="40" width="34" height="22" rx="6" fill="#1d2330" stroke="#1d1a24" stroke-width="2"/>
+  deco:`<rect x="33" y="40" width="34" height="22" rx="6" fill="#1d2330" stroke="#000" stroke-opacity=".35" stroke-width="2"/>
         <circle cx="43" cy="49" r="3.4" fill="#3ef2ff"/><circle cx="57" cy="49" r="3.4" fill="#3ef2ff"/>
         <path d="M43 56 Q50 60 57 56" fill="none" stroke="#3ef2ff" stroke-width="2" stroke-linecap="round"/>
         ${dots([[29,40],[29,52],[29,64],[71,40],[71,52],[71,64]],1.4,"#5c6672")}
@@ -418,13 +436,13 @@ const ITEMS = [
 { name:"Fun Guy", shape:"keg", fill:"#8a6a45", planks:1, hoops:[28], hoop:"#4a4f57", lid:"#9b7a52", inner:"#6b4f30",
   deco:`<path d="M10 82 Q22 70 30 76 Q38 66 46 74 Q56 68 62 76 Q72 68 90 80 V100 H10 Z" fill="#5d9a3a"/>
         <path d="M14 46 Q20 40 26 46 Q24 54 16 52 Z" fill="#5d9a3a"/>
-        <rect x="63" y="58" width="5" height="10" rx="1.5" fill="#f1ece2" stroke="#1d1a24" stroke-width="1.5"/>
-        <path d="M57 60 Q65 47 74 60 Z" fill="#e2465b" stroke="#1d1a24" stroke-width="2"/>
+        <rect x="63" y="58" width="5" height="10" rx="1.5" fill="#f1ece2" stroke="#000" stroke-opacity=".35" stroke-width="1.5"/>
+        <path d="M57 60 Q65 47 74 60 Z" fill="#e2465b" stroke="#000" stroke-opacity=".35" stroke-width="2"/>
         <circle cx="62" cy="56" r="1.4" fill="#fff"/><circle cx="68" cy="54" r="1.2" fill="#fff"/>
-        <rect x="45" y="66" width="3.5" height="7" rx="1" fill="#f1ece2" stroke="#1d1a24" stroke-width="1.2"/>
-        <path d="M41 67 Q46.7 58 52.5 67 Z" fill="#e2465b" stroke="#1d1a24" stroke-width="1.6"/>`,
+        <rect x="45" y="66" width="3.5" height="7" rx="1" fill="#f1ece2" stroke="#000" stroke-opacity=".35" stroke-width="1.2"/>
+        <path d="M41 67 Q46.7 58 52.5 67 Z" fill="#e2465b" stroke="#000" stroke-opacity=".35" stroke-width="1.6"/>`,
   top:`<path d="M30 17 Q36 12 42 16 Q40 20 32 20 Z" fill="#5d9a3a" stroke-width="1.5"/>` },
-{ name:"Pit Stop", shape:"drum", fill:"#222222", lid:"#333333", inner:"#111111",
+{ name:"Pit Stop", shape:"hex", fill:"#222222", lid:"#333333", inner:"#111111",
   deco:`<rect x="0" y="34" width="100" height="6" fill="#e2465b"/><rect x="0" y="66" width="100" height="6" fill="#e2465b"/>
         ${[0,1,2].map(r=>Array.from({length:8},(_,c)=>(c+r)%2?`<rect x="${20+c*8}" y="${42+r*8}" width="8" height="8" fill="#fff"/>`:"").join("")).join("")}
         <circle cx="50" cy="82" r="5" fill="#fff"/><text x="50" y="84.6" font-size="7" font-weight="700" text-anchor="middle" fill="#1d1a24" font-family="Open Sans,system-ui,sans-serif">1</text>` },
@@ -439,8 +457,8 @@ const ITEMS = [
         <path d="M20 16 L50 40 L80 16 M50 40 V92 M20 60 L50 40 L80 60 M20 60 L50 92 L80 60" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1.4"/>
         <polygon points="${star(40,32,5,1.3,4)}" fill="#fff"/>` },
 { name:"Barrel Royale", shape:"keg", fill:"#5a2a82", planks:1, hoops:[28,74], hoop:"#f2c14e", hw:6, lid:"#6b3596", inner:"#f2c14e",
-  deco:`<path d="M37 61 L39 44 L45 51 L50 40 L55 51 L61 44 L63 61 Z" fill="#f2c14e" stroke="#1d1a24" stroke-width="2"/>
-        <circle cx="50" cy="54" r="2.4" fill="#e2465b" stroke="#1d1a24" stroke-width="1"/>
+  deco:`<path d="M37 61 L39 44 L45 51 L50 40 L55 51 L61 44 L63 61 Z" fill="#f2c14e" stroke="#000" stroke-opacity=".35" stroke-width="2"/>
+        <circle cx="50" cy="54" r="2.4" fill="#e2465b" stroke="#000" stroke-opacity=".35" stroke-width="1"/>
         <circle cx="43" cy="56" r="1.6" fill="#4fb3ff"/><circle cx="57" cy="56" r="1.6" fill="#4fb3ff"/>
         <circle cx="34" cy="35" r="1.8" fill="#e2465b"/><circle cx="50" cy="38" r="1.8" fill="#4fb3ff"/><circle cx="66" cy="35" r="1.8" fill="#e2465b"/>` },
 
@@ -448,7 +466,7 @@ const ITEMS = [
 { name:"Trash Talk", shape:"bucket", fill:"#9aa6b2", hoops:[26,80], hoop:"#7d8996", hw:3, lid:"#b4bec8", inner:"#8893a0",
   deco:`<path d="M29 20 L35 92 M39 20 L42 92 M50 20 V92 M61 20 L58 92 M71 20 L65 92" stroke="#7d8996" stroke-width="3" fill="none"/>
         <path d="M60 48 q5 4 0 9 q-4 3 0 7" fill="none" stroke="#5f6a76" stroke-width="2"/>
-        <path d="M36 66 q4 -8 10 -2 q-2 6 -10 2 Z" fill="#f2d43a" stroke="#1d1a24" stroke-width="1.5"/>`,
+        <path d="M36 66 q4 -8 10 -2 q-2 6 -10 2 Z" fill="#f2d43a" stroke="#000" stroke-opacity=".35" stroke-width="1.5"/>`,
   top:`<path d="M41 20 Q41 11 50 11 Q59 11 59 20" fill="none" stroke-width="4"/><path d="M41 20 Q41 11 50 11 Q59 11 59 20" fill="none" stroke="#b4bec8" stroke-width="1.6"/>`,
   over:`<circle cx="82" cy="10" r="2" fill="#1d1a24" stroke="none"/><ellipse cx="79.5" cy="7" rx="2.6" ry="1.5" fill="#fff" stroke-width="1"/><ellipse cx="84.5" cy="7" rx="2.6" ry="1.5" fill="#fff" stroke-width="1"/>
         <path d="M74 14 q3 -3 5 0 M86 16 q2 -3 5 -1" fill="none" stroke-width="1.2"/>` },
@@ -478,16 +496,16 @@ const ITEMS = [
         ${dots([[38,62],[52,70],[62,48],[42,46],[58,60],[48,38]],1.4,"#ffe5a8")}`,
   top:`<path d="M21 20 q2 -9 10 -6 q4 -7 11 -3 q5 -6 12 -1 q6 -5 11 0 q7 -2 8 7 Q66 26 50 26 Q30 26 21 20 Z" fill="#fffaf0" stroke-width="2"/>
        <path d="M30 22 q0 8 3 10 q3 -2 2 -10" fill="#fffaf0" stroke-width="2"/>` },
-{ name:"You've Got Mail", shape:"capsule", fill:"#2f5fb3", lid:"#3a6fc7", inner:"#244a8c",
+{ name:"You've Got Mail", shape:"box", fill:"#2f5fb3", lid:"#3a6fc7", inner:"#244a8c",
   deco:`<rect x="35" y="30" width="30" height="6" rx="3" fill="#1d1a24"/>
-        <rect x="36" y="48" width="28" height="18" rx="1.5" fill="#fff" stroke="#1d1a24" stroke-width="2"/>
-        <path d="M36 48 L50 59 L64 48" fill="none" stroke="#1d1a24" stroke-width="2"/>
+        <rect x="36" y="48" width="28" height="18" rx="1.5" fill="#fff" stroke="#000" stroke-opacity=".35" stroke-width="2"/>
+        <path d="M36 48 L50 59 L64 48" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="2"/>
         <rect x="58" y="51" width="4" height="4" fill="#e2465b"/>
         <rect x="0" y="76" width="100" height="4" fill="#fff"/>`,
-  over:`${tube("M76 66 H84 V30","#9aa4ae",3)}<path d="M84 28 H96 V40 H84 Z" fill="#e2465b"/>` },
+  over:`${tube("M82 64 H88 V30","#9aa4ae",3)}<path d="M88 28 H98 V39 H88 Z" fill="#e2465b"/>` },
 { name:"Pop Culture", shape:"bucket", fill:"#ffffff", lid:"#ffffff", inner:"#fff6d5",
   deco:`${[0,2,4,6].map(i=>`<rect x="${14+i*10.5}" y="0" width="10.5" height="100" fill="#e2465b"/>`).join("")}
-        <circle cx="50" cy="54" r="10" fill="#f2c230" stroke="#1d1a24" stroke-width="2"/>
+        <circle cx="50" cy="54" r="10" fill="#f2c230" stroke="#000" stroke-opacity=".35" stroke-width="2"/>
         <polygon points="${star(50,54,7,3,5)}" fill="#fff"/>`,
   top:`${[[24,18,7],[34,12,8],[46,8,8],[58,10,8],[70,13,7],[78,19,6],[40,18,7],[54,17,8],[66,20,6],[30,22,5],[72,24,5]]
         .map(([x,y,r],i)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${i%3?"#fff6d5":"#ffe38a"}" stroke-width="2"/>`).join("")}` },
@@ -502,65 +520,65 @@ const ITEMS = [
         <path d="M0 36 q8 -4 16 0 t16 0 t16 0 t16 0 t16 0 t16 0 t16 0" fill="none" stroke="#fff" stroke-width="2"/>
         ${dots([[24,84],[32,86],[40,85],[48,87],[56,85],[64,86],[72,84],[28,82],[60,83]],3,"#e9c98b")}
         <path d="M30 84 Q26 70 32 60 Q34 70 34 84 M36 84 Q40 72 36 64" fill="none" stroke="#2fbf71" stroke-width="3"/>
-        <path d="M58 56 L66 50 L66 62 Z" fill="#ff8a1f" stroke="#1d1a24" stroke-width="1.6"/>
-        <ellipse cx="49" cy="56" rx="10" ry="6.5" fill="#ff8a1f" stroke="#1d1a24" stroke-width="1.8"/>
+        <path d="M58 56 L66 50 L66 62 Z" fill="#ff8a1f" stroke="#000" stroke-opacity=".35" stroke-width="1.6"/>
+        <ellipse cx="49" cy="56" rx="10" ry="6.5" fill="#ff8a1f" stroke="#000" stroke-opacity=".35" stroke-width="1.8"/>
         <circle cx="44" cy="54.5" r="1.5" fill="#1d1a24"/><path d="M50 51 q2 5 0 10" fill="none" stroke="#e06a00" stroke-width="1.4"/>
         <circle cx="40" cy="44" r="2" fill="none" stroke="#fff" stroke-width="1.2"/><circle cx="37" cy="38" r="1.4" fill="none" stroke="#fff" stroke-width="1.1"/>
         <path d="M22 40 Q18 56 24 70" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="3.5"/>` },
 { name:"Bacon Savings", shape:"keg", fill:"#f7a8c4", lid:"#f9bdd2", inner:"#f48fb1",
   under:`<path d="M27 26 L21 9 L38 20 Z" fill="#f48fb1"/><path d="M73 26 L79 9 L62 20 Z" fill="#f48fb1"/>`,
-  deco:`<ellipse cx="50" cy="58" rx="11" ry="7.5" fill="#f48fb1" stroke="#1d1a24" stroke-width="2"/>
+  deco:`<ellipse cx="50" cy="58" rx="11" ry="7.5" fill="#f48fb1" stroke="#000" stroke-opacity=".35" stroke-width="2"/>
         <ellipse cx="46" cy="58" rx="2" ry="3" fill="#b8476f"/><ellipse cx="54" cy="58" rx="2" ry="3" fill="#b8476f"/>
         <circle cx="39" cy="44" r="3.2" fill="#1d1a24"/><circle cx="61" cy="44" r="3.2" fill="#1d1a24"/>
         <circle cx="40" cy="43" r="1" fill="#fff"/><circle cx="62" cy="43" r="1" fill="#fff"/>
         <ellipse cx="32" cy="56" rx="4" ry="2.5" fill="#ff7aa8" opacity=".6"/><ellipse cx="68" cy="56" rx="4" ry="2.5" fill="#ff7aa8" opacity=".6"/>`,
   top:`<rect x="42" y="16.5" width="16" height="3.2" rx="1.6" fill="#1d1a24"/>`,
   over:`<path d="M84 60 q7 -3 5 4 q-2 5 5 4" fill="none" stroke-width="4.5"/><path d="M84 60 q7 -3 5 4 q-2 5 5 4" fill="none" stroke="#f48fb1" stroke-width="2"/>` },
-{ name:"Spin Cycle", shape:"drum", fill:"#f2f4f7", lid:"#e4e8ee", inner:"#c9d0d8",
+{ name:"Spin Cycle", shape:"box", fill:"#f2f4f7", lid:"#e4e8ee", inner:"#c9d0d8",
   deco:`<rect x="0" y="22" width="100" height="12" fill="#dfe3e8"/>
-        <circle cx="32" cy="28" r="3.6" fill="#9aa4ae" stroke="#1d1a24" stroke-width="1.5"/>
+        <circle cx="32" cy="28" r="3.6" fill="#9aa4ae" stroke="#000" stroke-opacity=".35" stroke-width="1.5"/>
         <circle cx="44" cy="28" r="1.8" fill="#2fbf71"/><circle cx="50" cy="28" r="1.8" fill="#f59e0b"/>
         <rect x="56" y="25" width="14" height="6" rx="1.5" fill="#1d2330"/><path d="M58 28 h10" stroke="#3ef2ff" stroke-width="1.6"/>
-        <circle cx="50" cy="60" r="17" fill="#c7ced6" stroke="#1d1a24" stroke-width="2.5"/>
-        <circle cx="50" cy="60" r="12.5" fill="#4fb3ff" stroke="#1d1a24" stroke-width="1.8"/>
+        <circle cx="50" cy="60" r="17" fill="#c7ced6" stroke="#000" stroke-opacity=".35" stroke-width="2.5"/>
+        <circle cx="50" cy="60" r="12.5" fill="#4fb3ff" stroke="#000" stroke-opacity=".35" stroke-width="1.8"/>
         <path d="M43 57 q7 -7 14 0 q-5 9 -14 5" fill="none" stroke="#fff" stroke-width="2"/>
         <path d="M51 63 l4 2 l-1 4 l-3 -1 Z" fill="#e2465b"/>
         <path d="M42 52 q3 -3 7 -4" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="2"/>` },
-{ name:"Couch Potato", shape:"tub", fill:"#9b6a3f", lid:"#ad7b4c", inner:"#8a5a30",
-  under:`<path d="M42 36 L28 10 M58 36 L72 8" stroke-width="2.6"/><circle cx="28" cy="9" r="2.4" fill="#9aa4ae" stroke-width="1.5"/><circle cx="72" cy="7" r="2.4" fill="#9aa4ae" stroke-width="1.5"/>`,
-  deco:`<rect x="20" y="44" width="42" height="30" rx="7" fill="#2d3a3f" stroke="#1d1a24" stroke-width="2.5"/>
+{ name:"Couch Potato", shape:"box", fill:"#9b6a3f", lid:"#ad7b4c", inner:"#8a5a30",
+  under:`<path d="M46 20 L34 3 M58 20 L70 2" stroke="#555" stroke-width="2.4"/><circle cx="34" cy="3" r="2.4" fill="#9aa4ae" stroke="none"/><circle cx="70" cy="2" r="2.4" fill="#9aa4ae" stroke="none"/>`,
+  deco:`<rect x="20" y="44" width="42" height="30" rx="7" fill="#2d3a3f" stroke="#000" stroke-opacity=".35" stroke-width="2.5"/>
         <rect x="24" y="48" width="34" height="22" rx="5" fill="#8fd3c6"/>
         <path d="M24 53 h34 M24 58 h34 M24 63 h34" stroke="#6fb8aa" stroke-width="1.2"/>
-        <ellipse cx="41" cy="60" rx="8" ry="5.5" fill="#c49255" stroke="#1d1a24" stroke-width="1.5"/>
+        <ellipse cx="41" cy="60" rx="8" ry="5.5" fill="#c49255" stroke="#000" stroke-opacity=".35" stroke-width="1.5"/>
         ${dots([[38,58],[44,61],[40,62.5]],.9,"#7a5a30")}
-        <circle cx="73" cy="52" r="4" fill="#e9c98b" stroke="#1d1a24" stroke-width="1.6"/><circle cx="73" cy="63" r="3" fill="#e9c98b" stroke="#1d1a24" stroke-width="1.6"/>
+        <circle cx="73" cy="52" r="4" fill="#e9c98b" stroke="#000" stroke-opacity=".35" stroke-width="1.6"/><circle cx="73" cy="63" r="3" fill="#e9c98b" stroke="#000" stroke-opacity=".35" stroke-width="1.6"/>
         <path d="M69 70 h8 M69 73 h8" stroke="#6b4423" stroke-width="1.4"/>` },
 { name:"Gumball Wizard", shape:"globe", fill:"#eef9ff", lid:"#e2465b", inner:"#b8323f",
   deco:`${[[24,50,"#e2465b"],[36,46,"#f2c230"],[48,44,"#3b82f6"],[60,46,"#2fbf71"],[72,50,"#ff7ad9"],[30,58,"#3b82f6"],[42,56,"#ff8a1f"],[54,56,"#e2465b"],[66,58,"#f2c230"],[78,60,"#3b82f6"],[22,66,"#2fbf71"],[36,66,"#ff7ad9"],[48,66,"#f2c230"],[60,66,"#3b82f6"],[72,68,"#e2465b"],[42,40,"#ff7ad9"],[56,38,"#2fbf71"]]
-        .map(([x,y,c])=>`<circle cx="${x}" cy="${y}" r="5.4" fill="${c}" stroke="#1d1a24" stroke-width="1.2"/><circle cx="${x-1.8}" cy="${y-1.8}" r="1.3" fill="#fff" opacity=".8"/>`).join("")}
+        .map(([x,y,c])=>`<circle cx="${x}" cy="${y}" r="5.4" fill="${c}" stroke="#000" stroke-opacity=".35" stroke-width="1.2"/><circle cx="${x-1.8}" cy="${y-1.8}" r="1.3" fill="#fff" opacity=".8"/>`).join("")}
         <rect x="0" y="72" width="100" height="28" fill="#e2465b"/>
-        <rect x="42" y="77" width="16" height="9" rx="2" fill="#c7ced6" stroke="#1d1a24" stroke-width="1.8"/><path d="M50 79 v5" stroke="#1d1a24" stroke-width="1.6"/>
+        <rect x="42" y="77" width="16" height="9" rx="2" fill="#c7ced6" stroke="#000" stroke-opacity=".35" stroke-width="1.8"/><path d="M50 79 v5" stroke="#000" stroke-opacity=".35" stroke-width="1.6"/>
         <path d="M22 34 Q16 46 18 58" fill="none" stroke="#fff" stroke-width="3.5"/>`,
   top:`<path d="M48 18 V11 H52 V18" fill="#b8323f" stroke-width="1.5"/><circle cx="50" cy="9" r="4" fill="#e2465b" stroke-width="2"/>` },
 { name:"Snare Thing", shape:"tub", fill:"#c0263a", hoops:[40,78], hoop:"#d5dae0", hw:5, lid:"#f5f2ea", inner:"#ebe5d6",
   deco:`${dots([[24,52],[38,62],[52,50],[66,64],[80,54],[30,70],[60,72],[46,70]],.9,"#ff9aa8")}
         <path d="M22 42 V82 M36 44 V86 M50 44 V87 M64 44 V86 M78 42 V82" stroke="#d5dae0" stroke-width="2.6"/>
-        ${[22,36,50,64,78].map(x=>`<rect x="${x-3}" y="56" width="6" height="8" rx="2" fill="#e8ebef" stroke="#1d1a24" stroke-width="1.3"/>`).join("")}`,
+        ${[22,36,50,64,78].map(x=>`<rect x="${x-3}" y="56" width="6" height="8" rx="2" fill="#e8ebef" stroke="#000" stroke-opacity=".35" stroke-width="1.3"/>`).join("")}`,
   top:`<path d="M38 36 q8 -3 16 1" fill="none" stroke="#d8cfba" stroke-width="2"/>`,
   over:`${tube("M18 8 L60 32","#e9c98b",3.5)}${tube("M82 8 L40 32","#e9c98b",3.5)}<ellipse cx="18" cy="8" rx="3" ry="2.6" fill="#e9c98b" stroke-width="1.8"/><ellipse cx="82" cy="8" rx="3" ry="2.6" fill="#e9c98b" stroke-width="1.8"/>` },
 { name:"Tea Time", shape:"globe", fill:"#7fc8b0", hoops:[30,78], hoop:"#e9c14e", hw:2.5, lid:"#8fd3c0", inner:"#5fa891",
   under:`<path d="M18 60 Q4 54 4 34 L11 35 Q12 50 22 52 Z" fill="#7fc8b0" stroke-width="2.6"/>${tube("M84 38 Q99 44 96 58 Q93 70 82 70","#7fc8b0",5)}`,
-  deco:`${[[32,50],[50,60],[68,48],[40,68],[60,72],[24,64],[76,64]].map(([x,y])=>`<polygon points="${star(x,y,5,2.4,5)}" fill="#ffd1e3" stroke="#1d1a24" stroke-width="1"/><circle cx="${x}" cy="${y}" r="1.4" fill="#f2c230"/>`).join("")}
+  deco:`${[[32,50],[50,60],[68,48],[40,68],[60,72],[24,64],[76,64]].map(([x,y])=>`<polygon points="${star(x,y,5,2.4,5)}" fill="#ffd1e3" stroke="#000" stroke-opacity=".35" stroke-width="1"/><circle cx="${x}" cy="${y}" r="1.4" fill="#f2c230"/>`).join("")}
         <path d="M30 42 q4 -4 8 0 M58 38 q4 -4 8 0" fill="none" stroke="#3d8f72" stroke-width="1.6"/>`,
   top:`<circle cx="50" cy="12" r="4.2" fill="#e9c14e" stroke-width="2"/>` },
 { name:"Keep It Hot", shape:"can", fill:"#c0263a", hoops:[24,82], hoop:"#9aa4ae", hw:5, lid:"#9aa4ae", inner:"#7d8794",
-  deco:`<path d="M0 36 H100 M0 50 H100 M0 64 H100" stroke="#1d1a24" stroke-opacity=".35" stroke-width="4"/>
-        <path d="M36 0 V100 M50 0 V100 M64 0 V100" stroke="#1d1a24" stroke-opacity=".3" stroke-width="4"/>
+  deco:`<path d="M0 36 H100 M0 50 H100 M0 64 H100" stroke="#000" stroke-opacity=".35" stroke-opacity=".35" stroke-width="4"/>
+        <path d="M36 0 V100 M50 0 V100 M64 0 V100" stroke="#000" stroke-opacity=".35" stroke-opacity=".3" stroke-width="4"/>
         <path d="M0 43 H100 M0 57 H100 M43 0 V100 M57 0 V100" stroke="#f2c230" stroke-opacity=".7" stroke-width="1"/>`,
   top:`<path d="M30 13 L33 3 H67 L70 13" fill="#9aa4ae" stroke-width="2.4"/><ellipse cx="50" cy="3" rx="17" ry="2.6" fill="#b8c1cb" stroke-width="2"/>
        <path d="M36 8 h4" stroke="#fff" stroke-opacity=".7" stroke-width="2"/>` },
 { name:"Mop Up", shape:"bucket", fill:"#ffcc33", hoops:[28], hoop:"#e0a800", hw:3, lid:"#ffd95e", inner:"#7cc4ff",
-  deco:`<path d="M42 50 q8 -12 16 0 q2 10 -8 10 q-10 0 -8 -10 Z" fill="#7cc4ff" stroke="#1d1a24" stroke-width="1.8"/>
+  deco:`<path d="M42 50 q8 -12 16 0 q2 10 -8 10 q-10 0 -8 -10 Z" fill="#7cc4ff" stroke="#000" stroke-opacity=".35" stroke-width="1.8"/>
         <path d="M46 50 q2 -3 4 -4" fill="none" stroke="#fff" stroke-width="1.6"/>
         <path d="M22 80 Q50 74 78 80" fill="none" stroke="#e0a800" stroke-width="3"/>`,
   top:`${tube("M56 20 L84 0","#c79a5b",3.5)}
@@ -584,17 +602,17 @@ const ITEMS = [
         <path d="M32 58 q6 -4 8 2 q0 6 -6 5 q-5 -2 -2 -7 Z" fill="#ff7ad9"/>
         <ellipse cx="42" cy="44" rx="3" ry="2.4" fill="#ffb24a"/>
         <rect x="0" y="70" width="100" height="30" fill="#c7ced6"/><path d="M0 76 H100 M0 82 H100" stroke="#9aa4ae" stroke-width="1.5"/>
-        <path d="M0 70 Q50 78 100 70" fill="none" stroke="#1d1a24" stroke-width="2"/>` },
-{ name:"Boom Box", shape:"drum", fill:"#4a4f5a", lid:"#5a606c", inner:"#3c414b",
+        <path d="M0 70 Q50 78 100 70" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="2"/>` },
+{ name:"Boom Box", shape:"box", fill:"#4a4f5a", lid:"#5a606c", inner:"#3c414b",
   deco:`<rect x="0" y="26" width="100" height="8" fill="#3c414b"/>
         ${dots([[30,30],[36,30],[42,30]],1.6,"#e2465b")}${dots([[60,30],[66,30],[72,30]],1.6,"#2fbf71")}
-        ${[35,65].map(x=>`<circle cx="${x}" cy="58" r="11" fill="#2b2e35" stroke="#9aa4ae" stroke-width="2.2"/><circle cx="${x}" cy="58" r="6" fill="#3c414b" stroke="#1d1a24" stroke-width="1.5"/><circle cx="${x}" cy="58" r="2" fill="#9aa4ae"/>`).join("")}
-        <rect x="42" y="40" width="16" height="9" rx="1.5" fill="#9aa4ae" stroke="#1d1a24" stroke-width="1.5"/><path d="M45 44.5 h10" stroke="#3c414b" stroke-width="2"/>
+        ${[35,65].map(x=>`<circle cx="${x}" cy="58" r="11" fill="#2b2e35" stroke="#9aa4ae" stroke-width="2.2"/><circle cx="${x}" cy="58" r="6" fill="#3c414b" stroke="#000" stroke-opacity=".35" stroke-width="1.5"/><circle cx="${x}" cy="58" r="2" fill="#9aa4ae"/>`).join("")}
+        <rect x="42" y="40" width="16" height="9" rx="1.5" fill="#9aa4ae" stroke="#000" stroke-opacity=".35" stroke-width="1.5"/><path d="M45 44.5 h10" stroke="#3c414b" stroke-width="2"/>
         <path d="M44 76 v-4 M48 76 v-7 M52 76 v-5 M56 76 v-8" stroke="#3ef2ff" stroke-width="2"/>`,
   over:`${tube("M30 17 V6 H70 V17","#9aa4ae",3.5)}` },
 { name:"Fire It Up", shape:"churn", fill:"#d63a3a", hoops:[44], hoop:"#b02a2a", hw:6, lid:"#e35a5a", inner:"#b02a2a",
   deco:`${dots([[28,46],[38,48],[50,49],[62,48],[72,46]],1.6,"#ffb3b3")}
-        <circle cx="50" cy="64" r="9" fill="#e35a5a" stroke="#1d1a24" stroke-width="2"/><circle cx="50" cy="64" r="4" fill="#b02a2a" stroke="#1d1a24" stroke-width="1.5"/>
+        <circle cx="50" cy="64" r="9" fill="#e35a5a" stroke="#000" stroke-opacity=".35" stroke-width="2"/><circle cx="50" cy="64" r="4" fill="#b02a2a" stroke="#000" stroke-opacity=".35" stroke-width="1.5"/>
         <rect x="0" y="80" width="100" height="20" fill="#b02a2a"/>`,
   top:`<polygon points="${star(50,10,6,6,5)}" fill="#b02a2a" stroke-width="2"/>`,
   over:`<rect x="12" y="48" width="11" height="13" rx="2" fill="#d63a3a" stroke-width="2.4"/><rect x="7" y="50.5" width="6" height="8" rx="1.5" fill="#b02a2a" stroke-width="2"/>
@@ -608,16 +626,16 @@ const ITEMS = [
         <rect x="0" y="78" width="100" height="22" fill="#a8763e"/>`,
   top:`<rect x="45" y="7" width="10" height="9" rx="1.5" fill="#d8a54b" stroke-width="2"/><ellipse cx="50" cy="7" rx="5" ry="1.8" fill="#e9c98b" stroke-width="1.5"/>`,
   over:`<circle cx="80" cy="12" r="2.6" fill="none" stroke="#7cc4ff" stroke-width="1.4"/><circle cx="86" cy="5" r="1.8" fill="none" stroke="#7cc4ff" stroke-width="1.2"/>` },
-{ name:"Say Cheese", shape:"drum", fill:"#2b2e35", lid:"#c7ced6", inner:"#9aa4ae",
+{ name:"Say Cheese", shape:"box", fill:"#2b2e35", lid:"#c7ced6", inner:"#9aa4ae",
   deco:`${Array.from({length:40},(_,i)=>`<circle cx="${20+(i*37)%62}" cy="${36+(i*23)%50}" r=".7" fill="#3c414b"/>`).join("")}
         <rect x="0" y="18" width="100" height="16" fill="#c7ced6"/>
-        <rect x="28" y="22" width="9" height="7" rx="1.5" fill="#1d2330" stroke="#1d1a24" stroke-width="1.4"/>
-        <rect x="62" y="21" width="11" height="8" rx="1.5" fill="#fff" stroke="#1d1a24" stroke-width="1.4"/>
-        <circle cx="50" cy="60" r="17" fill="#9aa4ae" stroke="#1d1a24" stroke-width="2.5"/>
-        <circle cx="50" cy="60" r="12" fill="#1d2330" stroke="#1d1a24" stroke-width="1.8"/>
+        <rect x="28" y="22" width="9" height="7" rx="1.5" fill="#1d2330" stroke="#000" stroke-opacity=".35" stroke-width="1.4"/>
+        <rect x="62" y="21" width="11" height="8" rx="1.5" fill="#fff" stroke="#000" stroke-opacity=".35" stroke-width="1.4"/>
+        <circle cx="50" cy="60" r="17" fill="#9aa4ae" stroke="#000" stroke-opacity=".35" stroke-width="2.5"/>
+        <circle cx="50" cy="60" r="12" fill="#1d2330" stroke="#000" stroke-opacity=".35" stroke-width="1.8"/>
         <circle cx="50" cy="60" r="6" fill="#3b5bdb" opacity=".8"/>
         <circle cx="45" cy="55" r="2.6" fill="#fff" opacity=".85"/>`,
-  top:`<ellipse cx="64" cy="16" rx="3.4" ry="1.8" fill="#e2465b" stroke-width="1.5"/>` },
+  top:`<ellipse cx="64" cy="20" rx="3.6" ry="1.8" fill="#e2465b"/>` },
 { name:"Spray It Loud", shape:"can", fill:"#2fbf71", hoops:[22], hoop:"#d5dae0", hw:6, lid:"#d5dae0", inner:"#b9c1ca",
   deco:`<path d="M24 46 L36 36 L44 50 L56 34 L64 52 L76 40" fill="none" stroke="#ff4fd8" stroke-width="4" stroke-linejoin="round"/>
         <path d="M24 60 Q38 52 50 62 T76 58" fill="none" stroke="#f2c230" stroke-width="3.5"/>
@@ -625,16 +643,16 @@ const ITEMS = [
         <rect x="0" y="80" width="100" height="20" fill="#d5dae0"/>`,
   top:`<rect x="43" y="4" width="14" height="10" rx="2" fill="#f2f4f7" stroke-width="2"/><circle cx="57" cy="7" r="1.4" fill="#1d1a24" stroke="none"/>`,
   over:`${dots([[64,6],[69,4],[68,9],[74,6],[73,2],[78,8],[79,3]],1.1,"#2fbf71")}` },
-{ name:"Treasure Trove", shape:"keg", fill:"#6b4224", planks:1, hoops:[28,74], hoop:"#f2c14e", hw:6, lid:"#73492b", inner:"#3e2615",
-  deco:`<rect x="43" y="42" width="14" height="17" rx="2" fill="#f2c14e" stroke="#1d1a24" stroke-width="2"/>
+{ name:"Treasure Trove", shape:"box", fill:"#6b4224", planks:1, hoops:[28,74], hoop:"#f2c14e", hw:6, lid:"#73492b", inner:"#3e2615",
+  deco:`<rect x="43" y="42" width="14" height="17" rx="2" fill="#f2c14e" stroke="#000" stroke-opacity=".35" stroke-width="2"/>
         <circle cx="50" cy="48.5" r="2.2" fill="#1d1a24"/><path d="M50 49 L48.6 55 H51.4 Z" fill="#1d1a24"/>
         ${dots([[24,40],[76,40],[24,62],[76,62]],1.6,"#f2c14e")}`,
   top:`${[[36,16],[44,13],[52,12],[60,14],[66,17],[40,19],[48,18],[57,19]].map(([x,y])=>`<ellipse cx="${x}" cy="${y}" rx="5" ry="2.6" fill="#f2c14e" stroke-width="1.6"/>`).join("")}
        <polygon points="50,6 54,9 50,13 46,9" fill="#3ef2ff" stroke-width="1.6"/><polygon points="${star(64,8,3.5,1,4)}" fill="#fff" stroke="none"/>` },
 { name:"Wind Me Up", shape:"capsule", fill:"#f6b6d0", hoops:[30,76], hoop:"#e9c14e", hw:3, lid:"#f9c9dc", inner:"#e98fb4",
-  deco:`<path d="M38 60 V44 L52 40 V56" fill="none" stroke="#1d1a24" stroke-width="2.2"/>
+  deco:`<path d="M38 60 V44 L52 40 V56" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="2.2"/>
         <ellipse cx="35.5" cy="60" rx="3.5" ry="2.6" fill="#1d1a24"/><ellipse cx="49.5" cy="56" rx="3.5" ry="2.6" fill="#1d1a24"/>
-        <path d="M60 52 V40 q5 2 6 6" fill="none" stroke="#1d1a24" stroke-width="2"/><ellipse cx="58" cy="52" rx="3" ry="2.2" fill="#1d1a24"/>
+        <path d="M60 52 V40 q5 2 6 6" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="2"/><ellipse cx="58" cy="52" rx="3" ry="2.2" fill="#1d1a24"/>
         <path d="M24 84 Q30 78 36 84 Q42 78 48 84 Q54 78 60 84 Q66 78 72 84 Q76 80 78 84" fill="none" stroke="#fff" stroke-width="2"/>`,
   top:`<path d="M50 18 V10" stroke-width="2"/><circle cx="50" cy="8" r="2.6" fill="#e9c14e" stroke-width="1.5"/>`,
   over:`<rect x="76" y="48" width="8" height="5" fill="#e9c14e" stroke-width="2"/>
@@ -646,147 +664,27 @@ const ITEMS = [
         <path d="M44 92 V80 Q50 74 56 80 V92 Z" fill="#2b2e35"/>`,
   top:`<rect x="44" y="6" width="12" height="11" rx="1" fill="#ffe36e" stroke-width="2"/><path d="M50 6 V17" stroke-width="1.4"/>
        <path d="M42 6 L50 1 L58 6 Z" fill="#2b2e35" stroke-width="2"/>` },
-{ name:"Jackpot", shape:"drum", fill:"#c0263a", lid:"#d63a3a", inner:"#f2c14e",
+{ name:"Jackpot", shape:"box", fill:"#c0263a", lid:"#d63a3a", inner:"#f2c14e",
   deco:`<rect x="0" y="18" width="100" height="14" fill="#f2c14e"/>
         ${dots([[28,25],[36,25],[44,25],[52,25],[60,25],[68,25],[76,25]],1.8,"#fff6c2")}
-        <rect x="26" y="40" width="48" height="21" rx="3" fill="#fff" stroke="#1d1a24" stroke-width="2.5"/>
-        <path d="M42 40 V61 M58 40 V61" stroke="#1d1a24" stroke-width="1.6"/>
+        <rect x="26" y="40" width="48" height="21" rx="3" fill="#fff" stroke="#000" stroke-opacity=".35" stroke-width="2.5"/>
+        <path d="M42 40 V61 M58 40 V61" stroke="#000" stroke-opacity=".35" stroke-width="1.6"/>
         ${[34,50,66].map(x=>`<text x="${x}" y="56" font-size="14" font-weight="700" text-anchor="middle" fill="#e2465b" font-family="Open Sans,system-ui,sans-serif">7</text>`).join("")}
         <rect x="36" y="70" width="28" height="9" rx="2" fill="#2b2e35"/>
         <ellipse cx="46" cy="73" rx="3.5" ry="1.6" fill="#f2c14e"/><ellipse cx="54" cy="74" rx="3.5" ry="1.6" fill="#f2c14e"/>`,
-  over:`${tube("M78 56 H87 V26","#c7ced6",3)}<circle cx="87" cy="23" r="5" fill="#e2465b" stroke-width="2.4"/><circle cx="85.5" cy="21.5" r="1.4" fill="#fff" stroke="none"/>` },
+  over:`${tube("M82 56 H89 V26","#c7ced6",3)}<circle cx="89" cy="23" r="5" fill="#e2465b"/><circle cx="85.5" cy="21.5" r="1.4" fill="#fff" stroke="none"/>` },
 { name:"Hall of Fame", shape:"bucket", fill:"#f2c14e", hoops:[82], hoop:"#c8961f", hw:7, lid:"#ffd96b", inner:"#c8961f",
   under:`${tube("M21 28 Q4 28 6 44 Q8 58 25 58","#f2c14e",5)}${tube("M79 28 Q96 28 94 44 Q92 58 75 58","#f2c14e",5)}`,
-  deco:`<polygon points="${star(50,42,11,4.6,5)}" fill="#fff2a8" stroke="#1d1a24" stroke-width="2"/>
-        <rect x="37" y="60" width="26" height="11" rx="1.5" fill="#c8961f" stroke="#1d1a24" stroke-width="2"/>
+  deco:`<polygon points="${star(50,42,11,4.6,5)}" fill="#fff2a8" stroke="#000" stroke-opacity=".35" stroke-width="2"/>
+        <rect x="37" y="60" width="26" height="11" rx="1.5" fill="#c8961f" stroke="#000" stroke-opacity=".35" stroke-width="2"/>
         <path d="M41 64 h18 M43 67.5 h14" stroke="#7a5a10" stroke-width="1.2"/>`,
   over:`<polygon points="${star(16,14,5,1.4,4)}" fill="#fff" stroke-width="1.4"/><polygon points="${star(86,10,4,1.2,4)}" fill="#fff" stroke-width="1.2"/>` },
 ];
-// ================= SC2-STYLE BARRELS =================
-// Redrawn from the Scrap Clicker 2 barrel list (names from the community wiki): flat colours,
-// no outlines, darker right side. Three bodies: cylinder, cuboid and hex prism.
-const darken = (c, f) => { const n = parseInt(c.slice(1),16); return "#" + [n>>16, n>>8&255, n&255].map(v => Math.round(v*f).toString(16).padStart(2,"0")).join(""); };
-const CYL = "M20 22 V84 A30 10.5 0 0 0 80 84 V22 Z";
-const SYM = {
-  heart:c=>`<path d="M50 72 L38 59 Q32 51 39 46 Q46 42 50 50 Q54 42 61 46 Q68 51 62 59 Z" fill="${c}"/>`,
-  moon:c=>`<path d="M56 44 A14 14 0 1 0 56 72 A17 17 0 0 1 56 44 Z" fill="${c}"/>`,
-  plus:c=>`<path d="M45 42 H55 V53 H66 V63 H55 V74 H45 V63 H34 V53 H45 Z" fill="${c}"/>`,
-  star:c=>`<polygon points="${star(50,59,14,6,5)}" fill="${c}"/>`,
-  sun:c=>`<polygon points="${star(50,58,13,8,8)}" fill="${c}"/>`,
-  noentry:c=>`<circle cx="50" cy="58" r="12" fill="none" stroke="${c}" stroke-width="5"/><path d="M42 50 L58 66" stroke="${c}" stroke-width="5"/>`,
-  up:c=>`<polygon points="50,40 63,54 55,54 55,74 45,74 45,54 37,54" fill="${c}"/>`,
-  down:c=>`<polygon points="50,76 63,62 55,62 55,42 45,42 45,62 37,62" fill="${c}"/>`,
-  tri:c=>`<polygon points="50,46 62,68 38,68" fill="${c}"/>`,
-  tridown:c=>`<polygon points="38,48 62,48 50,68" fill="${c}"/>`,
-  cross:c=>`<path d="M39 47 L61 69 M61 47 L39 69" stroke="${c}" stroke-width="5"/><polygon points="35,43 45,44 36,53" fill="${c}"/><polygon points="65,43 55,44 64,53" fill="${c}"/><polygon points="35,73 45,72 36,63" fill="${c}"/><polygon points="65,73 55,72 64,63" fill="${c}"/>`,
-  chevrons:c=>`<path d="M41 54 L50 46 L59 54 M41 66 L50 58 L59 66" fill="none" stroke="${c}" stroke-width="5"/>`,
-  ff:c=>`<polygon points="38,48 50,58 38,68" fill="${c}"/><polygon points="50,48 62,58 50,68" fill="${c}"/>`,
-  rew:c=>`<polygon points="62,48 50,58 62,68" fill="${c}"/><polygon points="50,48 38,58 50,68" fill="${c}"/>`,
-  bubble:c=>`<path d="M37 48 H63 Q65 48 65 50 V62 Q65 64 63 64 H48 L42 70 V64 H37 Q35 64 35 62 V50 Q35 48 37 48 Z" fill="${c}"/>`,
-};
-const HOLE = {
-  round:()=>`<ellipse cx="50" cy="22" rx="17" ry="5.8" fill="#0d0d0d"/>`,
-  diamond:()=>`<polygon points="50,16.5 61,22 50,27.5 39,22" fill="#0d0d0d"/>`,
-  rect:()=>`<rect x="37" y="18.5" width="26" height="7" fill="#0d0d0d"/>`,
-  hex:()=>`<polygon points="39,22 44,17.5 56,17.5 61,22 56,26.5 44,26.5" fill="#0d0d0d"/>`,
-};
-function flatCyl(o){
-  const dk = darken(o.body, .8);
-  let d = "";
-  if(o.grad) d += `<rect x="20" y="0" width="60" height="100" fill="url(#gv-${o.grad})"/>`;
-  if(o.panel) d += `<path d="M27 32 V78 A23 8 0 0 0 73 78 V32 A23 8 0 0 1 27 32 Z" fill="${o.panel}"/>`;
-  if(o.ribs) d += [29,39.5,50,60.5,71].map(x => `<rect x="${x-2.6}" y="34" width="5.2" height="50" rx="2.6" fill="${o.ribs}"/>`).join("");
-  if(o.rings) d += Array.from({length:o.n||4}, (_,i) => { const y = 36 + i*(52/(o.n||4)); return `<path d="M20 ${y.toFixed(1)} A30 10.5 0 0 0 80 ${y.toFixed(1)}" fill="none" stroke="${o.rings}" stroke-width="${o.n>5?3.6:5}"/>`; }).join("");
-  if(o.slot) d += `<rect x="35" y="${o.slotY||38}" width="30" height="${o.slotH||8}" rx="${o.slotR||0}" fill="#0d0d0d"/>`;
-  if(o.sym) d += SYM[o.sym](o.symc);
-  const top = o.hole === "none"
-    ? `<ellipse cx="50" cy="22" rx="30" ry="10.5" fill="${o.rim}"/><ellipse cx="50" cy="22.5" rx="26" ry="8.4" fill="${o.lid || o.body}"/>`
-    : `<ellipse cx="50" cy="22" rx="30" ry="10.5" fill="${o.rim}"/><ellipse cx="50" cy="22.3" rx="24" ry="8" fill="${o.inner || darken(o.rim,1.18)}"/>${HOLE[o.hole||"round"]()}`;
-  return `<path d="${CYL}" fill="${o.body}"/>
-    <g clip-path="url(#c-flatcyl)">${d}<rect x="66" y="0" width="14" height="100" fill="#000" opacity=".14"/></g>${top}`;
-}
-function flatBox(o){
-  const l = o.body, r = darken(o.body,.82);
-  let d = "";
-  if(o.stripes) for(let y=34; y<92; y+=11) d += `<polygon points="22,${y-12} 50,${y} 50,${y+5.5} 22,${y-6.5}" fill="${darken(l,.72)}"/><polygon points="50,${y} 78,${y-12} 78,${y-6.5} 50,${y+5.5}" fill="${darken(r,.72)}"/>`;
-  if(o.leftSlot) d += `<polygon points="26,30 42,37 42,47 26,40" fill="#0d0d0d"/>`;
-  if(o.rightSlot) d += `<polygon points="58,37 74,30 74,40 58,47" fill="#0d0d0d"/>`;
-  return `<polygon points="22,22 50,34 50,96 22,84" fill="${l}"/><polygon points="50,34 78,22 78,84 50,96" fill="${r}"/>${d}
-    <polygon points="22,22 50,10 78,22 50,34" fill="${o.top}"/>${o.hole === "diamond" ? `<polygon points="50,16 63,22 50,28 37,22" fill="#0d0d0d"/>` : ""}`;
-}
-function flatHex(o){
-  const f = o.body, s = darken(o.body,.82), s2 = darken(o.body,.9);
-  return `<polygon points="24,22 36,33 36,93 24,82" fill="${s2}"/><polygon points="36,33 64,33 64,93 36,93" fill="${f}"/><polygon points="64,33 76,22 76,82 64,93" fill="${s}"/>
-    ${o.slot ? `<rect x="40" y="46" width="20" height="${o.slotH||8}" rx="${o.slotR||0}" fill="#0d0d0d"/>` : ""}
-    <polygon points="24,22 36,11 64,11 76,22 64,33 36,33" fill="${o.top}"/>
-    ${o.hole === "none" ? `<polygon points="31,22 39,15 61,15 69,22 61,29 39,29" fill="${o.lid}"/>` : `<polygon points="32,22 40,15.5 60,15.5 68,22 60,28.5 40,28.5" fill="#0d0d0d"/>`}`;
-}
-const flat = o => o.box ? flatBox(o) : o.hex ? flatHex(o) : flatCyl(o);
-$defs().insertAdjacentHTML("beforeend", `<clipPath id="c-flatcyl"><path d="${CYL}"/></clipPath>
-  <linearGradient id="gv-grey" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#e2e2e2"/><stop offset="1" stop-color="#8e8e8e"/></linearGradient>
-  <linearGradient id="gv-copper" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#d98a4a"/><stop offset="1" stop-color="#b8662a"/></linearGradient>`);
-function $defs(){ return document.getElementById("defs"); }
-
-const SC2_ITEMS = [
- {name:"Circle Blue", body:"#9fbbe3", rim:"#4f7fcf"},
- {name:"Square Pink", body:"#e39b9e", rim:"#d0575e", hole:"diamond"},
- {name:"Trash Can", body:"#ecc89a", rim:"#c98a42", ribs:"#c98a42"},
- {name:"Billboard", body:"#cfa6dc", rim:"#c7a0d6", panel:"#9a5ab5", inner:"#e2c8ea"},
- {name:"Post Box", body:"#7fcf66", rim:"#5cb34a", hole:"none", lid:"#86d56c", slot:1, slotY:36, slotH:9},
- {name:"Blue Cuboid", box:1, body:"#8599d9", top:"#3d58b8", hole:"diamond"},
- {name:"Look Up", body:"#dcc95a", rim:"#b9a83a", sym:"up", symc:"#9a8a2a"},
- {name:"Helter Skelter", body:"#ea9452", rim:"#d9772e", rings:"#b5601f"},
- {name:"Rubbish Bin", body:"#d96d6d", rim:"#c45252", ribs:"#a63a3a", hole:"diamond"},
- {name:"Watermelon", box:1, body:"#36ad3e", top:"#287d2e", stripes:1, hole:"diamond"},
- {name:"I Love You", body:"#d77ac6", rim:"#c75ab4", sym:"heart", symc:"#a8358a"},
- {name:"Blue Swirl", body:"#7088d8", rim:"#5168c8", rings:"#3a4fae", n:7},
- {name:"Good Night", body:"#d1b61a", rim:"#a89010", sym:"moon", symc:"#8a7410"},
- {name:"I See You", body:"#8b5550", rim:"#6a3c38", hole:"none", lid:"#8e5a55", slot:1, slotY:36, slotH:10},
- {name:"No Entry", body:"#ea9090", rim:"#d33a3a", sym:"noentry", symc:"#d32f2f"},
- {name:"Tree Doctor", body:"#22b322", rim:"#168f16", sym:"plus", symc:"#0d6a0d"},
- {name:"Layer Cake", box:1, body:"#7a5ed0", top:"#5a40b0", stripes:1, hole:"diamond"},
- {name:"Twinkle Twinkle", body:"#e8b496", rim:"#d8834e", sym:"star", symc:"#c8682a"},
- {name:"Lurid Layered", body:"#36c8c8", rim:"#1f9c9c", rings:"#1e8080", n:7},
- {name:"Neon Trash", body:"#80c83c", rim:"#5aa62a", ribs:"#3d8a1a"},
- {name:"Tie Your Laces", body:"#c25a5a", rim:"#a84444", sym:"down", symc:"#8a3030"},
- {name:"Banana Hole", body:"#e8c45a", rim:"#c49e2a", hole:"rect"},
- {name:"The Pink Hex of Doom", hex:1, body:"#d48fd0", top:"#9a3fa0"},
- {name:"Sign o' The Times", body:"#1e6a3a", rim:"#1e6a3a", panel:"#4cc47a", inner:"#5ad68a"},
- {name:"Trash Bin", body:"#2a7a7a", rim:"#1e5a5a", ribs:"#174848", hole:"rect"},
- {name:"Shades of Grey", body:"#c0c0c0", rim:"#9a9a9a", grad:"grey", inner:"#d8d8d8"},
- {name:"Wrong Direction", box:1, body:"#7d9a32", top:"#5a7a20", leftSlot:1},
- {name:"Which Direction?", body:"#9c9c9c", rim:"#3a3a3a", sym:"cross", symc:"#2a2a2a", inner:"#5a5a5a"},
- {name:"Open Wide", body:"#c87a3e", rim:"#a85a20", grad:"copper"},
- {name:"I C U 2", body:"#6b95d4", rim:"#4a78c4", hole:"none", lid:"#7aa2dc", slot:1, slotY:34, slotH:9},
- {name:"Illuminati", body:"#de4b4b", rim:"#c03030", sym:"tri", symc:"#a82020"},
- {name:"No Parcels", hex:1, body:"#e8b83a", top:"#c9962a", hole:"none", lid:"#f0c84a", slot:1},
- {name:"Rhapsody in Green", body:"#1aa04a", rim:"#0e6a30", rings:"#0e6a30", hole:"diamond"},
- {name:"Double Jump", body:"#c8a2e2", rim:"#9a5ac0", sym:"chevrons", symc:"#9a4ac8"},
- {name:"Spin the Lime", body:"#9ac24a", rim:"#6f9a2a", rings:"#6a8a2a", n:5, hole:"rect"},
- {name:"The Box", box:1, body:"#9a6e30", top:"#6e4a1e", leftSlot:1},
- {name:"Visor", body:"#4a9ac8", rim:"#3a86b8", panel:"#2a6a8a", hole:"diamond"},
- {name:"Walking on Sunshine", body:"#e2cf62", rim:"#c4a83a", sym:"sun", symc:"#a8902a"},
- {name:"Fast Forward", body:"#86c85a", rim:"#5aa63a", sym:"ff", symc:"#3a8a2a"},
- {name:"Hexbox", body:"#a38ae8", rim:"#7a5ad8", hole:"hex"},
- {name:"Firecracker", body:"#c03a3a", rim:"#8a2020", rings:"#7a1e1e"},
- {name:"Hedge Trimmer", hex:1, body:"#6aaa2a", top:"#4a7a1a", hole:"none", lid:"#7aba3a", slot:1, slotH:9, slotR:3},
- {name:"Not Too Fat", body:"#c84ac8", rim:"#b032b0", hole:"none", lid:"#d060d0", slot:1, slotY:38, slotH:6, slotR:3},
- {name:"Rubbish Can", body:"#ecc232", rim:"#c9a018", ribs:"#8a7010", hole:"hex"},
- {name:"Straight Down", body:"#1a7aaa", rim:"#0e5a8a", sym:"tridown", symc:"#0e4a6a"},
- {name:"Rewind", body:"#ee8a30", rim:"#d06a10", sym:"rew", symc:"#b85a10"},
- {name:"Two at Once", box:1, body:"#33a033", top:"#227722", leftSlot:1, rightSlot:1},
- {name:"The End of The Beginning", body:"#22b8b8", rim:"#1aa0a0", panel:"#0e6a6a", hole:"rect"},
- {name:"Purple Whirlpool", body:"#9a3ad0", rim:"#6a1aa0", rings:"#5a1a8a", n:6},
- {name:"I Can't Hear You", body:"#de4040", rim:"#c02828", sym:"bubble", symc:"#a01a1a"},
-];
-
-// Two barrel sets with the same number of tiers: SC2-style (default) and the original Forge cartoons.
-const MAX = Math.min(ITEMS.length, SC2_ITEMS.length);
-const SVG_FORGE = ITEMS.map(it => `<svg viewBox="0 0 100 100" aria-hidden="true"><g stroke="#1d1a24" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round">${barrel(it)}</g></svg>`);
-const SVG_SC2 = SC2_ITEMS.map(it => `<svg viewBox="0 0 100 100" aria-hidden="true">${flat(it)}</svg>`);
-const forgeStyle = () => typeof S !== "undefined" && S.style === "forge";
-const svgFor = t => (forgeStyle() ? SVG_FORGE : SVG_SC2)[t-1];
-const nameOf = t => (forgeStyle() ? ITEMS : SC2_ITEMS)[t-1].name;
+const MAX = ITEMS.length;
+// no black outlines (SC2's newer barrels don't use them): details get a faint dark edge instead
+const SVG_CACHE = ITEMS.map(it => `<svg viewBox="0 0 100 100" aria-hidden="true"><g stroke="#000" stroke-opacity=".3" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">${barrel(it)}</g></svg>`);
+const svgFor = t => SVG_CACHE[t-1];
+const nameOf = t => ITEMS[t-1].name;
 
 // ================= BIG NUMBERS =================
 // All currencies are stored as log10(value) so they can grow far past 1e308.
@@ -821,7 +719,7 @@ const fresh = () => ({
   scrap:LZ, runScrap:LZ, totalScrap:LZ, gs:LZ, stars:0, best:1, runBest:1, prestiges:0, merges:0,
   up:{spawn:0,tier:0,mult:0,auto:0,double:0,lucky:0,offline:0},
   gup:{touch:0,gains:0,head:0},
-  grid:Array(SLOTS).fill(0), spawnT:0, autoT:0, last:Date.now(), muted:false, theme:"auto", buyMax:false, style:"sc2"
+  grid:Array(SLOTS).fill(0), spawnT:0, autoT:0, last:Date.now(), muted:false, theme:"auto", buyMax:false
 });
 let S = fresh();
 function load(){
@@ -1133,7 +1031,6 @@ function showBarrel(t){
 }
 function renderSettings(){
   $("mute").textContent = S.muted ? "Off" : "On";
-  $("style").textContent = forgeStyle() ? "Forge" : "SC2";
   $("stats").innerHTML = `<span>Scrap per second</span><b>${fmtL(prodL())}</b><span>Total scrap earned</span><b>${fmtL(S.totalScrap)}</b><span>Merges</span><b>${fmt(S.merges)}</b><span>Prestiges</span><b>${S.prestiges}</b><span>Best barrel</span><b>#${S.best}</b>`;
 }
 function showGsInfo(){
@@ -1273,7 +1170,7 @@ function prestige(){
     big:`<svg class="ico"><use href="#i-gold"/></svg>${fmtL(g)}`, ok:"Prestige", cancel:"Not yet",
     onOk:()=>{
       initAudio();
-      const keep = {gs:ladd(S.gs, g), stars:S.stars, buyMax:S.buyMax, style:S.style, best:S.best, prestiges:S.prestiges+1, merges:S.merges, totalScrap:S.totalScrap, gup:S.gup, muted:S.muted, theme:S.theme};
+      const keep = {gs:ladd(S.gs, g), stars:S.stars, buyMax:S.buyMax, best:S.best, prestiges:S.prestiges+1, merges:S.merges, totalScrap:S.totalScrap, gup:S.gup, muted:S.muted, theme:S.theme};
       S = Object.assign(fresh(), keep);
       S.runBest = spawnTier();
       sel = null; cells.forEach(c=>c._t = -1);
@@ -1341,7 +1238,6 @@ $("prestige").onclick = prestige;
 $("bulk").onclick = () => { S.buyMax = !S.buyMax; $("bulk").textContent = S.buyMax ? "MAX" : "×1"; };
 function applyTheme(){}
 $("mute").onclick = ()=>{ S.muted = !S.muted; renderSettings(); save(); };
-$("style").onclick = ()=>{ S.style = forgeStyle() ? "sc2" : "forge"; cells.forEach(c=>c._t = -1); drawGrid(false); $("book").innerHTML = ""; renderSettings(); save(); };
 $("wipe").onclick = ()=> modal({title:"Reset everything?", text:"This deletes ALL progress, including Golden Scrap and your barrel collection.", ok:"Delete", cancel:"Cancel",
   onOk:()=>{
     try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
