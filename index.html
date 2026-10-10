@@ -84,10 +84,10 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 .sq.blue{background:linear-gradient(var(--blue) 50%,var(--blue-dk) 50%)}
 .sq.ghost-slot{visibility:hidden}
 .sq.small{width:40px;height:40px;font-size:22px}
-.tabs{display:none;background:#3a3a3a;flex:none}
+.tabs{display:none;background:linear-gradient(#474747 50%,#333 50%);flex:none}
 .tabs.on{display:flex}
 .tabs button{flex:1;height:58px;display:flex;align-items:center;justify-content:center}
-.tabs button.on{background:#666}
+.tabs button.on{background:linear-gradient(#7a7a7a 50%,#6a6a6a 50%)}
 .tabs svg{width:44px;height:44px}
 .pane{display:none;overflow-y:auto;padding:14px 12px 18px;flex:1}
 .pane.on{display:block}
@@ -121,19 +121,32 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 .st.no b{color:#7a7a7a}
 .starnext{color:var(--ink-dark);text-align:center;font-size:15px;margin:2px 0 12px}
 
-/* upgrades */
-.upg{display:flex;align-items:center;gap:10px;padding:8px;background:var(--dbox);margin-bottom:8px}
-.upg .ic{width:46px;height:46px;display:flex;align-items:center;justify-content:center;flex:none;color:#fff}
-.upg .ic svg{width:26px;height:26px}
-.upg .txt{flex:1;min-width:0}
-.upg .nm{font-weight:800;font-size:15px;color:#fff}
-.upg .lv{font-size:12px;color:#bdbdbd;margin-left:5px}
-.upg .ds{font-size:12px;color:#cfcfcf;font-weight:600}
-.buy{min-width:96px;padding:10px 8px;background:linear-gradient(var(--blue) 50%,var(--blue-dk) 50%);color:#fff;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;gap:4px;font-variant-numeric:tabular-nums;text-shadow:0 1px 0 rgba(0,0,0,.2)}
-.buy:disabled{background:linear-gradient(var(--grey-btn) 50%,var(--grey-btn-dk) 50%);color:#e8e8e8;cursor:not-allowed}
+/* upgrades (SC2 peach rows) */
+.pane.flush{padding:0}
+.upg{display:flex;align-items:stretch;min-height:64px;background:#efd3bb}
+.upg:nth-child(even){background:#e6c6aa}
+.upg .ul{width:64px;flex:none;background:rgba(255,255,255,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 0 2px}
+.upg .uic svg{width:38px;height:38px;display:block}
+.upg .ulv{font-size:12.5px;font-weight:800;color:#2a2a2a;line-height:1.1;margin-top:1px}
+.upg .txt{flex:1;min-width:0;padding:6px 8px}
+.upg .nm{font-weight:800;font-size:15px;color:#2a2a2a;text-transform:uppercase;letter-spacing:.2px}
+.upg .ds{font-size:12.5px;color:#5c5145;font-weight:700;line-height:1.2}
+.upg .buy{width:30%;min-width:96px;flex:none}
+.buy{padding:10px 6px;background:linear-gradient(#00c94a 50%,#00ab3d 50%);color:#fff;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;gap:4px;font-variant-numeric:tabular-nums;text-shadow:0 1px 0 rgba(0,0,0,.2)}
+.buy.max{background:linear-gradient(#00c94a 50%,#00ab3d 50%);color:#fff;cursor:default}
+.buy.poor,.buy:disabled:not(.max){background:linear-gradient(#8c8c8c 50%,#7b7b7b 50%);color:#ff7070;cursor:not-allowed;text-shadow:none}
 .ico{width:30px;height:30px;flex:none}
 .ico.xs{width:14px;height:17px;vertical-align:-3px}
-
+.ph{color:var(--ink-dark);text-align:center;font-size:clamp(20px,6vw,26px);font-weight:800;margin:0 0 10px}
+.ph2{color:var(--ink-dark);text-align:center;font-size:clamp(18px,5.4vw,24px);font-weight:800;margin:18px 0 6px}
+.ph3{color:var(--ink-dark);text-align:center;font-size:clamp(18px,5.4vw,24px);font-weight:700;margin-bottom:10px}
+.starbox{display:flex;align-items:center;justify-content:center;gap:16px;padding:16px}
+.starbox svg{width:70px;height:70px}
+.starbox b{font-size:clamp(30px,9vw,44px);font-weight:800}
+.bigbtn.glow{animation:glow 1s ease-in-out infinite alternate}
+@keyframes glow{to{filter:brightness(1.18)}}
+.modal.starwin>div{max-width:420px}
+.modal.starwin .starfield{margin:4px 0 6px}
 /* barrels collection */
 .unl{text-align:center;font-size:clamp(20px,6vw,28px);font-weight:800;margin:4px 0 16px;text-shadow:0 2px 0 rgba(0,0,0,.18)}
 #book{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 10px;padding:0 4%}
@@ -174,7 +187,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 .modal .big{font-size:28px;font-weight:800;color:var(--ink-dark);margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px}
 .modal .big svg{width:26px;height:32px}
 .modal .row{display:flex;gap:10px}
-.modal .row .buy{flex:1;padding:12px;font-size:18px}
+.modal .row .buy{flex:1;padding:12px;font-size:18px;background:linear-gradient(var(--blue) 50%,var(--blue-dk) 50%);color:#fff}
 .modal .row .buy.alt{background:linear-gradient(var(--grey-btn) 50%,var(--grey-btn-dk) 50%)}
 .modal .detail{width:150px;height:150px;margin:0 auto 6px}
 .modal .detail.locked svg{filter:brightness(0);opacity:.28}
@@ -201,11 +214,14 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
 
   <div class="scrim" id="scrim"></div>
   <section class="win" id="sheet">
-    <header class="wt"><button class="sq blue" id="bulk">×1</button><h2 id="sheettitle"></h2><button class="sq red" id="close" aria-label="Close">X</button></header>
+    <header class="wt"><button class="sq blue" id="bulk" title="Buy one / buy max">×1</button><h2 id="sheettitle"></h2><button class="sq red" id="close" aria-label="Close">X</button></header>
     <nav class="tabs" id="ptabs">
       <button data-ptab="gs" title="Golden Scrap"><svg viewBox="0 0 40 48"><use href="#i-gold"/></svg></button>
       <button data-ptab="star" title="Stars"><svg viewBox="0 0 100 100"><use href="#i-star"/></svg></button>
-      <button data-ptab="gup" title="Golden Scrap Upgrades"><svg viewBox="0 0 64 56"><use href="#i-goldpile"/></svg></button>
+    </nav>
+    <nav class="tabs" id="utabs">
+      <button data-utab="scrap" title="Scrap Upgrades"><svg viewBox="0 0 40 48"><use href="#i-scrap"/></svg></button>
+      <button data-utab="gold" title="Golden Scrap Upgrades"><svg viewBox="0 0 40 48"><use href="#i-gold"/></svg></button>
     </nav>
     <div class="pane" id="pane-col"><div class="unl" id="colcount"></div><div id="book"></div></div>
     <div class="pane" id="pane-gold">
@@ -219,17 +235,18 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;paddin
         <p class="dark-note" id="gsmulttxt"></p>
       </div>
       <div class="sub-pane" id="pt-star">
-        <div class="dbox starhdr"><div class="bignum"><svg viewBox="0 0 40 48"><use href="#i-gold"/></svg><span id="gs3">0</span></div><button class="sq blue small" id="starinfo">i</button></div>
-        <div class="starfield" id="starfield"></div>
-        <div class="starnext" id="starnext"></div>
-        <button class="bigbtn" id="buystar">Buy Star</button>
-      </div>
-      <div class="sub-pane" id="pt-gup">
-        <p class="dark-note" style="margin:0 0 10px">Spending Golden Scrap on these lowers its production boost, so spend wisely.</p>
-        <div id="gups"></div>
+        <div class="ph">Stars</div>
+        <div class="dbox starbox"><svg viewBox="0 0 100 100"><use href="#i-star"/></svg><b>x10</b></div>
+        <div class="ph2">Current Boost:</div>
+        <div class="ph3" id="starboost">x1</div>
+        <p class="dark-note" id="starown"></p>
+        <button class="bigbtn" id="upstars">Upgrade<br>Stars</button>
       </div>
     </div>
-    <div class="pane" id="pane-up"><div id="ups"></div></div>
+    <div class="pane flush" id="pane-up">
+      <div class="sub-pane" id="ut-scrap"><div id="ups"></div></div>
+      <div class="sub-pane" id="ut-gold"><p class="dark-note" style="margin:10px">Spending Golden Scrap on these lowers its production boost, so spend wisely.</p><div id="gups"></div></div>
+    </div>
     <div class="pane" id="pane-set">
       <div class="setrow"><span>Sound</span><button id="mute"></button></div>
       <div class="sect">Statistics</div>
@@ -733,42 +750,44 @@ function pendingL(){
   return g < 15 ? lnum(Math.floor(10**g)) : g;
 }
 
-const ic = d => `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+// SC2-style coloured glyph icons for the upgrade rows
+const gi = d => `<svg viewBox="0 0 64 64" stroke-linejoin="round" stroke-linecap="round">${d}</svg>`;
 const UPG = [
-  {id:"tier", name:"Better Barrels", base:20000, grow:4, color:"#8b5cf6",
-   icon:ic(`<path d="M12 19V5M5 12l7-7 7 7"/>`),
+  {id:"spawn", name:"Faster Barrels", base:1000, grow:2, max:40,
+   icon:gi(`<path d="M8 14 L30 32 L8 50 Z M32 14 L54 32 L32 50 Z" fill="#2f7de1" stroke="#123f7a" stroke-width="3"/>`),
+   desc:l=>`Barrels spawn 0.1s faster. Currently: ${spawnInterval(l).toFixed(1)}s`},
+  {id:"tier", name:"Better Barrels", base:20000, grow:4, showMax:()=>MAX-1,
+   icon:gi(`<polygon points="32,6 56,30 42,30 42,58 22,58 22,30 8,30" fill="#f08a24" stroke="#7a3e0c" stroke-width="3"/>`),
    lock:() => spawnTier() >= MAX-1 ? "MAX" : null,
-   desc:()=>`Spawns barrel #${spawnTier()}. Lower barrels get lifted to it`},
-  {id:"spawn", name:"Faster Barrels", base:1000, grow:2, max:40, color:"#3b82f6",
-   icon:ic(`<circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/>`),
-   desc:l=>`New barrel every ${spawnInterval(l).toFixed(1)}s`},
-  {id:"double", name:"Doubled Barrels", base:5000, grow:4, max:10, color:"#f59e0b",
-   icon:ic(`<circle cx="8" cy="12" r="4"/><circle cx="16" cy="12" r="4"/>`),
-   desc:l=>`${l*4}% chance to spawn two barrels`},
-  {id:"auto", name:"Auto-Merger", base:10000, grow:5, max:15, color:"#10b981",
-   icon:ic(`<path d="M4 8h12l-3-3M20 16H8l3 3"/>`),
-   desc:l=>l ? `Merges a pair every ${autoInterval(l).toFixed(1)}s` : "Merges matching pairs for you"},
-  {id:"mult", name:"Scrap Press", base:5000, grow:5, max:25, color:"#ef4444",
-   icon:ic(`<path d="M6 6l12 12M18 6L6 18"/>`),
-   desc:l=>`+${l*10}% scrap production`},
-  {id:"lucky", name:"Lucky Merge", base:100000, grow:8, max:10, color:"#22c55e",
-   icon:ic(`<path d="M12 12c-4-6-9-2-5 2M12 12c6-4 2-9-2-5M12 12c4 6 9 2 5-2M12 12c-6 4-2 9 2 5M12 12l3 9"/>`),
-   desc:l=>`${l}% chance a merge skips a tier`},
-  {id:"offline", name:"Better Offline", base:3000, grow:5, max:9, color:"#6366f1",
-   icon:ic(`<path d="M20 14A8 8 0 1 1 10 4a6 6 0 0 0 10 10z"/>`),
-   desc:l=>`Earn ${Math.round(offEff(l)*100)}% while away (up to 8h)`},
+   desc:()=>`Barrels spawn 1 tier higher. Currently: #${spawnTier()}`},
+  {id:"double", name:"Doubled Barrel", base:5000, grow:4, max:10,
+   icon:gi(`${cyl(8,14,22,30,"#d8b77c","#ead1a3","#a8864a")}${cyl(32,18,22,30,"#d8b77c","#ead1a3","#a8864a")}`),
+   desc:l=>`+4% Chance that two Barrels spawn at once. Currently: ${l*4}%`},
+  {id:"auto", name:"Auto Merge", base:10000, grow:5, max:15,
+   icon:gi(`<path d="M14 26 A18 18 0 0 1 48 20" fill="none" stroke="#1d8f3a" stroke-width="10"/><path d="M14 26 A18 18 0 0 1 48 20" fill="none" stroke="#3cc04a" stroke-width="5"/><polygon points="44,8 56,24 38,26" fill="#3cc04a" stroke="#1d8f3a" stroke-width="3"/>
+     <path d="M50 38 A18 18 0 0 1 16 44" fill="none" stroke="#1d8f3a" stroke-width="10"/><path d="M50 38 A18 18 0 0 1 16 44" fill="none" stroke="#3cc04a" stroke-width="5"/><polygon points="20,56 8,40 26,38" fill="#3cc04a" stroke="#1d8f3a" stroke-width="3"/>`),
+   desc:l=>l ? `Merges two Barrels every ${autoInterval(l).toFixed(1)}s` : "Merges matching Barrels for you"},
+  {id:"mult", name:"Scrap Press", base:5000, grow:5, max:25,
+   icon:gi(`${cyl(10,12,30,36,"#8f8f8f","#b4b4b4","#6c6c6c")}<path d="M48 30 V54 M36 42 H60" stroke="#1d8f3a" stroke-width="11"/><path d="M48 30 V54 M36 42 H60" stroke="#3cc04a" stroke-width="6"/>`),
+   desc:l=>`+10% Scrap production. Currently: +${l*10}%`},
+  {id:"lucky", name:"Better Barrels II", base:100000, grow:8, max:10,
+   icon:gi(`<polygon points="32,6 56,30 42,30 42,58 22,58 22,30 8,30" fill="#3cc04a" stroke="#1d7a2c" stroke-width="3"/>`),
+   desc:l=>`+1% Chance that a merge gives a Barrel an extra tier higher. Currently: ${l}%`},
+  {id:"offline", name:"Offline Production", base:3000, grow:5, max:9,
+   icon:gi(`<path d="M40 8 A24 24 0 1 0 54 44 A20 20 0 0 1 40 8 Z" fill="#f2c230" stroke="#9a7400" stroke-width="3"/><path d="M44 34 V58 M32 46 H56" stroke="#1d8f3a" stroke-width="11"/><path d="M44 34 V58 M32 46 H56" stroke="#3cc04a" stroke-width="6"/>`),
+   desc:l=>`+10% Offline Production. Currently: ${Math.round(offEff(l)*100)}%`},
 ];
 const GUPG = [
-  {id:"touch", name:"Golden Touch", base:5, grow:1.8, max:50, color:"#d99a10",
-   icon:ic(`<path d="M12 3l2.5 6 6.5.5-5 4.2 1.6 6.3L12 16.6 6.4 20l1.6-6.3-5-4.2 6.5-.5z"/>`),
-   desc:l=>`Each Golden Scrap gives +${1+l}% (max 51%)`},
-  {id:"gains", name:"More Golden Scrap", max:40, color:"#d99a10",
+  {id:"touch", name:"Golden Boost", base:5, grow:1.8, max:50,
+   icon:gi(`${cyl(12,10,34,40,"#f3df2c","#fff07a","#c4ab00")}<path d="M50 30 V54 M38 42 H62" stroke="#1d8f3a" stroke-width="11"/><path d="M50 30 V54 M38 42 H62" stroke="#3cc04a" stroke-width="6"/>`),
+   desc:l=>`+1% Boost per Golden Scrap. Currently: ${1+l}%`},
+  {id:"gains", name:"More Golden Scrap", max:40,
    costL:l => Math.log10(50 + 20*l),
-   icon:ic(`<path d="M12 5v14M5 12h14"/>`),
-   desc:l=>`+${l*25}% Golden Scrap from prestige`},
-  {id:"head", name:"Head Start", base:50, grow:10, max:5, color:"#d99a10",
-   icon:ic(`<path d="M5 21V4M5 4h12l-2 4 2 4H5"/>`),
-   desc:l=>`+${l} permanent spawn tier`},
+   icon:gi(`<use href="#i-goldpile" x="2" y="6" width="60" height="52"/>`),
+   desc:l=>`+25% Golden Scrap when you restart. Currently: +${l*25}%`},
+  {id:"head", name:"Head Start", base:50, grow:10, max:5,
+   icon:gi(`<path d="M14 58 V8" stroke="#5c3a1a" stroke-width="5"/><path d="M16 9 H52 L44 20 L52 31 H16 Z" fill="#e2465b" stroke="#7a1626" stroke-width="3"/>`),
+   desc:l=>`Barrels start 1 tier higher after every restart. Currently: +${l}`},
 ];
 const costL = (u,l) => u.costL ? u.costL(l) : Math.log10(u.base) + l*Math.log10(u.grow);
 
@@ -879,6 +898,8 @@ function openPane(p){
   $("sheettitle").textContent = TITLES[p];
   $("bulk").classList.toggle("ghost-slot", p !== "up");
   $("ptabs").classList.toggle("on", p === "gold");
+  $("utabs").classList.toggle("on", p === "up");
+  if(p === "up") openUTab(utab);
   $("sheet").classList.add("on"); $("scrim").classList.add("on");
   if(p === "gold") openTab(ptab);
   if(p === "col") renderBook();
@@ -888,7 +909,12 @@ function openTab(t){
   ptab = t;
   document.querySelectorAll("#ptabs button").forEach(b => b.classList.toggle("on", b.dataset.ptab === t));
   document.querySelectorAll("#pane-gold .sub-pane").forEach(x => x.classList.toggle("on", x.id === "pt-"+t));
-  if(t === "star") starKey = "";
+}
+let utab = "scrap";
+function openUTab(t){
+  utab = t;
+  document.querySelectorAll("#utabs button").forEach(b => b.classList.toggle("on", b.dataset.utab === t));
+  document.querySelectorAll("#pane-up .sub-pane").forEach(x => x.classList.toggle("on", x.id === "ut-"+t));
 }
 function closePane(){
   pane = null;
@@ -897,13 +923,14 @@ function closePane(){
 }
 document.querySelectorAll(".dock button").forEach(b => b.onclick = () => { initAudio(); openPane(b.dataset.pane); });
 document.querySelectorAll("#ptabs button").forEach(b => b.onclick = () => openTab(b.dataset.ptab));
+document.querySelectorAll("#utabs button").forEach(b => b.onclick = () => openUTab(b.dataset.utab));
 $("close").onclick = closePane; $("scrim").onclick = closePane;
 
 function buildUpgrades(listEl, defs, key, gold){
   listEl.innerHTML = "";
   for(const u of defs){
     const row = document.createElement("div"); row.className = "upg";
-    row.innerHTML = `<div class="ic" style="background:${u.color}">${u.icon}</div><div class="txt"><div class="nm"></div><div class="ds"></div></div><button class="buy"></button>`;
+    row.innerHTML = `<div class="ul"><span class="uic">${u.icon}</span><span class="ulv"></span></div><div class="txt"><div class="nm"></div><div class="ds"></div></div><button class="buy"></button>`;
     row.querySelector("button").onclick = () => buy(u, key);
     u.el = row; u.key = key; u.gold = gold; listEl.appendChild(row);
   }
@@ -914,14 +941,15 @@ function refreshUpgrades(defs){
   let n = 0;
   for(const u of defs){
     const l = S[u.key][u.id], why = blocked(u, l);
-    const nm = u.el.querySelector(".nm"), ds = u.el.querySelector(".ds"), b = u.el.querySelector("button");
-    const t = `${u.name}<span class="lv">Lv ${l}${u.max?" / "+u.max:""}</span>`;
-    if(nm._v !== t){ nm.innerHTML = t; nm._v = t; }
+    const nm = u.el.querySelector(".nm"), ds = u.el.querySelector(".ds"), lv = u.el.querySelector(".ulv"), b = u.el.querySelector("button");
+    if(nm._v !== u.name){ nm.textContent = u.name; nm._v = u.name; }
+    const lt = `${l}/${u.max || (u.showMax ? u.showMax() : "∞")}`; if(lv._v !== lt){ lv.textContent = lt; lv._v = lt; }
     const d = u.desc(l); if(ds._v !== d){ ds.textContent = d; ds._v = d; }
     const c = costL(u,l);
-    const bt = why || `<svg class="ico xs" viewBox="0 0 40 48"><use href="#i-${u.gold?"gold":"scrap"}"/></svg>${fmtL(c)}`;
-    if(b._v !== bt){ b.innerHTML = bt; b._v = bt; }
     const ok = !why && (u.gold ? S.gs : S.scrap) >= c - 1e-9;
+    const bt = why ? "MAX" : `<svg class="ico xs" viewBox="0 0 40 48"><use href="#i-${u.gold?"gold":"scrap"}"/></svg>${fmtL(c)}`;
+    if(b._v !== bt){ b.innerHTML = bt; b._v = bt; }
+    b.className = "buy" + (why ? " max" : ok ? "" : " poor");
     b.disabled = !ok; if(ok) n++;
   }
   return n;
@@ -946,7 +974,7 @@ function buy(u, key){
 function buyStar(){
   initAudio();
   if(S.gs < starCostL(S.stars) - 1e-9) return sfx.err();
-  S.stars++; S.gs = LZ; sfx.prestige(); starKey = ""; render();
+  S.stars++; S.gs = LZ; sfx.prestige(); render();
   toast(`★ Star ${S.stars}! Production ×${fmtL(S.stars)}`);
 }
 // barrels below the spawn tier are useless clutter: upgrade them to the spawn tier
@@ -997,16 +1025,26 @@ function showStarInfo(){
     text:"Each Star multiplies scrap production by 10. Buying a Star spends ALL of your Golden Scrap. Stars 1-10 cost 1K, 2K, 3K, 5K, 25K, 75K, 200K, 500K, 1M and 2M Golden Scrap; after that each costs 3× the one before. At 5 Stars, Golden Scrap Multipliers unlock."});
 }
 $("gsinfo").onclick = showGsInfo;
-$("starinfo").onclick = showStarInfo;
+$("upstars").onclick = () => showUpgradeStars();
+let starWin = null;
+function showUpgradeStars(){
+  if(starWin) starWin.remove();
+  const sc = starCostL(S.stars), can = S.gs >= sc - 1e-9;
+  starWin = modal({title:"Upgrade Stars", ok: can ? `Buy Star ${S.stars+1}` : "Close",
+    html:`<div class="dbox starhdr"><div class="bignum"><svg viewBox="0 0 40 48"><use href="#i-gold"/></svg><span>${fmtL(S.gs)}</span></div><button class="sq blue small si">i</button></div>
+      <div class="starfield">${starRows()}</div>
+      <p>Next Star: ${fmtL(sc)} Golden Scrap (spends all)</p>`,
+    onOk: () => { starWin = null; if(can){ buyStar(); showUpgradeStars(); } }});
+  starWin.classList.add("starwin");
+  starWin.querySelector(".si").onclick = showStarInfo;
+  const x = starWin.querySelector(".x"); x.addEventListener("click", () => starWin = null);
+}
 
-// the stars window shows the current group of 10 stars in SC2's 2-3-3-2 layout
-let starKey = "";
-function renderStars(){
-  const key = S.stars + "/" + (S.gs >= starCostL(S.stars) - 1e-9);
-  if(key === starKey) return; starKey = key;
+// the Upgrade Stars window shows the current group of 10 stars in SC2's 2-3-3-2 layout
+function starRows(){
   const base = Math.floor(S.stars / 10) * 10, rows = [2,3,3,2];
   let k = 0;
-  $("starfield").innerHTML = rows.map(n => `<div class="r">${Array.from({length:n}, () => {
+  return rows.map(n => `<div class="r">${Array.from({length:n}, () => {
     const idx = base + k++, own = idx < S.stars;
     return `<div class="st${own ? "" : " no"}"><svg viewBox="0 0 100 100"><use href="#i-star${own ? "" : "no"}"/></svg><b>${own ? "x10" : "#" + (idx+1)}</b></div>`;
   }).join("")}</div>`).join("");
@@ -1034,7 +1072,7 @@ function render(){
   $("pendbar").textContent = pend >= 0 ? `Restart: +${fmtL(pend)}` : "Restart at 100M scrap";
   $("pendfill").style.width = pend >= 0 ? "100%" : Math.max(0, Math.min(100, 100 * 10**(S.runScrap - GS_MIN))) + "%";
   // prestige window
-  $("gs2").textContent = $("gs3").textContent = fmtL(S.gs);
+  $("gs2").textContent = fmtL(S.gs);
   const gm = gsTierMult();
   $("pend").textContent = pend >= 0 ? fmtL(pend - Math.log10(gm)) : "0";
   $("pendx").textContent = gm > 1 ? `x${gm}` : "";
@@ -1044,13 +1082,12 @@ function render(){
   $("prestige").disabled = pend < 0;
   $("gsmulttxt").textContent = S.stars < 5 ? "Golden Scrap Multipliers unlock at 5 Stars." :
     (GS_TIERS[gsTier()] ? `Reach barrel #${GS_TIERS[gsTier()][0]} for x${GS_TIERS[gsTier()][1]}.` : "Multiplier maxed at x1024.");
-  // stars window
-  renderStars();
-  $("starnext").textContent = `Next Star: ${fmtL(sc2)} Golden Scrap (spends all)`;
-  $("buystar").disabled = !canStar;
-  $("buystar").textContent = `Buy Star ${S.stars + 1}`;
+  // stars tab
+  $("starboost").textContent = "x" + fmtL(S.stars);
+  $("starown").textContent = `Stars owned: ${S.stars} · next one costs ${fmtL(sc2)} Golden Scrap`;
+  $("upstars").classList.toggle("glow", canStar);
   // badges
-  const nUp = refreshUpgrades(UPG), nGold = refreshUpgrades(GUPG) + (canStar ? 1 : 0) + (pend >= 0 && pend > S.gs ? 1 : 0);
+  const nUp = refreshUpgrades(UPG) + refreshUpgrades(GUPG), nGold = (canStar ? 1 : 0) + (pend >= 0 && pend > S.gs ? 1 : 0);
   $("dot-up").textContent = nUp; $("dot-up").classList.toggle("show", nUp > 0);
   $("dot-gold").textContent = nGold; $("dot-gold").classList.toggle("show", nGold > 0);
   if(pane === "set") renderSettings();
@@ -1177,7 +1214,6 @@ window.addEventListener("pointerup", e=>endDrag(e,false));
 window.addEventListener("pointercancel", e=>endDrag(e,true));
 
 $("prestige").onclick = prestige;
-$("buystar").onclick = buyStar;
 $("bulk").onclick = () => { S.buyMax = !S.buyMax; $("bulk").textContent = S.buyMax ? "MAX" : "×1"; };
 function applyTheme(){}
 $("mute").onclick = ()=>{ S.muted = !S.muted; renderSettings(); save(); };
