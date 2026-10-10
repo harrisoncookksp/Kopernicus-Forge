@@ -5,242 +5,251 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Scrap Forge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@600;700;800&display=swap">
 <style>
-/* Layout follows Scrap Clicker 2: green spawn bar across the very top, resources right under it
-   (scrap left, prestige currencies right), a 4x5 barrel board, and Barrels / Prestige / Upgrades /
-   Options tabs along the bottom. Dark, flat, simple. */
+/* Visual style matched to Scrap Clicker 2 screenshots: green header with dark-green number boxes,
+   blue/orange status bars, mint board with per-barrel production above each barrel, green icon dock,
+   grey windows with dark title bar, red square close and blue two-tone buttons. */
 :root{
-  --bg:#121419; --app:#1b1e25; --hud:#1b1e25; --panel:#22262e; --row:#2a2f39; --row2:#323845; --line:#383f4c;
-  --slot:#262a33; --slot-in:#1d2027; --ink:#f3f5f8; --muted:#97a0b0;
-  --green:#4cc35a; --green-dk:#2f8f3c; --green-ink:#08210c;
-  --gold:#ffcf3f; --gold-dk:#c28f00; --gold-ink:#2a1c00; --star:#ffbf1f;
-  --accent:#4cc35a; --accent-dk:#2f8f3c; --accent-ink:#08210c; --good:#4cc35a;
-  --bad:#ff5d6c; --shadow:rgba(0,0,0,.5); --scrim:rgba(0,0,0,.6);
+  --bg:#0f2a14;
+  --strip:#1d6b2a; --strip-fill:#4fd860;
+  --hdr:#36a83f; --hdr-dk:#1a5a22; --box:#134a19;
+  --board:#a4d4aa; --label:rgba(255,255,255,.62);
+  --dock:#36a83f; --dock-line:#1f6d27;
+  --win:#c4c4c4; --win-title:#747474; --win-title2:#6a6a6a; --dbox:#3d3d3d; --gbox:#7a7a7a; --gbox2:#676767;
+  --blue:#3a9cff; --blue-dk:#0b6fd3; --red:#e60000; --red-dk:#c40000;
+  --orange:#e07b1a; --level:#3d8fe0;
+  --ink:#ffffff; --ink-dark:#2a2a2a; --muted:#d9d9d9; --star:#f6f24a; --star-dk:#c9c400;
+  --grey-btn:#9a9a9a; --grey-btn-dk:#828282; --badge:#e10000;
+  --scrim:rgba(0,0,0,.6);
 }
-@media (prefers-color-scheme: light){
-  :root:not([data-theme="dark"]){
-    --bg:#c7ccd5; --app:#e9ecf1; --hud:#e9ecf1; --panel:#f5f6f9; --row:#ffffff; --row2:#eef1f5; --line:#cfd5de;
-    --slot:#d6dbe3; --slot-in:#c3cad5; --ink:#1a1d24; --muted:#5d6676; --shadow:rgba(20,30,50,.2); --scrim:rgba(10,15,25,.45);
-  }
-}
-:root[data-theme="light"]{
-  --bg:#c7ccd5; --app:#e9ecf1; --hud:#e9ecf1; --panel:#f5f6f9; --row:#ffffff; --row2:#eef1f5; --line:#cfd5de;
-  --slot:#d6dbe3; --slot-in:#c3cad5; --ink:#1a1d24; --muted:#5d6676; --shadow:rgba(20,30,50,.2); --scrim:rgba(10,15,25,.45);
-}
+@media (prefers-color-scheme: dark){ :root{ --bg:#0f2a14; } }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
-body{background:var(--bg);color:var(--ink);font:500 15px/1.3 "Fredoka",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-tap-highlight-color:transparent;overscroll-behavior:none;user-select:none;-webkit-user-select:none}
-button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
-#app{position:relative;max-width:460px;height:100dvh;margin:0 auto;background:var(--app);display:flex;flex-direction:column;overflow:hidden}
-@media (min-width:600px){#app{height:min(100dvh,920px);margin-top:max(0px,calc((100dvh - 920px)/2));border-radius:20px;box-shadow:0 20px 60px var(--shadow)}}
+body{background:var(--bg);color:var(--ink);font:700 15px/1.25 "Open Sans",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-tap-highlight-color:transparent;overscroll-behavior:none;user-select:none;-webkit-user-select:none}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+#app{position:relative;max-width:460px;height:100dvh;margin:0 auto;background:var(--board);display:flex;flex-direction:column;overflow:hidden}
+@media (min-width:600px){#app{height:min(100dvh,920px);margin-top:max(0px,calc((100dvh - 920px)/2))}}
 .stage{position:relative;flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
 
-/* ---- spawn bar (very top) ---- */
-.topbar{padding:calc(8px + env(safe-area-inset-top)) 10px 0}
-.spawnbar{position:relative;height:30px;border-radius:9px;background:var(--slot-in);overflow:hidden;box-shadow:inset 0 0 0 2px var(--line)}
-.spawnbar i{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(#7ee08a,var(--green) 55%,var(--green-dk));border-radius:9px 0 0 9px}
-.spawnbar .mini{position:absolute;left:4px;top:2px;width:26px;height:26px;z-index:1}
-.spawnbar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);letter-spacing:.2px}
-
-/* ---- resources ---- */
-.hud{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px 4px}
-.res{display:flex;align-items:center;gap:8px;min-width:0}
-.res .ico{width:34px;height:34px}
-.res b{display:block;font-size:30px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}
-.res small{display:block;color:var(--muted);font-size:13px;font-weight:600;margin-top:2px}
-.side{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
-.pill{display:flex;align-items:center;gap:6px;background:var(--row);border-radius:999px;padding:3px 12px 3px 5px;min-width:86px;justify-content:space-between}
-.pill b{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
-.pill.g b{color:var(--gold)}
-.ico{width:30px;height:30px;flex:none}
-.ico.sm{width:22px;height:22px}
-.ico.xs{width:15px;height:15px;vertical-align:-2px}
-.starico{color:var(--star);font-size:20px;line-height:1;text-shadow:0 1px 0 #8a5c00}
-.mult{text-align:center;font-size:12px;color:var(--muted);font-weight:600;padding:0 14px 2px}
+/* ---- top: spawn strip, resource boxes, status bars ---- */
+.spawnstrip{position:relative;height:calc(22px + env(safe-area-inset-top));background:var(--strip)}
+.spawnstrip i{position:absolute;left:0;bottom:0;top:0;width:0;background:linear-gradient(#6ee67c,var(--strip-fill))}
+.hud{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:8px 10px 8px 6px;background:var(--hdr)}
+.resbox{position:relative;display:flex;align-items:center;height:40px;margin-left:26px;background:var(--box);border-radius:2px}
+.resbox .rico{position:absolute;left:-26px;top:50%;width:40px;height:46px;transform:translateY(-50%)}
+.resbox b{flex:1;padding:0 8px 0 22px;font-size:22px;font-weight:800;white-space:nowrap;overflow:hidden;font-variant-numeric:tabular-nums;letter-spacing:.2px}
+.bars{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:3px 4px 4px;background:var(--hdr-dk);border-bottom:3px solid #0d3812}
+.lbar{position:relative;height:24px;background:#16612a;overflow:hidden}
+.lbar i{position:absolute;left:0;top:0;bottom:0;width:0}
+.lbar.blue i{background:var(--level)}
+.lbar.orange i{background:var(--orange)}
+.lbar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.35);white-space:nowrap}
 
 /* ---- board ---- */
-.field{flex:1;display:flex;align-items:center;justify-content:center;padding:6px 12px 10px;min-height:0}
-#grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(5,1fr);gap:7px;width:100%;max-width:min(100%,calc((100dvh - 250px) * .8));aspect-ratio:4/5;touch-action:none}
-.cell{position:relative;border-radius:14px;background:var(--slot);box-shadow:inset 0 -3px 0 var(--slot-in);cursor:grab}
-.cell.target{background:var(--row2);box-shadow:inset 0 0 0 3px var(--gold)}
-.cell.sel{background:var(--row2);box-shadow:inset 0 0 0 3px var(--gold)}
-.cell.match{background:var(--row2);box-shadow:inset 0 0 0 3px var(--green)}
+.field{flex:1;display:flex;align-items:center;justify-content:center;padding:4px 6px;min-height:0}
+#grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(5,1fr);gap:0 4px;width:100%;max-width:min(100%,calc((100dvh - 230px) * .64));aspect-ratio:4/6.25;touch-action:none}
+.cell{position:relative;border-radius:10px;cursor:grab}
+.plabel{position:absolute;left:-6px;right:-6px;top:0;text-align:center;font-size:clamp(10px,3.3vw,15px);font-weight:700;color:var(--label);white-space:nowrap;pointer-events:none;letter-spacing:-.2px}
+.item{position:absolute;inset:22% 6% 4%;animation:pop .22s ease-out}
+.cell.target,.cell.sel{background:rgba(255,255,255,.28)}
+.cell.match{background:rgba(255,255,255,.22);box-shadow:inset 0 0 0 3px rgba(255,255,255,.7)}
 .cell.match .item{animation:bob .45s ease-in-out infinite alternate}
 @keyframes bob{to{transform:translateY(-4%)}}
-.cell.dragging .item{opacity:.2}
-.item{position:absolute;inset:5% 9% 6%;animation:pop .22s ease-out}
-.item svg,.ghost svg,.pic svg,.mini svg,.detail svg{width:100%;height:100%;display:block;overflow:visible}
-.tier{position:absolute;left:4px;top:4px;min-width:20px;height:19px;padding:0 5px;border-radius:7px;color:#fff;font-size:12px;font-weight:700;line-height:19px;text-align:center;pointer-events:none}
+.cell.dragging .item{opacity:.25}
+.item svg,.ghost svg,.pic svg,.detail svg{width:100%;height:100%;display:block;overflow:visible}
 @keyframes pop{from{transform:scale(.3)}65%{transform:scale(1.12)}to{transform:scale(1)}}
 .ghost{position:fixed;pointer-events:none;z-index:50;transform:translate(-50%,-55%) scale(1.15)}
-.float{position:fixed;pointer-events:none;z-index:60;font-weight:700;font-size:18px;color:var(--gold);animation:up 1s ease-out forwards;-webkit-text-stroke:3px var(--app);paint-order:stroke fill}
+.float{position:fixed;pointer-events:none;z-index:60;font-weight:800;font-size:18px;color:#fff;animation:up 1s ease-out forwards;-webkit-text-stroke:3px #1a5a22;paint-order:stroke fill}
 @keyframes up{to{transform:translateY(-44px);opacity:0}}
 
-/* ---- tabs ---- */
-.dock{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px 10px calc(10px + env(safe-area-inset-bottom));background:var(--panel);border-top:1px solid var(--line);position:relative;z-index:35}
-.dock button{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0 6px;border-radius:12px;font-size:12px;font-weight:700;color:var(--muted)}
-.dock button .tabico{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--row);box-shadow:inset 0 -3px 0 var(--line)}
-.dock button svg{width:24px;height:24px}
-.dock button.on{color:var(--ink)}
-.dock button.on .tabico{background:var(--green);color:var(--green-ink);box-shadow:inset 0 -3px 0 var(--green-dk)}
-.dot{position:absolute;top:2px;right:calc(50% - 26px);width:14px;height:14px;border-radius:50%;background:var(--bad);border:2px solid var(--panel);display:none}
+/* ---- dock ---- */
+.dock{display:grid;grid-template-columns:repeat(4,1fr);background:var(--dock);border-top:3px solid var(--dock-line);padding:8px 6px calc(8px + env(safe-area-inset-bottom));position:relative;z-index:35}
+.dock button{position:relative;display:flex;align-items:center;justify-content:center;height:58px}
+.dock button svg{width:56px;height:56px}
+.dock button.on{background:rgba(0,0,0,.12);border-radius:10px}
+.dot{position:absolute;top:-2px;left:calc(50% + 6px);min-width:26px;height:26px;padding:0 6px;border-radius:6px;background:var(--badge);color:#fff;font-size:17px;font-weight:800;line-height:26px;text-align:center;display:none;box-shadow:inset 0 -3px 0 rgba(0,0,0,.2)}
 .dot.show{display:block}
 
-/* ---- panels ---- */
-.scrim{position:absolute;inset:0;background:var(--scrim);opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+/* ---- windows ---- */
+.scrim{position:absolute;inset:0;background:var(--scrim);opacity:0;pointer-events:none;transition:opacity .15s;z-index:20}
 .scrim.on{opacity:1;pointer-events:auto}
-.sheet{position:absolute;left:0;right:0;bottom:0;height:86%;background:var(--panel);border-radius:18px 18px 0 0;z-index:30;transform:translateY(105%);transition:transform .25s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column}
-.sheet.on{transform:none}
-.sheet header{display:flex;align-items:center;padding:12px 14px 10px;border-bottom:1px solid var(--line)}
-.sheet h2{margin:0;font-size:21px;font-weight:700;flex:1}
-.close{width:36px;height:36px;border-radius:10px;background:var(--row);font-size:18px;line-height:1}
-.bulk{margin-right:8px;padding:7px 12px;border-radius:10px;background:var(--row);font-weight:700;font-size:13px}
-.bulk.on{background:var(--green);color:var(--green-ink)}
-.pane{display:none;overflow-y:auto;padding:12px 12px 20px;flex:1;user-select:text}
+.win{position:absolute;left:3.5%;right:3.5%;top:max(12%,96px);bottom:3%;background:var(--win);z-index:30;display:none;flex-direction:column}
+.win.on{display:flex;animation:winin .16s ease-out}
+@keyframes winin{from{transform:scale(.94);opacity:0}}
+.wt{display:flex;align-items:stretch;height:52px;background:linear-gradient(var(--win-title) 50%,var(--win-title2) 50%);flex:none}
+.wt h2{flex:1;margin:0;display:flex;align-items:center;justify-content:center;font-size:27px;font-weight:800;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.sq{width:52px;flex:none;color:#fff;font-size:26px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.sq.red{background:linear-gradient(var(--red) 50%,var(--red-dk) 50%)}
+.sq.blue{background:linear-gradient(var(--blue) 50%,var(--blue-dk) 50%)}
+.sq.ghost-slot{visibility:hidden}
+.sq.small{width:40px;height:40px;font-size:22px}
+.tabs{display:none;background:#3a3a3a;flex:none}
+.tabs.on{display:flex}
+.tabs button{flex:1;height:58px;display:flex;align-items:center;justify-content:center}
+.tabs button.on{background:#666}
+.tabs svg{width:44px;height:44px}
+.pane{display:none;overflow-y:auto;padding:14px 12px 18px;flex:1}
 .pane.on{display:block}
-h3.sub{margin:16px 2px 4px;font-size:16px}
-.note{font-size:12px;color:var(--muted);margin:2px 2px 10px}
+.sub-pane{display:none}
+.sub-pane.on{display:block}
+.dbox{background:var(--dbox);color:#fff;padding:12px;margin:0 auto 12px;text-align:center;max-width:380px}
+.dbox .lbl{font-size:16px;margin-bottom:4px}
+.bignum{display:flex;align-items:center;justify-content:center;gap:10px;font-size:clamp(20px,6.4vw,30px);font-weight:800;font-variant-numeric:tabular-nums}
+.bignum svg{width:34px;height:40px;flex:none}
+.dark-lbl{color:var(--ink-dark);text-align:center;font-size:16px;margin:6px 0 4px}
+.afterrow{display:flex;align-items:center;justify-content:center;gap:8px;color:var(--ink-dark);font-size:clamp(18px,5.6vw,26px);font-weight:800;margin-bottom:14px;flex-wrap:wrap}
+.afterrow svg{width:24px;height:30px}
+.gbox{background:var(--gbox);padding:10px;margin:0 auto 14px;max-width:380px;color:#fff;text-align:center}
+.gbox .lbl{font-size:16px;margin-bottom:8px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.two div{background:var(--gbox2);padding:8px 4px}
+.two small{display:block;font-size:12px;color:#e3e3e3;font-weight:600}
+.two b{font-size:clamp(15px,4.6vw,20px)}
+.bigbtn{display:block;width:78%;margin:0 auto;padding:14px 8px;background:linear-gradient(var(--blue) 50%,var(--blue-dk) 50%);color:#fff;font-size:clamp(20px,6vw,28px);font-weight:800;text-shadow:0 2px 0 rgba(0,0,0,.2)}
+.bigbtn:disabled{background:linear-gradient(var(--grey-btn) 50%,var(--grey-btn-dk) 50%);color:#e8e8e8;cursor:not-allowed}
+.dark-note{color:#4a4a4a;font-size:13px;text-align:center;margin:10px 4px 0;font-weight:600}
 
-.upg{display:flex;align-items:center;gap:10px;padding:9px;border-radius:14px;background:var(--row);margin-bottom:7px}
-.upg .ic{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none;color:#fff;box-shadow:inset 0 -3px 0 rgba(0,0,0,.25)}
+/* stars */
+.starhdr{display:flex;align-items:center;justify-content:center;gap:12px}
+.starfield{display:flex;flex-direction:column;align-items:center;margin:6px 0 4px}
+.starfield .r{display:flex;justify-content:center;gap:2px;margin-top:calc(min(25vw,108px) * -.2)}
+.starfield .r:first-child{margin-top:0}
+.st{width:min(25vw,108px);height:min(25vw,108px);flex:none;position:relative}
+.st svg{width:100%;height:100%}
+.st b{position:absolute;inset:6% 0 0;display:flex;align-items:center;justify-content:center;font-size:clamp(13px,4.2vw,20px);font-weight:800;color:#1a1a1a}
+.st.no b{color:#7a7a7a}
+.starnext{color:var(--ink-dark);text-align:center;font-size:15px;margin:2px 0 12px}
+
+/* upgrades */
+.upg{display:flex;align-items:center;gap:10px;padding:8px;background:var(--dbox);margin-bottom:8px}
+.upg .ic{width:46px;height:46px;display:flex;align-items:center;justify-content:center;flex:none;color:#fff}
 .upg .ic svg{width:26px;height:26px}
 .upg .txt{flex:1;min-width:0}
-.upg .nm{font-weight:700;font-size:15px}
-.upg .lv{font-size:12px;color:var(--muted);font-weight:600;margin-left:5px}
-.upg .ds{font-size:12.5px;color:var(--muted)}
-.buy{min-width:94px;padding:9px 10px;border-radius:11px;background:var(--green);color:var(--green-ink);font-weight:700;font-size:15px;box-shadow:inset 0 -3px 0 var(--green-dk);display:flex;align-items:center;justify-content:center;gap:4px;font-variant-numeric:tabular-nums}
-.buy:active{transform:translateY(1px);box-shadow:inset 0 -1px 0 var(--green-dk)}
-.buy:disabled{background:var(--row2);color:var(--muted);box-shadow:inset 0 -3px 0 var(--line);cursor:not-allowed;transform:none}
-.buy.gold{background:var(--gold);color:var(--gold-ink);box-shadow:inset 0 -3px 0 var(--gold-dk)}
-.buy.gold:disabled{background:var(--row2);color:var(--muted);box-shadow:inset 0 -3px 0 var(--line)}
+.upg .nm{font-weight:800;font-size:15px;color:#fff}
+.upg .lv{font-size:12px;color:#bdbdbd;margin-left:5px}
+.upg .ds{font-size:12px;color:#cfcfcf;font-weight:600}
+.buy{min-width:96px;padding:10px 8px;background:linear-gradient(var(--blue) 50%,var(--blue-dk) 50%);color:#fff;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;gap:4px;font-variant-numeric:tabular-nums;text-shadow:0 1px 0 rgba(0,0,0,.2)}
+.buy:disabled{background:linear-gradient(var(--grey-btn) 50%,var(--grey-btn-dk) 50%);color:#e8e8e8;cursor:not-allowed}
+.ico{width:30px;height:30px;flex:none}
+.ico.xs{width:14px;height:17px;vertical-align:-3px}
 
-.starcard,.prest{background:var(--row);border-radius:16px;padding:14px;margin-bottom:10px;text-align:center}
-.starcard{box-shadow:inset 0 0 0 2px var(--star)}
-.prest{box-shadow:inset 0 0 0 2px var(--gold)}
-.starcard p,.prest p{margin:4px 0 10px;font-size:13px;color:var(--muted)}
-.stars-big{display:flex;align-items:baseline;justify-content:center;gap:6px;font-size:34px;font-weight:700}
-.stars-big .starico{font-size:34px}
-.stars-big small{font-size:14px;color:var(--muted);font-weight:600}
-.bar{position:relative;height:22px;border-radius:8px;background:var(--slot-in);overflow:hidden;margin-bottom:10px}
-.bar i{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(#ffe48a,var(--star))}
-.bar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6)}
-.starcard .buy,.prest .buy{width:100%;padding:11px;font-size:16px}
-.prest .big{display:flex;align-items:center;justify-content:center;gap:6px;font-size:30px;font-weight:700;color:var(--gold);margin:2px 0 6px}
-.prest #gsmulttxt{font-weight:600;color:var(--ink)}
-.gst{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:6px}
-.gst div{background:var(--row);border-radius:10px;padding:6px;text-align:center;font-size:12px;color:var(--muted)}
-.gst div b{display:block;font-size:17px;color:var(--ink)}
-.gst div.got{box-shadow:inset 0 0 0 2px var(--gold);color:var(--ink)}
-.gst div.got b{color:var(--gold)}
-.gst div.cur{background:var(--row2)}
-.gst.locked div{opacity:.45}
+/* barrels collection */
+.unl{text-align:center;font-size:clamp(20px,6vw,28px);font-weight:800;margin:4px 0 16px;text-shadow:0 2px 0 rgba(0,0,0,.18)}
+#book{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 10px;padding:0 4%}
+.card{position:relative;cursor:pointer;text-align:center}
+.card .pic{aspect-ratio:1}
+.card.locked .pic svg{filter:brightness(0);opacity:.28}
+.card b{display:block;font-size:12px;color:var(--ink-dark);margin-top:2px;line-height:1.15}
+.card span{display:block;font-size:11px;color:#555;font-weight:600}
 
-#book{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
-.card{background:var(--row);border-radius:12px;padding:6px 4px;text-align:center;cursor:pointer}
-.card:active{transform:scale(.97)}
-.card .pic{aspect-ratio:1;padding:2px 8px}
-.card.locked .pic svg{filter:brightness(0);opacity:.25}
-.card b{display:block;font-size:11px;line-height:1.15;min-height:2.3em;margin-top:2px}
-.card span{font-size:10px;color:var(--muted)}
-
-.setrow{display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--row);border-radius:14px;margin-bottom:7px}
-.setrow button{min-width:90px;padding:8px 12px;border-radius:10px;background:var(--row2);font-weight:700}
-.setrow button.danger{color:var(--bad)}
-.stats{display:grid;grid-template-columns:1fr auto;gap:6px 12px;padding:12px;background:var(--row);border-radius:14px;font-size:14px}
-.stats span{color:var(--muted)}
-.news{background:var(--row);border-radius:14px;padding:12px;font-size:13px}
+/* options */
+.setrow{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--dbox);margin-bottom:8px}
+.setrow button{min-width:96px;padding:9px 12px;background:linear-gradient(var(--blue) 50%,var(--blue-dk) 50%);color:#fff;font-weight:800}
+.setrow button.danger{background:linear-gradient(var(--red) 50%,var(--red-dk) 50%)}
+.stats{display:grid;grid-template-columns:1fr auto;gap:6px 12px;padding:12px;background:var(--dbox);font-size:14px;margin-bottom:8px}
+.stats span{color:#cfcfcf;font-weight:600}
+.news{background:var(--dbox);padding:12px;font-size:13px;margin-bottom:8px}
 .news b{display:block;margin-bottom:4px}
-.news ul{margin:0;padding-left:18px;color:var(--muted)}
+.news ul{margin:0;padding-left:18px;color:#cfcfcf;font-weight:600}
+.sect{color:var(--ink-dark);font-size:16px;margin:12px 2px 6px}
 
-.toast{position:absolute;left:50%;top:100px;transform:translateX(-50%);background:var(--row2);color:var(--ink);padding:10px 16px;border-radius:12px;z-index:40;font-weight:600;width:max-content;max-width:calc(100% - 32px);text-align:center;animation:tin .25s ease-out;box-shadow:0 6px 20px var(--shadow)}
-.toast .mini{display:inline-block;width:28px;height:28px;vertical-align:middle;margin-right:6px}
+/* info table */
+.gst{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center}
+.gst div{background:var(--gbox2);padding:6px 2px;font-size:12px;color:#e3e3e3}
+.gst div b{display:block;font-size:17px;color:#fff}
+.gst div.got{background:var(--dbox)}
+.gst div.got b{color:var(--star)}
+.gst div.cur{box-shadow:inset 0 0 0 2px var(--star)}
+
+.toast{position:absolute;left:50%;top:150px;transform:translateX(-50%);background:var(--dbox);color:#fff;padding:10px 16px;z-index:40;width:max-content;max-width:calc(100% - 32px);text-align:center;animation:tin .2s ease-out;font-size:15px}
+.toast .mini{display:inline-block;width:30px;height:30px;vertical-align:middle;margin-right:6px}
+.toast .mini svg{width:100%;height:100%}
 @keyframes tin{from{transform:translate(-50%,-12px);opacity:0}}
-.modal{position:absolute;inset:0;background:var(--scrim);display:flex;align-items:center;justify-content:center;z-index:60;padding:20px}
-.modal>div{background:var(--panel);border-radius:18px;padding:22px;width:100%;max-width:340px;text-align:center}
-.modal h3{margin:0 0 8px;font-size:21px}
-.modal p{margin:0 0 14px;color:var(--muted)}
-.modal .big{font-size:28px;font-weight:700;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:6px}
-.modal .row{display:flex;gap:8px}
-.modal .row .buy{flex:1;padding:12px}
-.modal .row .buy.alt{background:var(--row2);color:var(--ink);box-shadow:inset 0 -3px 0 var(--line)}
+.modal{position:absolute;inset:0;background:var(--scrim);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
+.modal>div{background:var(--win);width:100%;max-width:400px;text-align:center}
+.modal .wt h2{font-size:22px}
+.modal .body{padding:14px}
+.modal p{margin:0 0 12px;color:var(--ink-dark);font-size:15px}
+.modal .big{font-size:28px;font-weight:800;color:var(--ink-dark);margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px}
+.modal .big svg{width:26px;height:32px}
+.modal .row{display:flex;gap:10px}
+.modal .row .buy{flex:1;padding:12px;font-size:18px}
+.modal .row .buy.alt{background:linear-gradient(var(--grey-btn) 50%,var(--grey-btn-dk) 50%)}
 .modal .detail{width:150px;height:150px;margin:0 auto 6px}
-.modal .detail.locked svg{filter:brightness(0);opacity:.25}
+.modal .detail.locked svg{filter:brightness(0);opacity:.28}
 </style>
 </head>
 <body>
 <!-- shared defs: icons here; barrel clip paths and shading are added by the script -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs id="defs">
-  <symbol id="i-scrap" viewBox="0 0 32 32"><path d="M16 3 L19 7 L24 5 L24 10 L29 12 L26 16 L29 20 L24 22 L24 27 L19 25 L16 29 L13 25 L8 27 L8 22 L3 20 L6 16 L3 12 L8 10 L8 5 L13 7 Z" fill="#9aa7b8" stroke="#1d1a24" stroke-width="2" stroke-linejoin="round"/><circle cx="16" cy="16" r="5" fill="#5c6878" stroke="#1d1a24" stroke-width="2"/></symbol>
-  <symbol id="i-gold" viewBox="0 0 32 32"><path d="M16 3 L19 7 L24 5 L24 10 L29 12 L26 16 L29 20 L24 22 L24 27 L19 25 L16 29 L13 25 L8 27 L8 22 L3 20 L6 16 L3 12 L8 10 L8 5 L13 7 Z" fill="#ffd447" stroke="#1d1a24" stroke-width="2" stroke-linejoin="round"/><circle cx="16" cy="16" r="5" fill="#d99a10" stroke="#1d1a24" stroke-width="2"/><path d="M9 9 L12 11" stroke="#fff" stroke-width="2" stroke-linecap="round"/></symbol>
-  <symbol id="i-barrel" viewBox="0 0 100 100"><path d="M27 18 Q13 51 27 84 Q50 92 73 84 Q87 51 73 18 Z" fill="#b9793f" stroke="#1d1a24" stroke-width="6" stroke-linejoin="round"/><path d="M18 34 Q50 46 82 34 M18 68 Q50 80 82 68" fill="none" stroke="#4a4f57" stroke-width="7"/><ellipse cx="50" cy="18" rx="23" ry="7" fill="#c98b4f" stroke="#1d1a24" stroke-width="6"/></symbol>
 </defs></svg>
 
 <div id="app">
 <div class="stage">
-  <div class="topbar">
-    <div class="spawnbar"><i id="spawnfill"></i><div class="mini" id="nextpic"></div><span id="spawnlbl"></span></div>
-  </div>
+  <div class="spawnstrip" title="Next barrel"><i id="spawnfill"></i></div>
   <header class="hud">
-    <div class="res"><svg class="ico"><use href="#i-scrap"/></svg><div><b id="scrap">0</b><small><span id="sps">0</span> / sec</small></div></div>
-    <div class="side">
-      <div class="pill g" title="Golden Scrap"><svg class="ico sm"><use href="#i-gold"/></svg><b id="gs">0</b></div>
-      <div class="pill" title="Stars: each one ×10 production"><span class="starico">★</span><b id="stars">0</b></div>
-    </div>
+    <div class="resbox" title="Scrap"><svg class="rico"><use href="#i-scrap"/></svg><b id="scrap">0</b></div>
+    <div class="resbox" title="Golden Scrap"><svg class="rico"><use href="#i-gold"/></svg><b id="gs">0</b></div>
   </header>
-  <div class="mult" id="gsb"></div>
+  <div class="bars">
+    <div class="lbar blue"><i id="starfill2"></i><span id="starbar">Stars 0</span></div>
+    <div class="lbar orange"><i id="pendfill"></i><span id="pendbar"></span></div>
+  </div>
 
   <div class="field"><div id="grid"></div></div>
 
   <div class="scrim" id="scrim"></div>
-  <section class="sheet" id="sheet">
-    <header><h2 id="sheettitle"></h2><button class="bulk" id="bulk">Buy ×1</button><button class="close" id="close" aria-label="Close">✕</button></header>
-    <div class="pane" id="pane-col"><p class="note" id="colcount"></p><div id="book"></div></div>
+  <section class="win" id="sheet">
+    <header class="wt"><button class="sq blue" id="bulk">×1</button><h2 id="sheettitle"></h2><button class="sq red" id="close" aria-label="Close">X</button></header>
+    <nav class="tabs" id="ptabs">
+      <button data-ptab="gs" title="Golden Scrap"><svg viewBox="0 0 40 48"><use href="#i-gold"/></svg></button>
+      <button data-ptab="star" title="Stars"><svg viewBox="0 0 100 100"><use href="#i-star"/></svg></button>
+      <button data-ptab="gup" title="Golden Scrap Upgrades"><svg viewBox="0 0 64 56"><use href="#i-goldpile"/></svg></button>
+    </nav>
+    <div class="pane" id="pane-col"><div class="unl" id="colcount"></div><div id="book"></div></div>
     <div class="pane" id="pane-gold">
-      <div class="starcard">
-        <div class="stars-big"><span class="starico">★</span><span id="starcount">0</span><small>stars</small></div>
-        <p>Each star multiplies production by 10. Buying one spends <b>all</b> your Golden Scrap.</p>
-        <div class="bar"><i id="starfill"></i><span id="starlbl"></span></div>
-        <button class="buy gold" id="buystar">Buy Star</button>
+      <div class="sub-pane" id="pt-gs">
+        <div class="dbox"><div class="lbl">Golden Scrap</div><div class="bignum"><svg viewBox="0 0 40 48"><use href="#i-gold"/></svg><span id="gs2">0</span></div></div>
+        <div class="dark-lbl">After Prestige:</div>
+        <div class="afterrow">+ <svg viewBox="0 0 40 48"><use href="#i-gold"/></svg><span id="pend">0</span><span id="pendx"></span><button class="sq blue small" id="gsinfo">i</button></div>
+        <div class="gbox"><div class="lbl">Boost per Golden Scrap: <span id="gsper"></span></div>
+          <div class="two"><div><small>Current Boost:</small><b id="boostnow"></b></div><div><small>Boost after Restart:</small><b id="boostafter"></b></div></div></div>
+        <button class="bigbtn" id="prestige">Restart Game</button>
+        <p class="dark-note" id="gsmulttxt"></p>
       </div>
-      <div class="prest">
-        <p>Prestige resets your scrap, barrels and scrap upgrades.<br>Golden Scrap and Stars are kept.</p>
-        <div class="big"><svg class="ico"><use href="#i-gold"/></svg><span id="pend">0</span></div>
-        <p id="gsmulttxt"></p>
-        <button class="buy gold" id="prestige">Prestige</button>
+      <div class="sub-pane" id="pt-star">
+        <div class="dbox starhdr"><div class="bignum"><svg viewBox="0 0 40 48"><use href="#i-gold"/></svg><span id="gs3">0</span></div><button class="sq blue small" id="starinfo">i</button></div>
+        <div class="starfield" id="starfield"></div>
+        <div class="starnext" id="starnext"></div>
+        <button class="bigbtn" id="buystar">Buy Star</button>
       </div>
-      <h3 class="sub">Golden Scrap Multipliers</h3>
-      <p class="note" id="gstnote"></p>
-      <div class="gst" id="gst"></div>
-      <h3 class="sub">Golden Scrap Upgrades</h3>
-      <p class="note">Spending Golden Scrap on these lowers its production bonus, so spend wisely.</p>
-      <div id="gups"></div>
+      <div class="sub-pane" id="pt-gup">
+        <p class="dark-note" style="margin:0 0 10px">Spending Golden Scrap on these lowers its production boost, so spend wisely.</p>
+        <div id="gups"></div>
+      </div>
     </div>
     <div class="pane" id="pane-up"><div id="ups"></div></div>
     <div class="pane" id="pane-set">
-      <h3 class="sub" style="margin-top:2px">Settings</h3>
       <div class="setrow"><span>Sound</span><button id="mute"></button></div>
-      <div class="setrow"><span>Theme</span><button id="theme"></button></div>
-      <h3 class="sub">Statistics</h3>
+      <div class="sect">Statistics</div>
       <div class="stats" id="stats"></div>
-      <h3 class="sub">News</h3>
-      <div class="news"><b>Barrels 21–50 are here</b><ul>
-        <li>30 new everyday-object barrels in 10 new shapes</li>
-        <li>Stars: each ×10 production, unlock GS Multipliers at 5</li>
-        <li>Golden Scrap now depends on your best barrel</li></ul></div>
-      <h3 class="sub">Danger zone</h3>
+      <div class="sect">News</div>
+      <div class="news"><b>The look of Scrap Clicker 2</b><ul>
+        <li>Green header, status bars and icon dock</li>
+        <li>Production shown above every barrel</li>
+        <li>Prestige window with Golden Scrap, Stars and Upgrades tabs</li></ul></div>
+      <div class="sect">Danger zone</div>
       <div class="setrow"><span>Delete all progress</span><button class="danger" id="wipe">Reset</button></div>
     </div>
   </section>
 </div>
 
   <nav class="dock">
-    <button data-pane="col"><span class="tabico"><svg viewBox="0 0 100 100"><use href="#i-barrel"/></svg></span>Barrels</button>
-    <button data-pane="gold"><span class="dot" id="dot-gold"></span><span class="tabico"><svg viewBox="0 0 32 32"><use href="#i-gold"/></svg></span>Prestige</button>
-    <button data-pane="up"><span class="dot" id="dot-up"></span><span class="tabico">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span>Upgrades</button>
-    <button data-pane="set"><span class="tabico">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span>Options</button>
+    <button data-pane="col" title="Barrels"><svg viewBox="0 0 64 64"><use href="#i-barrels4"/></svg></button>
+    <button data-pane="gold" title="Prestige"><span class="dot" id="dot-gold"></span><svg viewBox="0 0 40 48"><use href="#i-gold"/></svg></button>
+    <button data-pane="up" title="Upgrades"><span class="dot" id="dot-up"></span><svg viewBox="0 0 64 64"><use href="#i-up"/></svg></button>
+    <button data-pane="set" title="Options"><svg viewBox="0 0 64 64"><use href="#i-more"/></svg></button>
   </nav>
 
 </div>
@@ -379,7 +388,7 @@ const ITEMS = [
 { name:"Gold Standard", shape:"drum", fill:"#f2c14e", hoops:[30,74], hoop:"#c8961f", lid:"#ffd96b", inner:"#c8961f",
   deco:`<circle cx="50" cy="53" r="12" fill="#ffd96b" stroke="#b8860b" stroke-width="2.5"/>
         <circle cx="50" cy="53" r="8.5" fill="none" stroke="#b8860b" stroke-width="1.2"/>
-        <text x="50" y="58.5" font-size="15" font-weight="700" text-anchor="middle" fill="#b8860b" font-family="Fredoka,system-ui,sans-serif">$</text>
+        <text x="50" y="58.5" font-size="15" font-weight="700" text-anchor="middle" fill="#b8860b" font-family="Open Sans,system-ui,sans-serif">$</text>
         <polygon points="${star(66,40,4,1.2,4)}" fill="#fff"/>` },
 { name:"Barrel-bot", shape:"capsule", fill:"#9aa5b4", hoops:[30], hoop:"#6c7785", lid:"#b7c2cf", inner:"#7d8896",
   deco:`<rect x="33" y="40" width="34" height="22" rx="6" fill="#1d2330" stroke="#1d1a24" stroke-width="2"/>
@@ -400,7 +409,7 @@ const ITEMS = [
 { name:"Pit Stop", shape:"drum", fill:"#222222", lid:"#333333", inner:"#111111",
   deco:`<rect x="0" y="34" width="100" height="6" fill="#e2465b"/><rect x="0" y="66" width="100" height="6" fill="#e2465b"/>
         ${[0,1,2].map(r=>Array.from({length:8},(_,c)=>(c+r)%2?`<rect x="${20+c*8}" y="${42+r*8}" width="8" height="8" fill="#fff"/>`:"").join("")).join("")}
-        <circle cx="50" cy="82" r="5" fill="#fff"/><text x="50" y="84.6" font-size="7" font-weight="700" text-anchor="middle" fill="#1d1a24" font-family="Fredoka,system-ui,sans-serif">1</text>` },
+        <circle cx="50" cy="82" r="5" fill="#fff"/><text x="50" y="84.6" font-size="7" font-weight="700" text-anchor="middle" fill="#1d1a24" font-family="Open Sans,system-ui,sans-serif">1</text>` },
 { name:"Synthwave", shape:"can", fill:"#1b1035", hoops:[26,78], hoop:"#ff4fd8", hw:2.5, lid:"#2a1a50", inner:"#120a26",
   deco:`<circle cx="50" cy="52" r="13" fill="#ff9a3c"/>
         <rect x="30" y="53" width="40" height="2" fill="#1b1035"/><rect x="30" y="57.5" width="40" height="2.5" fill="#1b1035"/><rect x="30" y="62" width="40" height="3" fill="#1b1035"/>
@@ -624,7 +633,7 @@ const ITEMS = [
         ${dots([[28,25],[36,25],[44,25],[52,25],[60,25],[68,25],[76,25]],1.8,"#fff6c2")}
         <rect x="26" y="40" width="48" height="21" rx="3" fill="#fff" stroke="#1d1a24" stroke-width="2.5"/>
         <path d="M42 40 V61 M58 40 V61" stroke="#1d1a24" stroke-width="1.6"/>
-        ${[34,50,66].map(x=>`<text x="${x}" y="56" font-size="14" font-weight="700" text-anchor="middle" fill="#e2465b" font-family="Fredoka,system-ui,sans-serif">7</text>`).join("")}
+        ${[34,50,66].map(x=>`<text x="${x}" y="56" font-size="14" font-weight="700" text-anchor="middle" fill="#e2465b" font-family="Open Sans,system-ui,sans-serif">7</text>`).join("")}
         <rect x="36" y="70" width="28" height="9" rx="2" fill="#2b2e35"/>
         <ellipse cx="46" cy="73" rx="3.5" ry="1.6" fill="#f2c14e"/><ellipse cx="54" cy="74" rx="3.5" ry="1.6" fill="#f2c14e"/>`,
   over:`${tube("M78 56 H87 V26","#c7ced6",3)}<circle cx="87" cy="23" r="5" fill="#e2465b" stroke-width="2.4"/><circle cx="85.5" cy="21.5" r="1.4" fill="#fff" stroke="none"/>` },
@@ -646,14 +655,17 @@ const LZ = -9e15, L3 = Math.log10(3);
 const ladd = (a,b) => { if(a < b) [a,b] = [b,a]; if(b <= LZ) return a; return a + Math.log10(1 + 10**(b-a)); };
 const lsub = (a,b) => { if(b <= LZ) return a; if(b >= a) return LZ; const r = a + Math.log10(1 - 10**(b-a)); return isFinite(r) ? r : LZ; };
 const lnum = n => n > 0 ? Math.log10(n) : LZ;
-const SUF = ["","K","M","B","T","Qa","Qi","Sx","Sp","Oc","No","Dc","UDc","DDc","TDc","QaDc","QiDc","SxDc","SpDc","OcDc","NoDc","Vg"];
+// SC2 style: full numbers with commas, then 1.092e275
 function fmtL(l){
   if(l < -1) return "0";
-  if(l < 3){ const n = 10**l; return n < 10 && n % 1 > 0.05 ? n.toFixed(1) : Math.floor(n + 1e-9).toString(); }
-  const e = Math.floor(l/3);
-  if(e < SUF.length) return (10**(l - e*3)).toFixed(2).replace(/\.?0+$/,"") + SUF[e];
-  const x = Math.floor(l);
-  return (10**(l - x)).toFixed(2) + "e" + (x < 1e6 ? x.toLocaleString("en-US") : fmtL(Math.log10(x)));
+  if(l < 15){
+    const n = 10**l;
+    if(n < 100 && n % 1 > 0.05) return n.toFixed(1);
+    return Math.floor(n + 1e-6).toLocaleString("en-US");
+  }
+  let x = Math.floor(l), m = 10**(l - x);
+  if(m >= 9.9995){ m = 1; x++; }
+  return m.toFixed(3) + "e" + (x < 1e6 ? x : fmtL(Math.log10(x)));
 }
 const fmt = n => fmtL(lnum(n));
 function fmtTime(s){
@@ -787,6 +799,26 @@ const sfx = {
 // ================= UI =================
 const $ = id => document.getElementById(id);
 const app = $("app"), gridEl = $("grid");
+
+// icons in the Scrap Clicker 2 style (ribbed barrels, chunky arrow, three dots)
+function cyl(x, y, w, h, body, top, rib){
+  const rx = w/2, ry = w*.22, cx = x+rx;
+  return `<path d="M${x} ${y} V${y+h} Q${x} ${y+h+ry*1.6} ${cx} ${y+h+ry*1.6} Q${x+w} ${y+h+ry*1.6} ${x+w} ${y+h} V${y} Z" fill="${body}" stroke="#1a1a1a" stroke-width="1.6"/>
+    <path d="M${x+w*.72} ${y} V${y+h+ry*1.2} Q${x+w} ${y+h+ry*.6} ${x+w} ${y+h} V${y} Z" fill="#000" opacity=".16"/>
+    ${rib ? [.25,.42,.58,.75].map(f=>`<path d="M${(x+w*f).toFixed(1)} ${y+ry+2} V${(y+h+ry*.9).toFixed(1)}" stroke="${rib}" stroke-width="${(w*.06).toFixed(1)}"/>`).join("") : ""}
+    <ellipse cx="${cx}" cy="${y}" rx="${rx}" ry="${ry}" fill="${top}" stroke="#1a1a1a" stroke-width="1.6"/>
+    <ellipse cx="${cx}" cy="${y+.3}" rx="${(rx*.66).toFixed(1)}" ry="${(ry*.62).toFixed(1)}" fill="#1e1e1e"/>`;
+}
+$("defs").insertAdjacentHTML("beforeend", `
+  <symbol id="i-scrap" viewBox="0 0 40 48">${cyl(4,8,32,32,"#8f8f8f","#b4b4b4","#6c6c6c")}</symbol>
+  <symbol id="i-gold" viewBox="0 0 40 48">${cyl(4,8,32,32,"#f3df2c","#fff07a","#c4ab00")}</symbol>
+  <symbol id="i-star" viewBox="0 0 100 100"><polygon points="${star(50,54,47,20,5)}" fill="#c9c400"/><polygon points="${star(50,54,38,16.5,5)}" fill="#f6f24a"/></symbol>
+  <symbol id="i-starno" viewBox="0 0 100 100"><polygon points="${star(50,54,47,20,5)}" fill="#8f8f8f"/><polygon points="${star(50,54,38,16.5,5)}" fill="#b5b5b5"/></symbol>
+  <symbol id="i-goldpile" viewBox="0 0 64 56">${cyl(4,26,16,20,"#f3df2c","#fff07a","#c4ab00")}${cyl(24,28,16,20,"#f3df2c","#fff07a","#c4ab00")}${cyl(44,26,16,20,"#f3df2c","#fff07a","#c4ab00")}${cyl(14,10,16,20,"#f3df2c","#fff07a","#c4ab00")}${cyl(34,10,16,20,"#f3df2c","#fff07a","#c4ab00")}</symbol>
+  <symbol id="i-barrels4" viewBox="0 0 64 64">${cyl(6,8,20,20,"#8fb3e8","#5b8ad6")}${cyl(36,8,20,20,"#e88f9a","#d65b6a")}${cyl(6,38,20,18,"#e8c08f","#c99a5b","#b98a4b")}${cyl(36,38,20,18,"#a77fd6","#7d55b8")}</symbol>
+  <symbol id="i-up" viewBox="0 0 64 64"><polygon points="32,5 58,31 43,31 43,59 21,59 21,31 6,31" fill="#c8682a" stroke="#5c2f0e" stroke-width="3" stroke-linejoin="round"/><polygon points="32,5 58,31 43,31 43,59 34,59 34,12" fill="#000" opacity=".14"/></symbol>
+  <symbol id="i-more" viewBox="0 0 64 64">${[12,32,52].map(x=>`<circle cx="${x}" cy="32" r="9" fill="#3d7fd9" stroke="#163a73" stroke-width="3"/><circle cx="${x-2.5}" cy="29.5" r="3" fill="#8fbaf2"/>`).join("")}</symbol>`);
+
 const cells = [];
 for(let i=0;i<SLOTS;i++){
   const c = document.createElement("div");
@@ -798,9 +830,8 @@ function drawCell(i, anim=true){
   const c = cells[i], t = S.grid[i];
   c.classList.toggle("sel", sel === i);
   if(c._t === t) return;
-  c._t = t;
-  c.classList.toggle("full", !!t);
-  c.innerHTML = t ? `<div class="item"${anim?"":' style="animation:none"'} title="#${t} ${ITEMS[t-1].name}">${svgFor(t)}</div><span class="tier" style="background:hsl(${(t*47)%360} 62% 42%)">${t}</span>` : "";
+  c._t = t; c._lbl = null;
+  c.innerHTML = `<span class="plabel"></span>` + (t ? `<div class="item"${anim?"":' style="animation:none"'} title="#${t} ${ITEMS[t-1].name}">${svgFor(t)}</div>` : "");
 }
 function drawGrid(anim=true){ for(let i=0;i<SLOTS;i++) drawCell(i, anim); }
 // light up the barrels you can merge the held/selected barrel into
@@ -817,31 +848,47 @@ function toast(html){
 function floatText(i, txt){
   const r = cells[i].getBoundingClientRect(), d = document.createElement("div");
   d.className = "float"; d.textContent = txt;
-  d.style.left = (r.left + r.width/2) + "px"; d.style.top = (r.top + 4) + "px"; d.style.translate = "-50% 0";
+  d.style.left = (r.left + r.width/2) + "px"; d.style.top = (r.top + r.height*.3) + "px"; d.style.translate = "-50% 0";
   document.body.appendChild(d); setTimeout(()=>d.remove(), 1000);
 }
-function modal({title, text, big, ok="OK", cancel, onOk}){
+// small window in the same style as the big ones
+function modal({title, text, big, html, ok="OK", cancel, onOk}){
   const m = document.createElement("div"); m.className = "modal";
-  m.innerHTML = `<div><h3></h3><p></p>${big?`<div class="big">${big}</div>`:""}<div class="row">${cancel?`<button class="buy alt">${cancel}</button>`:""}<button class="buy ok">${ok}</button></div></div>`;
-  m.querySelector("h3").textContent = title; m.querySelector("p").textContent = text;
-  m.querySelector(".ok").onclick = () => { m.remove(); onOk && onOk(); };
-  const c = m.querySelector(".alt"); if(c) c.onclick = () => m.remove();
+  m.innerHTML = `<div><header class="wt"><span class="sq ghost-slot"></span><h2></h2><button class="sq red x">X</button></header>
+    <div class="body">${text != null ? "<p></p>" : ""}${html || ""}${big?`<div class="big">${big}</div>`:""}
+    <div class="row">${cancel?`<button class="buy alt">${cancel}</button>`:""}<button class="buy ok">${ok}</button></div></div></div>`;
+  m.querySelector("h2").textContent = title;
+  if(text != null) m.querySelector("p").textContent = text;
+  const close = () => m.remove();
+  m.querySelector(".ok").onclick = () => { close(); onOk && onOk(); };
+  m.querySelector(".x").onclick = close;
+  const c = m.querySelector(".alt"); if(c) c.onclick = close;
+  m.onclick = e => { if(e.target === m) close(); };
   app.appendChild(m);
+  return m;
 }
 
-// sheet
-const TITLES = {up:"Scrap Upgrades", gold:"Prestige", col:"Barrels", set:"Options"};
-let pane = null;
+// windows
+const TITLES = {up:"Upgrades", gold:"Prestige", col:"Barrels", set:"Options"};
+let pane = null, ptab = "gs";
 function openPane(p){
   if(pane === p){ closePane(); return; }
   pane = p;
   document.querySelectorAll(".dock button").forEach(b => b.classList.toggle("on", b.dataset.pane === p));
   document.querySelectorAll(".pane").forEach(x => x.classList.toggle("on", x.id === "pane-"+p));
   $("sheettitle").textContent = TITLES[p];
-  $("bulk").style.display = p === "up" ? "" : "none";
+  $("bulk").classList.toggle("ghost-slot", p !== "up");
+  $("ptabs").classList.toggle("on", p === "gold");
   $("sheet").classList.add("on"); $("scrim").classList.add("on");
+  if(p === "gold") openTab(ptab);
   if(p === "col") renderBook();
   if(p === "set") renderSettings();
+}
+function openTab(t){
+  ptab = t;
+  document.querySelectorAll("#ptabs button").forEach(b => b.classList.toggle("on", b.dataset.ptab === t));
+  document.querySelectorAll("#pane-gold .sub-pane").forEach(x => x.classList.toggle("on", x.id === "pt-"+t));
+  if(t === "star") starKey = "";
 }
 function closePane(){
   pane = null;
@@ -849,13 +896,14 @@ function closePane(){
   $("sheet").classList.remove("on"); $("scrim").classList.remove("on");
 }
 document.querySelectorAll(".dock button").forEach(b => b.onclick = () => { initAudio(); openPane(b.dataset.pane); });
+document.querySelectorAll("#ptabs button").forEach(b => b.onclick = () => openTab(b.dataset.ptab));
 $("close").onclick = closePane; $("scrim").onclick = closePane;
 
 function buildUpgrades(listEl, defs, key, gold){
   listEl.innerHTML = "";
   for(const u of defs){
     const row = document.createElement("div"); row.className = "upg";
-    row.innerHTML = `<div class="ic" style="background:${u.color}">${u.icon}</div><div class="txt"><div class="nm"></div><div class="ds"></div></div><button class="buy${gold?" gold":""}"></button>`;
+    row.innerHTML = `<div class="ic" style="background:${u.color}">${u.icon}</div><div class="txt"><div class="nm"></div><div class="ds"></div></div><button class="buy"></button>`;
     row.querySelector("button").onclick = () => buy(u, key);
     u.el = row; u.key = key; u.gold = gold; listEl.appendChild(row);
   }
@@ -863,20 +911,20 @@ function buildUpgrades(listEl, defs, key, gold){
 // returns the reason an upgrade can't be bought right now, or null
 const blocked = (u, l) => (u.max && l >= u.max) ? "MAX" : u.lock ? u.lock() : null;
 function refreshUpgrades(defs){
-  let any = false;
+  let n = 0;
   for(const u of defs){
     const l = S[u.key][u.id], why = blocked(u, l);
     const nm = u.el.querySelector(".nm"), ds = u.el.querySelector(".ds"), b = u.el.querySelector("button");
-    const n = `${u.name}<span class="lv">Lv ${l}${u.max?" / "+u.max:""}</span>`;
-    if(nm._v !== n){ nm.innerHTML = n; nm._v = n; }
+    const t = `${u.name}<span class="lv">Lv ${l}${u.max?" / "+u.max:""}</span>`;
+    if(nm._v !== t){ nm.innerHTML = t; nm._v = t; }
     const d = u.desc(l); if(ds._v !== d){ ds.textContent = d; ds._v = d; }
     const c = costL(u,l);
-    const bt = why || `<svg class="ico xs"><use href="#i-${u.gold?"gold":"scrap"}"/></svg>${fmtL(c)}`;
+    const bt = why || `<svg class="ico xs" viewBox="0 0 40 48"><use href="#i-${u.gold?"gold":"scrap"}"/></svg>${fmtL(c)}`;
     if(b._v !== bt){ b.innerHTML = bt; b._v = bt; }
     const ok = !why && (u.gold ? S.gs : S.scrap) >= c - 1e-9;
-    b.disabled = !ok; if(ok) any = true;
+    b.disabled = !ok; if(ok) n++;
   }
-  return any;
+  return n;
 }
 function buyOne(u, key){
   const l = S[key][u.id];
@@ -898,7 +946,7 @@ function buy(u, key){
 function buyStar(){
   initAudio();
   if(S.gs < starCostL(S.stars) - 1e-9) return sfx.err();
-  S.stars++; S.gs = LZ; sfx.prestige(); render();
+  S.stars++; S.gs = LZ; sfx.prestige(); starKey = ""; render();
   toast(`★ Star ${S.stars}! Production ×${fmtL(S.stars)}`);
 }
 // barrels below the spawn tier are useless clutter: upgrade them to the spawn tier
@@ -922,63 +970,90 @@ function renderBook(){
     const t = i+1, known = t <= S.best;
     c.classList.toggle("locked", !known);
     c.querySelector("b").textContent = known ? ITEMS[i].name : "???";
-    c.querySelector("span").textContent = `#${t} · ${fmtL(tierL(t))}/s`;
+    c.querySelector("span").textContent = `#${t}`;
   });
-  $("colcount").textContent = `Discovered ${S.best} of ${MAX} barrels. Each tier makes 3× the one before it.`;
+  $("colcount").textContent = `Unlocked: ${S.best}/${MAX}`;
 }
 function showBarrel(t){
-  const known = t <= S.best, m = document.createElement("div");
-  m.className = "modal";
-  m.innerHTML = `<div><div class="detail${known?"":" locked"}">${svgFor(t)}</div><h3></h3><p></p><div class="row"><button class="buy ok">Close</button></div></div>`;
-  m.querySelector("h3").textContent = known ? `#${t} ${ITEMS[t-1].name}` : `#${t} ???`;
-  m.querySelector("p").textContent = known ? `Makes ${fmtL(tierL(t))} scrap/sec before multipliers.` : "Merge your way up to discover this barrel.";
-  m.querySelector(".ok").onclick = () => m.remove();
-  m.onclick = e => { if(e.target === m) m.remove(); };
-  app.appendChild(m);
+  const known = t <= S.best;
+  modal({title: known ? ITEMS[t-1].name : "???",
+    html:`<div class="detail${known?"":" locked"}">${svgFor(t)}</div><p>Barrel #${t}<br>${known ? `Makes ${fmtL(tierL(t))} scrap/sec before boosts.` : "Merge your way up to discover this barrel."}</p>`,
+    ok:"Close"});
 }
 function renderSettings(){
   $("mute").textContent = S.muted ? "Off" : "On";
-  $("theme").textContent = S.theme[0].toUpperCase() + S.theme.slice(1);
-  $("stats").innerHTML = `<span>Total scrap earned</span><b>${fmtL(S.totalScrap)}</b><span>Merges</span><b>${fmt(S.merges)}</b><span>Prestiges</span><b>${S.prestiges}</b><span>Best barrel</span><b>#${S.best}</b>`;
+  $("stats").innerHTML = `<span>Scrap per second</span><b>${fmtL(prodL())}</b><span>Total scrap earned</span><b>${fmtL(S.totalScrap)}</b><span>Merges</span><b>${fmt(S.merges)}</b><span>Prestiges</span><b>${S.prestiges}</b><span>Best barrel</span><b>#${S.best}</b>`;
+}
+function showGsInfo(){
+  const n = gsTier();
+  modal({title:"Golden Scrap", ok:"Close",
+    html:`<p>On restart you get (best barrel ÷ 5)⁵ Golden Scrap, times your multiplier. Each Golden Scrap boosts production by ${fmtL(Math.log10(gsPer()) + 2)}%.</p>
+      <p>${S.stars < 5 ? "Multipliers unlock at 5 Stars:" : "Multipliers from your best barrel this run:"}</p>
+      <div class="gst" style="margin-bottom:14px">${GS_TIERS.map(([req, m], i) =>
+        `<div class="${S.stars >= 5 && i < n ? "got" : ""}${S.stars >= 5 && i === n-1 ? " cur" : ""}"><b>×${m}</b>Barrel #${req}${i === GS_TIERS.length-1 ? "+" : ""}</div>`).join("")}</div>`});
+}
+function showStarInfo(){
+  modal({title:"Stars", ok:"Close",
+    text:"Each Star multiplies scrap production by 10. Buying a Star spends ALL of your Golden Scrap. Stars 1-10 cost 1K, 2K, 3K, 5K, 25K, 75K, 200K, 500K, 1M and 2M Golden Scrap; after that each costs 3× the one before. At 5 Stars, Golden Scrap Multipliers unlock."});
+}
+$("gsinfo").onclick = showGsInfo;
+$("starinfo").onclick = showStarInfo;
+
+// the stars window shows the current group of 10 stars in SC2's 2-3-3-2 layout
+let starKey = "";
+function renderStars(){
+  const key = S.stars + "/" + (S.gs >= starCostL(S.stars) - 1e-9);
+  if(key === starKey) return; starKey = key;
+  const base = Math.floor(S.stars / 10) * 10, rows = [2,3,3,2];
+  let k = 0;
+  $("starfield").innerHTML = rows.map(n => `<div class="r">${Array.from({length:n}, () => {
+    const idx = base + k++, own = idx < S.stars;
+    return `<div class="st${own ? "" : " no"}"><svg viewBox="0 0 100 100"><use href="#i-star${own ? "" : "no"}"/></svg><b>${own ? "x10" : "#" + (idx+1)}</b></div>`;
+  }).join("")}</div>`).join("");
 }
 
-let gstKey = "";
-function renderGsTiers(){
-  const n = gsTier(), key = n + "/" + S.runBest + "/" + (S.stars >= 5);
-  if(key === gstKey) return; gstKey = key;
-  $("gst").innerHTML = GS_TIERS.map(([req, m], i) =>
-    `<div class="${i < n ? "got" : ""}${i === n-1 ? " cur" : ""}"><b>×${m}</b>Barrel #${req}${i === GS_TIERS.length-1 ? "+" : ""}</div>`).join("");
-  const next = GS_TIERS[n];
-  $("gst").classList.toggle("locked", S.stars < 5);
-  $("gstnote").textContent = S.stars < 5 ? "Unlocks at 5 Stars. Then your highest barrel each run multiplies the Golden Scrap you get when you prestige, up to ×1024 at barrel #97."
-    : "Your highest barrel this run multiplies the Golden Scrap you get when you prestige. The bonus stops growing at barrel #97.";
-  $("gsmulttxt").textContent = S.stars < 5 ? "Golden Scrap = (best barrel ÷ 5)⁵ · multipliers unlock at 5 Stars" : (n ? `Multiplier ×${gsTierMult()}` : "No multiplier yet")
-    + (next ? ` · reach barrel #${next[0]} for ×${next[1]}` : " · maxed out");
-}
 let lastNext = 0;
 function render(){
   const sc = fmtL(S.scrap);
-  $("scrap").textContent = sc; $("scrap").style.fontSize = sc.length > 9 ? "24px" : "";
-  $("sps").textContent = fmtL(prodL());
-  $("gs").textContent = fmtL(S.gs);
-  $("stars").textContent = S.stars;
-  $("gsb").textContent = `Production multiplier ×${fmtL(multL())}`;
-  const sc2 = starCostL(S.stars), canStar = S.gs >= sc2 - 1e-9;
-  $("starcount").textContent = S.stars;
-  $("starfill").style.width = Math.max(0, Math.min(100, 100 * 10**(S.gs - sc2))) + "%";
-  $("starlbl").textContent = `${fmtL(S.gs)} / ${fmtL(sc2)} Golden Scrap`;
+  $("scrap").textContent = sc; $("scrap").style.fontSize = sc.length > 12 ? "16px" : sc.length > 9 ? "19px" : "";
+  const gsTxt = fmtL(S.gs);
+  $("gs").textContent = gsTxt; $("gs").style.fontSize = gsTxt.length > 12 ? "16px" : gsTxt.length > 9 ? "19px" : "";
+  // spawn strip
+  const si = spawnInterval(S.up.spawn);
+  $("spawnfill").style.width = Math.min(100, S.spawnT / si * 100) + "%";
+  // per-barrel production above each barrel
+  const m = multL();
+  cells.forEach((c,i) => {
+    const t = S.grid[i], txt = t ? "+" + fmtL(tierL(t) + m) : "";
+    if(c._lbl !== txt){ c._lbl = txt; const l = c.firstChild; if(l) l.textContent = txt; }
+  });
+  // status bars: stars (blue) and pending prestige (orange)
+  const sc2 = starCostL(S.stars), canStar = S.gs >= sc2 - 1e-9, pend = pendingL();
+  $("starbar").textContent = `Stars ${S.stars}`;
+  $("starfill2").style.width = Math.max(0, Math.min(100, 100 * 10**(S.gs - sc2))) + "%";
+  $("pendbar").textContent = pend >= 0 ? `Restart: +${fmtL(pend)}` : "Restart at 100M scrap";
+  $("pendfill").style.width = pend >= 0 ? "100%" : Math.max(0, Math.min(100, 100 * 10**(S.runScrap - GS_MIN))) + "%";
+  // prestige window
+  $("gs2").textContent = $("gs3").textContent = fmtL(S.gs);
+  const gm = gsTierMult();
+  $("pend").textContent = pend >= 0 ? fmtL(pend - Math.log10(gm)) : "0";
+  $("pendx").textContent = gm > 1 ? `x${gm}` : "";
+  $("gsper").textContent = fmtL(Math.log10(gsPer()) + 2) + "%";
+  $("boostnow").textContent = "x" + fmtL(gsMultL());
+  $("boostafter").textContent = "x" + fmtL(ladd(0, ladd(S.gs, pend) + Math.log10(gsPer())));
+  $("prestige").disabled = pend < 0;
+  $("gsmulttxt").textContent = S.stars < 5 ? "Golden Scrap Multipliers unlock at 5 Stars." :
+    (GS_TIERS[gsTier()] ? `Reach barrel #${GS_TIERS[gsTier()][0]} for x${GS_TIERS[gsTier()][1]}.` : "Multiplier maxed at x1024.");
+  // stars window
+  renderStars();
+  $("starnext").textContent = `Next Star: ${fmtL(sc2)} Golden Scrap (spends all)`;
   $("buystar").disabled = !canStar;
   $("buystar").textContent = `Buy Star ${S.stars + 1}`;
-  const pend = pendingL();
-  $("pend").textContent = fmtL(pend);
-  renderGsTiers();
-  $("prestige").disabled = pend < 0;
-  const si = spawnInterval(S.up.spawn), full = !S.grid.includes(0);
-  $("spawnfill").style.width = Math.min(100, S.spawnT / si * 100) + "%";
-  $("spawnlbl").textContent = full ? "Board full! Merge some barrels" : `Barrel #${spawnTier()} in ${Math.max(0, si - S.spawnT).toFixed(1)}s`;
-  if(lastNext !== spawnTier()){ lastNext = spawnTier(); $("nextpic").innerHTML = svgFor(lastNext); }
-  $("dot-up").classList.toggle("show", refreshUpgrades(UPG));
-  $("dot-gold").classList.toggle("show", refreshUpgrades(GUPG) || canStar || pend >= Math.max(0, S.gs));
+  // badges
+  const nUp = refreshUpgrades(UPG), nGold = refreshUpgrades(GUPG) + (canStar ? 1 : 0) + (pend >= 0 && pend > S.gs ? 1 : 0);
+  $("dot-up").textContent = nUp; $("dot-up").classList.toggle("show", nUp > 0);
+  $("dot-gold").textContent = nGold; $("dot-gold").classList.toggle("show", nGold > 0);
+  if(pane === "set") renderSettings();
 }
 
 // ================= GAME ACTIONS =================
@@ -1103,13 +1178,9 @@ window.addEventListener("pointercancel", e=>endDrag(e,true));
 
 $("prestige").onclick = prestige;
 $("buystar").onclick = buyStar;
-$("bulk").onclick = () => { S.buyMax = !S.buyMax; $("bulk").textContent = S.buyMax ? "Buy Max" : "Buy ×1"; $("bulk").classList.toggle("on", S.buyMax); };
-function applyTheme(){
-  if(S.theme === "auto") document.documentElement.removeAttribute("data-theme");
-  else document.documentElement.setAttribute("data-theme", S.theme);
-}
+$("bulk").onclick = () => { S.buyMax = !S.buyMax; $("bulk").textContent = S.buyMax ? "MAX" : "×1"; };
+function applyTheme(){}
 $("mute").onclick = ()=>{ S.muted = !S.muted; renderSettings(); save(); };
-$("theme").onclick = ()=>{ S.theme = {auto:"light", light:"dark", dark:"auto"}[S.theme] || "auto"; applyTheme(); renderSettings(); save(); };
 $("wipe").onclick = ()=> modal({title:"Reset everything?", text:"This deletes ALL progress, including Golden Scrap and your barrel collection.", ok:"Delete", cancel:"Cancel",
   onOk:()=>{
     try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
@@ -1149,7 +1220,7 @@ function tick(){
 // ================= BOOT =================
 load();
 applyTheme();
-$("bulk").textContent = S.buyMax ? "Buy Max" : "Buy ×1"; $("bulk").classList.toggle("on", S.buyMax);
+$("bulk").textContent = S.buyMax ? "MAX" : "×1";
 buildUpgrades($("ups"), UPG, "up", false);
 buildUpgrades($("gups"), GUPG, "gup", true);
 liftLow();
