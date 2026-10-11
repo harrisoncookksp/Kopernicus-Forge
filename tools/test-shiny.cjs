@@ -17,6 +17,7 @@ const OUTDIR = path.resolve(__dirname, 'out'); require('fs').mkdirSync(OUTDIR, {
   // forced shiny spawn
   await p.evaluate(()=>{ Math.random=()=>0.001; spawnOne(); Math.random=()=>0.5; });
   console.log('spawned shiny', await p.evaluate(()=>[S.shiny.filter(Boolean).length, S.shinies]));
+  console.log('shiny drop (expect +1 per shiny, no x10 prod)', await p.evaluate(()=>{ const m0=S.magnets, n=S.shiny.filter((v,i)=>v&&S.grid[i]).length, p0=prodL(); S.shinyT=59.95; step(0.1); return [n, S.magnets-m0, +(prodL()-p0).toFixed(3) < 0.01]; }));
   await p.click('.dock button[data-pane=col]'); await p.waitForTimeout(300);
   await p.locator('#book .card').nth(110).scrollIntoViewIfNeeded(); await p.waitForTimeout(150);
   await p.screenshot({path:path.join(OUTDIR,'shiny-book.png')});

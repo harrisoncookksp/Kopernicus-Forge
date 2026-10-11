@@ -24,11 +24,11 @@ const OUTDIR = path.resolve(__dirname, 'out'); require('fs').mkdirSync(OUTDIR, {
   await p.locator('.modal .ok').click();
   console.log('converted', await p.evaluate(()=>[S.grid[0], S.frags, S.qstat.converts]));
   // tree
-  await p.evaluate(()=>{ S.starLv=Array(10).fill(82); S.frags=2000; S.magnets=50000; S.beams=2000; S.gs=Math.log10(1e12); });
+  await p.evaluate(()=>{ S.starLv=Array(10).fill(100); S.frags=5000; S.magnets=100000; S.beams=8000; S.gs=Math.log10(1e12); });
   await p.click('.dock button[data-pane=up]'); await p.click('#utabs button[data-utab=tree]'); await p.waitForTimeout(200);
   await p.screenshot({path:path.join(OUTDIR,'e-tree.png')});
   const n = await p.locator('#tree .upg .buy').count();
-  for(let i=0;i<n;i++) await p.locator('#tree .upg .buy').nth(i).click();
+  for(let i=0;i<n;i++){ const bt=p.locator('#tree .upg .buy').nth(i); if(await bt.isEnabled()) await bt.click(); }
   console.log('tree owned', await p.evaluate(()=>[Object.keys(S.tree).length, S.frags, S.magnets, S.beams, spendReq(), fmtS(brickRateL()), magMult(), beamYield()]));
   await p.screenshot({path:path.join(OUTDIR,'e-tree2.png'), fullPage:false});
   await p.click('#close');

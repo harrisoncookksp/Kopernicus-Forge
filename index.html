@@ -1197,16 +1197,16 @@ const ITEMS = [
   over:`${cubeFace([[20,26],[70,26],[70,90],[20,90]], ["#e2465b","#e2465b","#e2465b","#e2465b","#e2465b","#2fbf71","#e2465b","#e2465b","#e2465b"])}
         ${cubeFace([[70,26],[82,16],[82,80],[70,90]], ["#3b82f6","#3b82f6","#3b82f6","#3b82f6","#3b82f6","#3b82f6","#3b82f6","#3b82f6","#f2c230"], .55)}
         ${cubeFace([[32,16],[82,16],[70,26],[20,26]], ["#fff","#fff","#fff","#fff","#fff","#fff","#ff8a1f","#fff","#fff"])}` },
-{ name:"Centennial", shape:"trophy", fill:"#f2c14e", lid:"#fff3b0", inner:"#e9b830",
-  deco:`<rect x="0" y="0" width="100" height="58" fill="url(#lg-gold)"/>
-        <text x="50" y="40" font-size="20" font-weight="800" text-anchor="middle" fill="#fff8d6" stroke="none" font-family="Open Sans,system-ui,sans-serif">100</text>
-        <path d="M24 44 Q50 54 76 44" fill="none" stroke="#c8961f" stroke-width="2"/>
-        <rect x="0" y="58" width="100" height="5" fill="#c8961f"/><rect x="0" y="70" width="100" height="30" fill="#2b2b33"/>
-        <rect x="36" y="77" width="28" height="9" rx="1" fill="#f2c14e"/>
-        ${[[22,74,"#e2465b"],[30,84,"#3b82f6"],[70,76,"#2fbf71"],[76,86,"#ff7ad9"],[60,82,"#f2c230"]].map(([x,y,c])=>`<rect x="${x}" y="${y}" width="4" height="2" fill="${c}" transform="rotate(${x*7} ${x} ${y})"/>`).join("")}`,
-  under:`${tube("M21 20 Q4 20 6 34 Q8 46 32 47","#e9b53a",5)}${tube("M79 20 Q96 20 94 34 Q92 46 68 47","#e9b53a",5)}`,
-  top:`${[[38,8,"#e2465b"],[50,4,"#3b82f6"],[62,8,"#2fbf71"],[44,12,"#f2c230"],[56,11,"#ff7ad9"]].map(([x,y,c])=>`<rect x="${x}" y="${y}" width="3.5" height="2" fill="${c}" stroke="none" transform="rotate(${x*9} ${x} ${y})"/>`).join("")}`,
-  over:`<polygon points="${star(14,40,4,1.2,4)}" fill="#fff" stroke="none"/><polygon points="${star(88,44,5,1.4,4)}" fill="#fff" stroke="none"/>` },
+{ name:"Centennial", shape:"tub", fill:"#f9d6e4", lid:"#fff4f8", inner:"#ffe0ec",
+  deco:`<rect x="0" y="36" width="100" height="10" fill="#fff4f8"/>
+        ${[16,26,36,46,56,66,76].map((x,i)=>`<path d="M${x} 44 q4 ${8+(i%3)*4} 8 0" fill="#fff4f8"/>`).join("")}
+        <rect x="0" y="62" width="100" height="6" fill="#e2465b"/>${[18,30,42,54,66,78].map(x=>`<circle cx="${x}" cy="65" r="2" fill="#fff"/>`).join("")}
+        <text x="50" y="59" font-size="11" font-weight="800" text-anchor="middle" fill="#e2465b" font-family="Open Sans,system-ui,sans-serif">100</text>
+        ${[[22,74,"#3b82f6"],[36,76,"#2fbf71"],[62,75,"#f2c230"],[76,73,"#9a3ac0"]].map(([x,y,c])=>`<rect x="${x}" y="${y}" width="5" height="2" rx="1" fill="${c}" transform="rotate(${x*5} ${x} ${y})"/>`).join("")}`,
+  top:`<path d="M26 34 V20 Q50 26 74 20 V34 Q50 40 26 34 Z" fill="#fff4f8"/><ellipse cx="50" cy="20" rx="24" ry="5" fill="#ffe0ec"/>
+       ${[28,36,44,52,60,68].map((x,i)=>`<path d="M${x} 33 q2 ${4+(i%2)*3} 4 0" fill="#ffe0ec" stroke="none"/>`).join("")}
+       ${[[34,19,"#3b82f6"],[42,17,"#e2465b"],[50,16,"#2fbf71"],[58,17,"#f2c230"],[66,19,"#9a3ac0"]].map(([x,y,c])=>`<rect x="${x-1.5}" y="${y-11}" width="3" height="11" fill="${c}"/><path d="M${x} ${y-12} q-2.4 -3 0 -6 q2.4 3 0 6 Z" fill="#ffb02e" stroke="none"/><circle cx="${x}" cy="${y-14}" r="3.4" fill="url(#rg-glow)" opacity=".7" stroke="none"/>`).join("")}`,
+  over:`<polygon points="${star(10,28,4,1.3,4)}" fill="#fff" stroke="none"/><polygon points="${star(90,30,4,1.3,4)}" fill="#fff" stroke="none"/>` },
 { name:"Message Received", shape:"churn", fill:"#cfeaf7", lid:"#8a5a30", inner:"#6b4423",
   deco:`<path d="M22 70 q6 -4 12 0 t12 0 t12 0 t12 0 t12 0 V100 H22 Z" fill="#4fb3ff"/>
         <path d="M34 66 H66 L62 72 H38 Z" fill="#8a5a30"/><path d="M49 66 V44 M49 46 L62 60 H49 M49 50 L38 62 H49" fill="#fff" stroke="#6b4423" stroke-width="1"/>
@@ -1613,15 +1613,16 @@ const ITEMS = [
   deco:`<path d="M14 40 H86" stroke="#5a3a1e" stroke-width="2"/>`,
   top:`${[[26,30,9],[40,24,11],[56,24,11],[72,30,9],[34,36,8],[50,34,10],[66,36,8],[48,16,8]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="url(#lg-gold)"/><path d="M${x-r*.5} ${y-r*.2} q${r*.3} ${-r*.4} ${r*.6} 0" fill="none" stroke="#fff6c2" stroke-width="1.3"/>`).join("")}
        ${[[30,18],[64,14],[78,22]].map(([x,y])=>`<polygon points="${star(x,y,3.4,1.1,4)}" fill="#fff" stroke="none"/>`).join("")}` },
-{ name:"Legendary", shape:"trophy", fill:"#f2c14e", lid:"#fff3b0", inner:"#e9b830",
-  deco:`<rect x="0" y="0" width="100" height="58" fill="url(#lg-gold)"/>
-        <text x="50" y="40" font-size="20" font-weight="800" text-anchor="middle" fill="#fff8d6" font-family="Open Sans,system-ui,sans-serif">150</text>
-        ${[0,1,2,3,4].map(i=>`<ellipse cx="${26+i*1.5}" cy="${18+i*6}" rx="4" ry="2" fill="#2f8a42" transform="rotate(${-40+i*12} ${26+i*1.5} ${18+i*6})"/><ellipse cx="${74-i*1.5}" cy="${18+i*6}" rx="4" ry="2" fill="#2f8a42" transform="rotate(${40-i*12} ${74-i*1.5} ${18+i*6})"/>`).join("")}
-        <rect x="0" y="58" width="100" height="5" fill="#c8961f"/><rect x="0" y="70" width="100" height="30" fill="#3a1a5e"/>
-        <rect x="36" y="77" width="28" height="9" rx="1" fill="#f2c14e"/><polygon points="${star(50,81.5,3.4,1.4,5)}" fill="#3a1a5e"/>`,
-  under:`${tube("M21 20 Q4 20 6 34 Q8 46 32 47","#e9b53a",5)}${tube("M79 20 Q96 20 94 34 Q92 46 68 47","#e9b53a",5)}`,
-  top:`<polygon points="${star(50,4,8,3.4,5)}" fill="#fff6c2" stroke="#c8961f" stroke-width="1"/><circle cx="50" cy="6" r="12" fill="url(#rg-glow)" opacity=".5" stroke="none"/>`,
-  over:`${[[10,30],[90,24],[14,60],[88,64]].map(([x,y])=>`<polygon points="${star(x,y,4,1.3,4)}" fill="#fff" stroke="none"/>`).join("")}` },
+{ name:"Legendary", shape:"tbox", fill:"#e8e4dc", lid:"#f4f0e8", inner:"#d8d2c6",
+  deco:`<path d="M32 30 Q40 36 36 44 M60 74 Q56 80 62 86" fill="none" stroke="#c8c0b0" stroke-width="1.4"/>
+        <rect x="30" y="14" width="36" height="6" fill="#d8d2c6"/><rect x="30" y="86" width="36" height="6" fill="#c8c0b0"/>
+        <circle cx="48" cy="54" r="15" fill="url(#rg-yellow)" opacity=".5"/>
+        ${[0,1,2,3,4].flatMap(i=>[220-i*28, -40+i*28]).map(d=>{const r=d*Math.PI/180,x=(48+15*Math.cos(r)).toFixed(1),y=(54-15*Math.sin(r)).toFixed(1);return `<ellipse cx="${x}" cy="${y}" rx="4.2" ry="1.9" fill="#c8961f" transform="rotate(${90-d} ${x} ${y})"/>`}).join("")}
+        <rect x="37" y="48" width="22" height="13" rx="1.5" fill="url(#lg-gold)"/><text x="48" y="58" font-size="9" font-weight="800" text-anchor="middle" fill="#7a5a00" font-family="Georgia,serif">150</text>
+        <path d="M33 22 V84" stroke="#fff" stroke-opacity=".6" stroke-width="2"/>`,
+  over:`<circle cx="53" cy="8" r="14" fill="url(#rg-yellow)" opacity=".55" stroke="none"/>
+        <polygon points="${star(53,8,8,3.4,5)}" fill="url(#lg-gold)" stroke="#a07c10" stroke-width="1"/>
+        ${[[14,20],[88,36],[18,70],[86,78]].map(([x,y])=>`<polygon points="${star(x,y,4,1.3,4)}" fill="#fff" stroke="none"/>`).join("")}` },
 { name:"Eye of the Cyclops", shape:"globe", fill:"#d9a27a", lid:"#b8805a", inner:"#8a5a3a",
   deco:`<ellipse cx="50" cy="52" rx="28" ry="20" fill="#fff"/><circle cx="52" cy="53" r="14" fill="#3b82f6"/><circle cx="52" cy="53" r="14" fill="url(#rg-cyan)" opacity=".5"/>
         <circle cx="52" cy="53" r="6.5" fill="#0e1638"/><circle cx="48" cy="49" r="3" fill="#fff"/>
